@@ -36,6 +36,7 @@
 \usepackage{booktabs}
 \usepackage{multirow}
 \usepackage{soul}
+\usepackage{tabularx}
 
 \usepackage{cleveref}
 \crefname{codecount}{Code}{Codes}
@@ -312,60 +313,58 @@ For these reasons, we decided to explore a variety of alternative options for di
 
 
 \section{Related work}
-There are many tracing and profiling tools that are able to record I/O information; we will discuss a selection of them in more detail in the following
-Most of them focus on individual jobs, and only a few of them apply machine learning for mass analysis
+There are many tracing and profiling tools that are able to record I/O information~\cite{TFAPIKBBCF19}; we will discuss a selection of them in more detail in the following.
+Most of them focus on individual jobs, and only a few of them apply machine learning for mass analysis.
 
-The issue of performance profiles is that they remove the temporal dimension and make it difficult to identify relevant I/O phases
-As the purpose of interesting applications is the computation and I/O is just a byproduct, applications often spend less than 10\% time with I/O
-Tracing tools, however, produce too much information that must be reduced further
+The issue of performance profiles is that they remove the temporal dimension and make it difficult to identify relevant I/O phases.
+As the purpose of interesting applications is the computation and I/O is just a byproduct, applications often spend less than 10\% time with I/O.
+Tracing tools, however, produce too much information that must be reduced further.
 
-The Ellexus tools include Breeze, a user-friendly offline I/O profiling software, an automatic I/O report generator Healthcheck, and command line tool Mistral which purpose is to report on and resolve I/O performance issues when running complex Linux applications on high performance compute clusters
-Mistral is a small program that allows you to monitor application I/O patterns in real time, and log undesirable behaviour using rules defined in a configuration file called a contract
-Ellexus tools support POSIX and MPI (MPICH, MVAPICH, OpenMPI) I/O interfaces
+The Ellexus tools\footnote{\url{https://www.ellexus.com/products/}} include Breeze, a user-friendly offline I/O profiling software, an automatic I/O report generator Healthcheck, and command line tool Mistral which purpose is to report on and resolve I/O performance issues when running complex Linux applications on high performance compute clusters.
+Mistral is a small program that allows you to monitor application I/O patterns in real time, and log undesirable behaviour using rules defined in a configuration file called a contract.
+Ellexus tools support POSIX and MPI (MPICH, MVAPICH, OpenMPI) I/O interfaces.
 
-Darshan [13] is an open source I/O characterization tool for post-mortem analysis of HPC applications' I/O behavior
-Its primary objective is to capture concise but useful information with minimal overhead
-Darshan accomplishes this by eschewing end-to-end tracing in favor of compact statistics such as elapsed time, access sizes, access patterns, and file names for each file opened by an application
-These statistics are captured in a bounded amount of memory per process as the application executes
-When the application shuts down, it is reduced, compressed, and stored in a unified log file
-Utilities included with Darshan can then be used to analyze, visualize, and summarize the Darshan log information
-Because of Darshan's low overhead, it is suitable for system-wide deployment on large-scale systems
-In this deployment model, Darshan can be used not just to investigate the I/O behavior of individual applications but also to capture a broad view of system workloads for use by facility operators and I/O researchers
+Darshan~\cite{carns2011understanding-toc,hpcdarshan} is an open source I/O characterization tool for post-mortem analysis of HPC applications' I/O behavior.
+Its primary objective is to capture concise but useful information with minimal overhead.
+Darshan accomplishes this by eschewing end-to-end tracing in favor of compact statistics such as elapsed time, access sizes, access patterns, and file names for each file opened by an application.
+These statistics are captured in a bounded amount of memory per process as the application executes.
+When the application shuts down, it is reduced, compressed, and stored in a unified log file.
+Utilities included with Darshan can then be used to analyze, visualize, and summarize the Darshan log information.
+Because of Darshan's low overhead, it is suitable for system-wide deployment on large-scale systems.
+In this deployment model, Darshan can be used not just to investigate the I/O behavior of individual applications but also to capture a broad view of system workloads for use by facility operators and I/O researchers.
 
-Darshan supports several types of instrumentation via software modules
-Each module provides its own statistical counters and function wrappers while sharing a common infrastructure for reduction, compression, and storage
-The most full-featured modules provide instrumentation for POSIX, MPI-I/O and standard I/O library function calls, while additional modules provide limited PNetCDF and HDF5 instrumentation
-Other modules collect system information, such as Blue Gene runtime system parameters or Lustre file system striping parameters
-The Darshan eXtended Tracing (DXT) module can be enabled at runtime to increase fidelity by recording a complete trace of all MPI-I/O and POSIX I/O operations
+Darshan supports several types of instrumentation via software modules.
+Each module provides its own statistical counters and function wrappers while sharing a common infrastructure for reduction, compression, and storage.
+The most full-featured modules provide instrumentation for POSIX, MPI-I/O and standard I/O library function calls, while additional modules provide limited PNetCDF and HDF5 instrumentation.
+Other modules collect system information, such as Blue Gene runtime system parameters or Lustre file system striping parameters.
+The Darshan eXtended Tracing (DXT) module can be enabled at runtime to increase fidelity by recording a complete trace of all MPI-I/O and POSIX I/O operations.
 
-Darshan uses LD\_PRELOAD to intercept I/O calls at runtime in dynamically linked executables and link-time wrappers to intercept I/O calls at compile time in statically linked executables
-For example, to override POSIX I/O calls, the GNU C Library is overloaded so that Darshan can intercept all the read, write and metadata operations
-In order to measure MPI I/O, the MPI libraries must be similarly overridden
-This technique allows an application to be traced without modification and with reasonably low overhead
+Darshan uses LD\_PRELOAD to intercept I/O calls at runtime in dynamically linked executables and link-time wrappers to intercept I/O calls at compile time in statically linked executables.
+For example, to override POSIX I/O calls, the GNU C Library is overloaded so that Darshan can intercept all the read, write and metadata operations.
+In order to measure MPI I/O, the MPI libraries must be similarly overridden.
+This technique allows an application to be traced without modification and with reasonably low overhead.
 
-LASSi tool [15] was developed for detecting, the so called, victim and aggressor applications
-An aggressor can steal I/O resources from the victim and negatively affect its runtime
-To identify such applications, LASSi calculates metrics from Lustre job-stats and information from the job scheduler
-One metric category shows file system load and another category describes applications I/O behavior
-The correlation of these metrics can help to identify applications that cause the file system to slow down
-In the LASSi workflow this is a manual step, where a support team is involved in the identification of applications during file system slow down
-Manual steps are disadvantageous when processing large amounts of data and must be avoided in unsupervised I/O behavior identification
-LASSi's indicates that the main target group are system maintainers
-Understanding LASSi reports may be challenging for ordinary HPC users, who do not have knowledge about the underlying storage system
+LASSi tool~\cite{DBLP:journals/corr/abs-1906-03884} was developed for detecting, the so called, victim and aggressor applications.
+An aggressor can steal I/O resources from the victim and negatively affect its runtime.
+To identify such applications, LASSi calculates metrics from Lustre job-stats and information from the job scheduler.
+One metric category shows file system load and another category describes applications I/O behavior.
+The correlation of these metrics can help to identify applications that cause the file system to slow down.
+In the LASSi workflow this is a manual step, where a support team is involved in the identification of applications during file system slow down.
+Manual steps are disadvantageous when processing large amounts of data and must be avoided in unsupervised I/O behavior identification.
+LASSi's indicates that the main target group are system maintainers.
+Understanding LASSi reports may be challenging for ordinary HPC users, who do not have knowledge about the underlying storage system.
 
-The Nextgenio monitoring system [17] has four main collectors
-The first two, the PBS and ALPS tools, collect job scheduling information
-The proprietary Cray I/O monitoring tool exploits Lustre I/O counters to capture file system usage on OSTs of all OSSs and allocated compute nodes
-The MAP component provides information about cpu, memory and network usage
-Then all the collected data is clustered for the analysis of system usage and performance evaluation
+The Nextgenio monitoring system~\cite{nextgenio2016}, has four main collectors.
+The first two, the PBS and ALPS tools, collect job scheduling information.
+The proprietary Cray I/O monitoring tool exploits Lustre I/O counters to capture file system usage on OSTs of all OSSs and allocated compute nodes.
+The MAP component provides information about cpu, memory and network usage.
+Then all the collected data is clustered for the analysis of system usage and performance evaluation.
 
-In [14], the authors utilized probes to detect file system slow-down
-A probing tool measures file system response times by periodically sending metadata and read/write requests
-An increase of response times correlates to the overloading of the file system
-This approach allows the calculation of a slow-down factor identification of the slow-down time period
-This approach is able to detect a file system slow-down, but cannot detect the jobs that cause the slow-down
-
-
+In~\cite{TUISVPKB19}, the authors utilized probes to detect file system slow-down.
+A probing tool measures file system response times by periodically sending metadata and read/write requests.
+An increase of response times correlates to the overloading of the file system.
+This approach allows the calculation of a slow-down factor identification of the slow-down time period.
+This approach is able to detect a file system slow-down, but cannot detect the jobs that cause the slow-down.
 
 \section{Methodology}
 Generally, machine learning algorithms expect a fixed number of features.
@@ -430,7 +429,7 @@ The result of the data-preprocessing is a coding of the initial time series data
 
 \begin{table}
 	\centering
-	\begin{tabular}{lll}
+	\begin{tabularx}{\textwidth}{llX}
 		\hline
 		Dimension       & Operation                                    &  Description                                                       \\ 
 		\hline
@@ -449,7 +448,7 @@ The result of the data-preprocessing is a coding of the initial time series data
 		\hline
 		All             & Job profile                                  &  Reduces time series to a fixed set of values                      \\ 
 		\hline
-	\end{tabular}
+	\end{tabularx}
 	\caption{Data reduction techniques.}
 	\label{tab:reduction_techniques}
 \end{table}
@@ -467,7 +466,7 @@ The operations are summarized in \Cref{tab:coding_ops}.
 
 \begin{table}
   \centering
-  \begin{tabular}{ll}
+	\begin{tabularx}{\textwidth}{lX}
     \hline
     Operation &  Description \\
     \hline
@@ -481,8 +480,7 @@ The operations are summarized in \Cref{tab:coding_ops}.
     \hline 
     Phase extraction &  Extract continuous sequences of non-zero segments. \par - Splits time series at zero segments in sub time series (I/O phases) and removes zero segments. \par - Preserves order of I/O phases. \\
     \hline
-
-  \end{tabular}
+  \end{tabularx}
   \caption{Coding operations.}
   \label{tab:coding_ops}
 \end{table}
@@ -626,7 +624,7 @@ As we will see later, under some circumstances they can be used together in one 
 
 \begin{table}
   \centering
-  \begin{tabular}{ll}
+	\begin{tabularx}{\textwidth}{lX}
     \hline
     Operation & Description \\
     \hline
@@ -638,7 +636,7 @@ As we will see later, under some circumstances they can be used together in one 
     \hline
     Phase &  - Find best I/O phases combination of two jobs with a maximum similarity \par - Depends on phase extraction from data pre-processing and sliding window similarity \par - Preserve the order of the phases \\
     \hline
-  \end{tabular}
+  \end{tabularx}
   \caption{Similarity functions}
   \label{tab:sim_funcs}
 \end{table}
@@ -652,7 +650,8 @@ For scalability reasons, we derived two algorithms that are able to handle the l
 
 \begin{table}
   \centering
-  \begin{tabular}{p{0.99in}p{3.2in}}
+  %\begin{tabular}{p{0.99in}p{3.2in}}
+	\begin{tabularx}{\textwidth}{lX}
     \hline
     Algorithm & Description \\
     \hline
@@ -666,7 +665,7 @@ For scalability reasons, we derived two algorithms that are able to handle the l
     \hline
     SimplifiedDensity &  Combines ideas from k-means with density clustering. The simplified clustering algorithms add a job to a cluster if similarity to the cluster centroid is equal or larger than the user defined value. \\
     \hline
-  \end{tabular}
+  \end{tabularx}
   \caption{Clustering algorithms}
   \label{tab:clustering_algorithms}
 \end{table}
@@ -792,18 +791,20 @@ For this coding it is 53 percent.
 This similarity function works on the same principle like the BIN functions, with the difference that it computes the similarity for all metrics, and then the mean value of the similarities.
 This adaption allows to apply Levenshtein-based similarity on hexadecimal coding.
 
-\begin{equation}
-  similarity \left( job_{A}\text{, jo}b_{B} \right) =1-\frac{ \sum_{m \in Metric}^{} levenshtein \left( coding_{A,m}\text{, coding}_{B,m} \right) }{N \cdot L_{B}} \text{, with }L_{B} \geq L_{A}
-\end{equation}
+\begin{align}
+  similarity \left( job_{A}\text{, jo}b_{B} \right) &= 1 -\frac{ \sum_{m \in Metric}^{} levenshtein \left( coding_{A,m}\text{, coding}_{B,m} \right) }{N \cdot L_{B}} \\
+	&\text{, with }L_{B} \geq L_{A}
+\end{align}
 
 \subsubsection{HEX\_NATIVE}
 The similarity function below computes a performance aware similarity between two jobs.
 It works with hexadecimal codings at metric level, i.e., it computes maximum similarity between metrics and computes a mean value of them.
 Assume jobB is larger or equal than jobA, the job similarity between two jobs can be computed by the following equation.
 
-\begin{equation}
-similarity \left( job_{A}\text{, jo}b_{B} \right)  = 1-\frac{ \sum _{m \in Metric}^{}maxCodingSimilarity \left( job_{A,m}\text{, jo}b_{B,m} \right) }{L_{B}}\text{, with }L_{B} \geq L_{A}
-\end{equation}
+\begin{align}
+similarity \left( job_{A}\text{, jo}b_{B} \right) &= 1-\frac{ \sum _{m \in Metric}^{}maxCodingSimilarity \left( job_{A,m}\text{, jo}b_{B,m} \right) }{L_{B}}\\
+&\text{, with }L_{B} \geq L_{A}
+\end{align}
 
 The metric coding sequences $job_{B,m}$ and $job_{A,m}$ of different jobs can have different lengths.
 Therefore, to compute a maximum similarity between two metrics, we use a sliding window approach.
@@ -1175,21 +1176,14 @@ The largest cluster is even representative in Top10 relevant jobs in ref\_top\_t
 \begin{table}
   \centering
   \begin{tabular}{ll}
-    \hline
     Coding sequence & Cluster size \\
     \hline
-    [511] &  37,272 \\
-    \hline
-    [32] &  14,536 \\
-    \hline
-    [272] &  11,338 \\
-    \hline
-    [160] &  11,014 \\
-    \hline
-    [128] &  10,228 \\
-    \hline
-    [8] &  9,446 \\
-    \hline
+		$[511]$ &  37,272 \\
+		$[32]$ &  14,536 \\
+		$[272]$ &  11,338 \\
+    $[160]$ &  11,014 \\
+    $[128]$ &  10,228 \\
+    $[8]$ &  9,446 \\
   \end{tabular}
   \caption{Top 6 largest clusters created by BIN algorithms with SIM = 0.7.}
   \label{tab:bin:largest_clusters}
@@ -1209,7 +1203,6 @@ The following observations are characteristic for this algorithm:
 \begin{table}
   \centering
   \begin{tabular}{ll}
-    \hline
     SIM & 0.7 \\
     Number of jobs & 7615 \\
     Number of job types & 3306 \\
@@ -1220,19 +1213,21 @@ The following observations are characteristic for this algorithm:
 \end{table}
 
 \begin{table}
-  \begin{tabular}{@{ }l@{ }@{ }l@{ }}
-    coding                                                                                                 &  type    \\ 
-    \hline
-    0:0:0:0:0:0:294:0:0:0:0:32:0:0:0:0:0:0:0:0:0:0:0:32:0:0:0:0:0:0:0:0:0:0:0:32:0:0:0:0:0:0:0:0:0:0 & centroid\\
-    & \\
-    coding                                                                                                 & count    \\ 
-    \hline
-    0:0:0:0:0:0:359:96:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0 & 95\\
-    0:0:0:0:0:0:295:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0 & 62\\
-    0:0:0:0:0:0:0:0:0:0:0:0:4:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0 & 47\\
-    0:0:0:0:0:0:359:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0 & 44\\
-    0:0:0:0:0:6:6:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0 & 40\\
-  \end{tabular}
+	\begin{tiny}
+		\begin{tabular}{@{ }l@{ }@{ }l@{ }}
+			coding                                                                                                 &  type    \\ 
+			\hline
+			0:0:0:0:0:0:294:0:0:0:0:32:0:0:0:0:0:0:0:0:0:0:0:32:0:0:0:0:0:0:0:0:0:0:0:32:0:0:0:0:0:0:0:0:0:0 & centroid\\
+			& \\
+			coding                                                                                                 & count    \\ 
+			\hline
+			0:0:0:0:0:0:359:96:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0 & 95\\
+			0:0:0:0:0:0:295:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0 & 62\\
+			0:0:0:0:0:0:0:0:0:0:0:0:4:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0 & 47\\
+			0:0:0:0:0:0:359:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0 & 44\\
+			0:0:0:0:0:6:6:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0 & 40\\
+		\end{tabular}
+	\end{tiny}
   \caption{Centroid and Top 5 job types.}
   \label{tab:bin_all:top_jobs}
 \end{table}
@@ -1268,20 +1263,22 @@ The following is characteristic for this algorithm:
 \end{table}
 
 \begin{table}
-  \centering
-  \begin{tabular}{@{ }l@{ }@{ }l@{ }}
-    coding                                                                                                    & type     \\ 
-    \hline
-    272:272:272:272:272:278:286:272:272:272:272:272:272:272:272:272:272:272:272 & centroid \\
-    & \\
-    coding                                                                                                    & count    \\ 
-    \hline
-    272:272:272:272:272:278:286:272:272:272:272:272:272:272:272:272:272:272:272 & 528\\
-    272:272:272:272:272:406:286:272:272:272:272:272:272:272:272:272 & 96\\
-    272:272:272:272:272:279:31:272:272:272:272:272:272:272:272:272:272:272:272:272:272:272 & 53\\
-    272:272:272:272:272:272:272:272:272:272:272:279:319:272:272:272:272:272:272:272:272 & 52\\
-    272:272:272:272:272:279:319:272:272:272:272:272:272:272:272:272:272:272:272:272:272 & 50\\
-  \end{tabular}
+	\centering
+	\begin{tiny}
+		\begin{tabular}{@{ }l@{ }@{ }l@{ }}
+			coding                                                                                                    & type     \\ 
+			\hline
+			272:272:272:272:272:278:286:272:272:272:272:272:272:272:272:272:272:272:272 & centroid \\
+			& \\
+			coding                                                                                                    & count    \\ 
+			\hline
+			272:272:272:272:272:278:286:272:272:272:272:272:272:272:272:272:272:272:272 & 528\\
+			272:272:272:272:272:406:286:272:272:272:272:272:272:272:272:272 & 96\\
+			272:272:272:272:272:279:31:272:272:272:272:272:272:272:272:272:272:272:272:272:272:272 & 53\\
+			272:272:272:272:272:272:272:272:272:272:272:279:319:272:272:272:272:272:272:272:272 & 52\\
+			272:272:272:272:272:279:319:272:272:272:272:272:272:272:272:272:272:272:272:272:272 & 50\\
+		\end{tabular}
+	\end{tiny}
   \caption{Centroid and Top 5 job types}
   \label{tab:bin_aggzeros:top_jobs}
 \end{table}
@@ -1324,20 +1321,22 @@ Cluster characteristics:
 \end{table}
 
 \begin{table}
-  \centering
-  \begin{tabular}{@{ }l@{ }@{ }l@{ }@{ }l@{ }@{ }l@{ }@{ }l@{ }@{ }l@{ }@{ }l@{ }@{ }l@{ }@{ }l@{ }@{ }l@{ }}
-    md\_file\_create  & md\_file\_delete  & md\_mod           & md\_other & md\_read & read\_bytes & read\_calls       & write\_bytes & write\_calls & type     \\ 
-    \hline
-    0:...:0           & 0:0:0:1:0:0:0:0:0 & 0:...:0           & 0:...:0   & 0:...:0  & 0:...:0     & 0:...:0           & 0:...:0      & 0:...:0      & centroid \\ 
-    &                   &                   &           &          &             &                   &              &              &          \\ 
-    md\_file\_create  & md\_file\_delete  & md\_mod           & md\_other & md\_read & read\_bytes & read\_calls       & write\_bytes & write\_calls & count    \\ 
-    \hline
-    0:...:0           & 0:0:0:0:0:0:1:0:0 & 0:...:0           & 0:...:0   & 0:...:0  & 0:...:0     & 0:...:0           & 0:...:0      & 0:...:0      & 606      \\ 
-    0:...:0           & 0:0:0:0:0:0:0:0:1 & 0:...:0           & 0:...:0   & 0:...:0  & 0:...:0     & 0:...:0           & 0:...:0      & 0:...:0      & 562      \\ 
-    0:...:0           & 0:...:0           & 0:...:0           & 0:...:0   & 0:...:0  & 0:...:0     & 0:0:0:0:0:0:1:0:0 & 0:...:0      & 0:...:0      & 429      \\ 
-    0:...:0           & 0:0:0:1:0:0:0:0:0 & 0:...:0           & 0:...:0   & 0:...:0  & 0:...:0     & 0:...:0           & 0:...:0      & 0:...:0      & 185      \\ 
-    0:0:0:0:0:0:1:1:1 & 0:...:0           & 0:0:0:0:0:0:1:0:0 & 0:...:0   & 0:...:0  & 0:...:0     & 0:...:0           & 0:...:0      & 0:...:0      & 75       \\ 
-  \end{tabular}
+	\centering
+	\begin{tiny}
+		\begin{tabular}{@{ }l@{ }@{ }l@{ }@{ }l@{ }@{ }l@{ }@{ }l@{ }@{ }l@{ }@{ }l@{ }@{ }l@{ }@{ }l@{ }@{ }l@{ }}
+			md\_file\_create  & md\_file\_delete  & md\_mod           & md\_other & md\_read & read\_bytes & read\_calls       & write\_bytes & write\_calls & Type     \\ 
+			\hline
+			0:...:0           & 0:0:0:1:0:0:0:0:0 & 0:...:0           & 0:...:0   & 0:...:0  & 0:...:0     & 0:...:0           & 0:...:0      & 0:...:0      & centroid \\ 
+			&                   &                   &           &          &             &                   &              &              &          \\ 
+			md\_file\_create  & md\_file\_delete  & md\_mod           & md\_other & md\_read & read\_bytes & read\_calls       & write\_bytes & write\_calls & Count    \\ 
+			\hline
+			0:...:0           & 0:0:0:0:0:0:1:0:0 & 0:...:0           & 0:...:0   & 0:...:0  & 0:...:0     & 0:...:0           & 0:...:0      & 0:...:0      & 606      \\ 
+			0:...:0           & 0:0:0:0:0:0:0:0:1 & 0:...:0           & 0:...:0   & 0:...:0  & 0:...:0     & 0:...:0           & 0:...:0      & 0:...:0      & 562      \\ 
+			0:...:0           & 0:...:0           & 0:...:0           & 0:...:0   & 0:...:0  & 0:...:0     & 0:0:0:0:0:0:1:0:0 & 0:...:0      & 0:...:0      & 429      \\ 
+			0:...:0           & 0:0:0:1:0:0:0:0:0 & 0:...:0           & 0:...:0   & 0:...:0  & 0:...:0     & 0:...:0           & 0:...:0      & 0:...:0      & 185      \\ 
+			0:0:0:0:0:0:1:1:1 & 0:...:0           & 0:0:0:0:0:0:1:0:0 & 0:...:0   & 0:...:0  & 0:...:0     & 0:...:0           & 0:...:0      & 0:...:0      & 75       \\ 
+		\end{tabular}
+	\end{tiny}
   \caption{Centroid and Top 5 job types}
   \label{tab:hex_lev:top_jobs}
 \end{table}
@@ -1380,20 +1379,22 @@ Cluster characteristics:
 
 
 \begin{table}
-  \centering
-  \begin{tabular}{@{ }l@{ }@{ }l@{ }@{ }l@{ }@{ }l@{ }@{ }l@{ }@{ }l@{ }@{ }l@{ }@{ }l@{ }@{ }l@{ }@{ }l@{ }}
-    md\_file\_create & md\_file\_delete & md\_mod          & md\_other  & md\_read   & read\_bytes   & read\_calls & write\_bytes  & write\_calls & type\\ 
-    \hline
-    0:...:0          & 0.04:0.04:0.07:0 & 0.04:0.04:0.14:0 & 0:0:0.25:0 & 0.04:0:0:0 & 0:0.04:0.04:0 & 0:...:0     & 0:0.04:0.04:0 & 0.04:0:0:0   & centroid \\ 
-    &                  &                  &            &            &               &             &               &              &          \\ 
-    md\_file\_create & md\_file\_delete & md\_mod          & md\_other  & md\_read   & read\_bytes   & read\_calls & write\_bytes  & write\_calls & count    \\ 
-    \hline
-    0:...:0          & 0:0:0.04:0       & 0:0:0.11:0       & 0:0:0.29:0 & 0:...:0    & 0:...:0       & 0:...:0     & 0:...:0       & 0:...:0      & 1344     \\ 
-    0:...:0          & 0:0:0.33:0       & 0:0:0.08:0       & 0:0:0.04:0 & 0:...:0    & 0:...:0       & 0:...:0     & 0:...:0       & 0:...:0      & 458      \\ 
-    0:0:0:0.04       & 0:0:0.04:0       & 0:0:0.11:0       & 0:0:0.29:0 & 0:...:0    & 0:...:0       & 0:...:0     & 0:...:0       & 0:...:0      & 384      \\ 
-    0:...:0          & 0:0:0.04:0       & 0:0:0.07:0       & 0:0:0.29:0 & 0:...:0    & 0:...:0       & 0:...:0     & 0:0:0.04:0    & 0:...:0      & 356      \\ 
-    0:...:0          & 0:0:0.04:0       & 0:0:0.11:0       & 0:0:0.5:0  & 0:...:0    & 0:...:0       & 0:...:0     & 0:...:0       & 0:...:0      & 278      \\ 
-  \end{tabular}
+	\centering
+	\begin{tiny}
+		\begin{tabular}{@{ }l@{ }@{ }l@{ }@{ }l@{ }@{ }l@{ }@{ }l@{ }@{ }l@{ }@{ }l@{ }@{ }l@{ }@{ }l@{ }@{ }l@{ }}
+      md\_file\_create & md\_file\_delete & md\_mod   & md\_other & md\_read  & read\_bytes & read\_calls & write\_bytes & write\_calls & Type     \\ 
+      \hline
+      0:\dots:0        & 0:\dots:0        & 0:0:1:0   & 0:0:1:0   & 0:\dots:0 & 0:\dots:0   & 0:\dots:0   & 0:\dots:0    & 0:\dots:0    & centroid \\ 
+                       &                  &           &           &           &             &             &              &              &          \\ 
+      md\_file\_create & md\_file\_delete & md\_mod   & md\_other & md\_read  & read\_bytes & read\_calls & write\_bytes & write\_calls & Count    \\ 
+      \hline
+      0:\dots:0        & 0:\dots:0        & 0:\dots:0 & 0:0:1:0   & 0:\dots:0 & 0:\dots:0   & 0:\dots:0   & 0:\dots:0    & 0:\dots:0    & 5010     \\ 
+      0:\dots:0        & 0:\dots:0        & 0:\dots:0 & 0:0:2:0   & 0:\dots:0 & 0:\dots:0   & 0:\dots:0   & 0:\dots:0    & 0:\dots:0    & 1963     \\ 
+      0:\dots:0        & 0:0:1:0          & 0:\dots:0 & 0:\dots:0 & 0:\dots:0 & 0:\dots:0   & 0:\dots:0   & 0:\dots:0    & 0:\dots:0    & 1099     \\ 
+      0:\dots:0        & 0:\dots:0        & 0:\dots:0 & 0:1:0:0   & 0:\dots:0 & 0:\dots:0   & 0:\dots:0   & 0:\dots:0    & 0:\dots:0    & 911      \\ 
+      0:\dots:0        & 0:0:1:0          & 0:0:1:0   & 0:\dots:0 & 0:\dots:0 & 0:\dots:0   & 0:\dots:0   & 0:\dots:0    & 0:\dots:0    & 676      \\ 
+		\end{tabular}
+	\end{tiny}
   \caption{Centroid and Top 5 job types.}
   \label{tab:hex_native:top_jobs}
 \end{table}
@@ -1442,20 +1443,22 @@ Cluster characteristics:
 
 \begin{table}
   \centering
-  \begin{tabular}{@{ }l@{ }@{ }l@{ }@{ }l@{ }@{ }l@{ }@{ }l@{ }@{ }l@{ }@{ }l@{ }@{ }l@{ }@{ }l@{ }@{ }l@{ }}
-    ...     & md\_file\_delete & md\_mod     & ...     & ...     & ...     & ...     & ...     & ...     & type     \\ 
-    \hline
-    0: … :0 & 4:0:0:0:0:0      & 4:0:0:0:0:0 & 0: … :0 & 0: … :0 & 0: … :0 & 0: … :0 & 0: … :0 & 0: … :0 & centroid \\ 
-    &                  &             &         &         &         &         &         &         &          \\ 
-    ...     & md\_file\_delete & md\_mod     & ...     & ...     & ...     & ...     & ...     & ...     & count    \\ 
-    \hline
-    0: … :0 & 4                & 4           & 0: … :0 & 0: … :0 & 0: … :0 & 0: … :0 & 0: … :0 & 0: … :0 & 2329     \\ 
-    0: … :0 & 4:0:0:0:0:0      & 4:0:0:0:0:0 & 0: … :0 & 0: … :0 & 0: … :0 & 0: … :0 & 0: … :0 & 0: … :0 & 1773     \\ 
-    0: … :0 & 4:0              & 4:0         & 0: … :0 & 0: … :0 & 0: … :0 & 0: … :0 & 0: … :0 & 0: … :0 & 224      \\ 
-    0: … :0 & 2                & 4           & 0: … :0 & 0: … :0 & 0: … :0 & 0: … :0 & 0: … :0 & 0: … :0 & 65       \\ 
-    0: … :0 & 0:4              & 0:4         & 0: … :0 & 0: … :0 & 0: … :0 & 0: … :0 & 0: … :0 & 0: … :0 & 57       \\ 
-  \end{tabular}
-  \caption{Centroid and Top 5 job types.}
+	\begin{tiny}
+		\begin{tabular}{@{ }l@{ }@{ }l@{ }@{ }l@{ }@{ }l@{ }@{ }l@{ }@{ }l@{ }@{ }l@{ }@{ }l@{ }@{ }l@{ }@{ }l@{ }}
+			...     & md\_file\_delete & md\_mod     & ...     & ...     & ...     & ...     & ...     & ...     & Type     \\ 
+			\hline
+			0: … :0 & 4:0:0:0:0:0      & 4:0:0:0:0:0 & 0: … :0 & 0: … :0 & 0: … :0 & 0: … :0 & 0: … :0 & 0: … :0 & centroid \\ 
+			        &                  &             &         &         &         &         &         &         &          \\ 
+			...     & md\_file\_delete & md\_mod     & ...     & ...     & ...     & ...     & ...     & ...     & Count    \\ 
+			\hline
+			0: … :0 & 4                & 4           & 0: … :0 & 0: … :0 & 0: … :0 & 0: … :0 & 0: … :0 & 0: … :0 & 2329     \\ 
+			0: … :0 & 4:0:0:0:0:0      & 4:0:0:0:0:0 & 0: … :0 & 0: … :0 & 0: … :0 & 0: … :0 & 0: … :0 & 0: … :0 & 1773     \\ 
+			0: … :0 & 4:0              & 4:0         & 0: … :0 & 0: … :0 & 0: … :0 & 0: … :0 & 0: … :0 & 0: … :0 & 224      \\ 
+			0: … :0 & 2                & 4           & 0: … :0 & 0: … :0 & 0: … :0 & 0: … :0 & 0: … :0 & 0: … :0 & 65       \\ 
+			0: … :0 & 0:4              & 0:4         & 0: … :0 & 0: … :0 & 0: … :0 & 0: … :0 & 0: … :0 & 0: … :0 & 57       \\ 
+		\end{tabular}
+	\end{tiny}
+	\caption{Centroid and Top 5 job types.}
   \label{fig:pm_quant:top_jobs}
 \end{table}
 
@@ -1498,22 +1501,25 @@ Information related to the cluster is in \Cref{tab:use_case:bin_all:stats}, \Cre
 \end{table}
 
 \begin{table}
-  \begin{tabular}{@{ }l@{ }@{ }l@{ }}
-    coding                                                                                                 &  name    \\ 
-    \hline
-    192:192:192:192:192:192:196:192:192:192:192:192:192:192:192:192:192:192:192:192:192:192:64:64:64:64:64 & job      \\ 
-    192:192:192:192:192:192:192:192:192:192:192:454:230:192:192:192:192:192:192:192:192:192:192:192        & centroid \\ 
-    & \\
-    coding                                                                                                 & count    \\ 
-    \hline
-    192:192:192:192:192:454:198:192:192:192:192:192:192:192:192:192:192:192:192:192:192:192:192:192        & 5        \\ 
-    192:192:192:192:192:192:192:192:192:192:192:454:230:192:192:192:192:192:192:192:192:192:192:192        & 3        \\ 
-    192:192:192:192:192:454:230:192:192:192:192:192:192:192:192:192:192:192:192:192:192:192:192:192        & 3        \\ 
-    192:192:192:192:192:192:192:192:192:192:192:454:230:192:192:192:192:192:192:192:192:192:192            & 2        \\ 
-    228:192:192:192:192:192:192:192:192:192:192:192:192:192:192:192:192:192                                & 2        \\ 
-  \end{tabular}
-  \caption{Job, centroid and Top 5 job types.}
-  \label{tab:use_case:bin_all:top_jobs}
+  \centering
+	\begin{tiny}
+		\begin{tabular}{@{ }l@{ }@{ }l@{ }}
+			coding                                                                                                 &  name    \\ 
+			\hline
+			192:192:192:192:192:192:196:192:192:192:192:192:192:192:192:192:192:192:192:192:192:192:64:64:64:64:64 & job      \\ 
+			192:192:192:192:192:192:192:192:192:192:192:454:230:192:192:192:192:192:192:192:192:192:192:192        & centroid \\ 
+			& \\
+			coding                                                                                                 & count    \\ 
+			\hline
+			192:192:192:192:192:454:198:192:192:192:192:192:192:192:192:192:192:192:192:192:192:192:192:192        & 5        \\ 
+			192:192:192:192:192:192:192:192:192:192:192:454:230:192:192:192:192:192:192:192:192:192:192:192        & 3        \\ 
+			192:192:192:192:192:454:230:192:192:192:192:192:192:192:192:192:192:192:192:192:192:192:192:192        & 3        \\ 
+			192:192:192:192:192:192:192:192:192:192:192:454:230:192:192:192:192:192:192:192:192:192:192            & 2        \\ 
+			228:192:192:192:192:192:192:192:192:192:192:192:192:192:192:192:192:192                                & 2        \\ 
+		\end{tabular}
+	\end{tiny}
+	\caption{Job, centroid and Top 5 job types.}
+	\label{tab:use_case:bin_all:top_jobs}
 \end{table}
 
 \begin{figure}
@@ -1539,23 +1545,25 @@ Information related to the cluster is in \Cref{tab:use_case:bin_aggzeros:stats},
 \end{table}
 
 \begin{table}
-  \centering
-  \begin{tabular}{@{ }l@{ }@{ }l@{ }}
-    coding                                                                                                    & name     \\ 
-    \hline
-    192:192:192:192:192:192:196:192:192:192:192:192:192:192:192:192:192:192:192:192:192:192:64:64:64:64:64    & job      \\ 
-    511:238:192:510:192:224:228:192:192:192:192:192:192:192:192:192:192:192:192:192:192:64:64:64:64:64        & centroid \\ 
-    & \\
-    coding                                                                                                    & count    \\ 
-    \hline
-    0:224:192:192:192:192:228:192:192:192:192:192:192:192:192:192:192:192:192:192:192:64:64:64:64:64          & 1        \\ 
-    192:192:192:192:192:192:196:192:192:192:192:192:192:192:192:192:192:192:192:192:192:192:64:64:64:64:64    & 1        \\ 
-    192:192:193:196:192:192:192:192:192:192:192:192:192:192:192:192:192:192:192:192:64:64:64:64               & 1        \\ 
-    192:193:193:198:192:192:192:192:192:192:192:192:192:192:192:192:192:192:192:192:192:64:64:64:64:64:64     & 1        \\ 
-    207:463:225:495:246:224:198:192:192:192:192:192:192:192:192:192:192:192:192:192:192:192:64:64:64:64:64:64 & 1        \\ 
-  \end{tabular}
-  \caption{Job, centroid and Top 5 job types.}
-  \label{tab:use_case:bin_aggzeros:top_jobs}
+	\centering
+	\begin{tiny}
+		\begin{tabular}{@{ }l@{ }@{ }l@{ }}
+			coding                                                                                                    & name     \\ 
+			\hline
+			192:192:192:192:192:192:196:192:192:192:192:192:192:192:192:192:192:192:192:192:192:192:64:64:64:64:64    & job      \\ 
+			511:238:192:510:192:224:228:192:192:192:192:192:192:192:192:192:192:192:192:192:192:64:64:64:64:64        & centroid \\ 
+			& \\
+			coding                                                                                                    & count    \\ 
+			\hline
+			0:224:192:192:192:192:228:192:192:192:192:192:192:192:192:192:192:192:192:192:192:64:64:64:64:64          & 1        \\ 
+			192:192:192:192:192:192:196:192:192:192:192:192:192:192:192:192:192:192:192:192:192:192:64:64:64:64:64    & 1        \\ 
+			192:192:193:196:192:192:192:192:192:192:192:192:192:192:192:192:192:192:192:192:64:64:64:64               & 1        \\ 
+			192:193:193:198:192:192:192:192:192:192:192:192:192:192:192:192:192:192:192:192:192:64:64:64:64:64:64     & 1        \\ 
+			207:463:225:495:246:224:198:192:192:192:192:192:192:192:192:192:192:192:192:192:192:192:64:64:64:64:64:64 & 1        \\ 
+		\end{tabular}
+	\end{tiny}
+	\caption{Job, centroid and Top 5 job types.}
+	\label{tab:use_case:bin_aggzeros:top_jobs}
 \end{table}
 
 \begin{figure}
@@ -1581,24 +1589,25 @@ Information related to the cluster is in \Cref{tab:use_case:hex_lev:stats}, \Cre
 \end{table}
 
 \begin{table}
-  \begin{tabular}{@{ }l@{ }@{ }l@{ }@{ }l@{ }}
-    md\_other                                            & read\_calls                                            & name    \\ 
-    \hline
-    0:\dots:0                                           & 3:3:8:8:8:5:6:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8 & job      \\ 
-    0:\dots:0                                           & 8:8:8:8:8:2:6:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8 & centroid \\ 
-    && \\
-    md\_other                                            & read\_calls                                            & count    \\ 
-    \hline
-    0:\dots:0                                           & 0:0:0:0:0:0:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8   & 4        \\ 
-    0:\dots:0                                           & 8:8:8:8:8:2:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8   & 4        \\ 
-    0:0:0:4:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0 & 0:0:0:0:0:0:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8   & 4        \\ 
-    0:\dots:0                                           & 8:8:8:8:8:3:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8 & 3        \\ 
-    0:\dots:0                                           & 0:0:0:0:0:0:2:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8   & 2        \\ 
-  \end{tabular}
+  \begin{tiny}
+    \begin{tabular}{@{ }l@{ }@{ }l@{ }@{ }l@{ }}
+      md\_other                                            & read\_calls                                            & name    \\ 
+      \hline
+      0:\dots:0                                           & 3:3:8:8:8:5:6:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8 & job      \\ 
+      0:\dots:0                                           & 8:8:8:8:8:2:6:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8 & centroid \\ 
+      && \\
+      md\_other                                            & read\_calls                                            & count    \\ 
+      \hline
+      0:\dots:0                                           & 0:0:0:0:0:0:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8   & 4        \\ 
+      0:\dots:0                                           & 8:8:8:8:8:2:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8   & 4        \\ 
+      0:0:0:4:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0 & 0:0:0:0:0:0:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8   & 4        \\ 
+      0:\dots:0                                           & 8:8:8:8:8:3:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8 & 3        \\ 
+      0:\dots:0                                           & 0:0:0:0:0:0:2:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8   & 2        \\ 
+    \end{tabular}
+  \end{tiny}
   \caption{Job, centroid and Top 5 job types.}
   \label{tab:use_case:hex_lev:top_jobs}
 \end{table}
-
 
 \begin{figure}
   \centering
@@ -1608,11 +1617,8 @@ Information related to the cluster is in \Cref{tab:use_case:hex_lev:stats}, \Cre
 \end{figure}
 
 
-
 \paragraph{HEX\_NATIVE}
 Information related to the cluster is in \Cref{tab:use_case:hex_native:stats}, \Cref{tab:use_case:hex_native:job_centroid}, and in \Cref{fig:use_case:hex_native:length}.
-
-Visualization\ of for such long codings as in this cluster requires more space. We omitted the Top 5 cluster job types. Only codings for job and cluster centroid are given.  
 
 \begin{table}
   \centering
@@ -1627,27 +1633,22 @@ Visualization\ of for such long codings as in this cluster requires more space. 
 
 \begin{table}
   \centering
-  \begin{tabular}{@{ }l@{ }|@{ }l@{ }}
-    md\_file\_create & 0:\dots:0 \\
-    md\_file\_delete & 0:\dots:0 \\
-    md\_mod & 0:0:0:0:0:0:0.01:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0 \\
-    md\_other & 0:\dots:0 \\
-    md\_read & 0:\dots:0 \\
-    read\_bytes & 0:\dots:0 \\
-    read\_calls & 0.78:0.78:2:2:1.97:1.22:1.41:2:2:2:2:2:2:2:2:2:2:2:2:2:2:2:2:2:2:2:2 \\
-    write\_bytes & 0.01:0.01:0.02:0.02:0.02:0.01:0.01:0.01:0.01:0.01:0.01:0.01:0.01:0.01:0.01:0.01:0.01:0.01:0.01:0.01:0.01:0.01:0:0:0:0:0 \\
-    write\_calls & 0:\dots:0 \\
-    &\\
-    md\_file\_create & 0:\dots:0\\
-    md\_file\_delete & 0:0:0:0:0:0.02:0.02:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0\\
-    md\_mod & 0:0:0:0:0:0.02:0.02:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0\\
-    md\_other & 0:\dots:0\\
-    md\_read & 0:\dots:0\\
-    read\_bytes & 0:0:0:0:0:0:0.01:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0\\
-    read\_calls & 2:2:2:2:2:0.53:1.11:2:2:2:2:2:2:2:2:2:2:2:2:2:2:2:2:2:2:2:2\\
-    write\_bytes & 0.01:0.01:0.01:0.01:0.01:0.02:0.01:0.01:0.01:0.01:0.01:0.01:0.01:0.01:0.01:0.01:0.01:0.01:0.01:0.01:0.01:0.01:0.01:0.01:0.01:0.01:0.01\\
-    write\_calls & 0:0:0:0:0:0.01:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0\\
-  \end{tabular}
+  \begin{tiny}
+    \begin{tabular}{@{ }l@{ }@{ }l@{ }@{ }l@{ }@{ }l@{ }@{ }l@{ }@{ }l@{ }@{ }l@{ }@{ }l@{ }@{ }l@{ }@{ }l@{ }}
+      \dots     & \dots     & \dots     & \dots.    & …         & \dots     & read\_calls                                           & \dots     & \dots     & Type     \\ 
+			\hline
+      0:\dots:0 & 0:\dots:0 & 0:\dots:0 & 0:\dots:0 & 0:\dots:0 & 0:\dots:0 & 3:3:8:8:8:5:6:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8 & 0:\dots:0 & 0:\dots:0 & job      \\ 
+      0:\dots:0 & 0:\dots:0 & 0:\dots:0 & 0:\dots:0 & 0:\dots:0 & 0:\dots:0 & 8:8:8:8:8:2:4:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8 & 0:\dots:0 & 0:\dots:0 & centroid \\ 
+      &           &           &           &           &           &                                                       &           &           &          \\ 
+      \dots     & \dots     & \dots     & \dots.    & …         & \dots     & read\_calls                                           & \dots     & \dots     & Count    \\ 
+			\hline
+      0:\dots:0 & 0:\dots:0 & 0:\dots:0 & 0:\dots:0 & 0:\dots:0 & 0:\dots:0 & 8:8:8:8:8:3:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8 & 0:\dots:0 & 0:\dots:0 & 3        \\ 
+      0:\dots:0 & 0:\dots:0 & 0:\dots:0 & 0:\dots:0 & 0:\dots:0 & 0:\dots:0 & 8:8:8:8:8:5:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8 & 0:\dots:0 & 0:\dots:0 & 2        \\ 
+      0:\dots:0 & 0:\dots:0 & 0:\dots:0 & 0:\dots:0 & 0:\dots:0 & 0:\dots:0 & 3:3:8:8:8:5:6:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8 & 0:\dots:0 & 0:\dots:0 & 1        \\ 
+      0:\dots:0 & 0:\dots:0 & 0:\dots:0 & 0:\dots:0 & 0:\dots:0 & 0:\dots:0 & 3:6:6:7:7:7:7:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8 & 0:\dots:0 & 0:\dots:0 & 1        \\ 
+      0:\dots:0 & 0:\dots:0 & 0:\dots:0 & 0:\dots:0 & 0:\dots:0 & 0:\dots:0 & 6:5:6:7:6:2:7:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8 & 0:\dots:0 & 0:\dots:0 & 1        \\ 
+    \end{tabular}
+  \end{tiny}
   \caption{Job and centroid coding sequences.}
   \label{tab:use_case:hex_native:job_centroid}
 \end{table}
@@ -1672,9 +1673,9 @@ Mean value allow us to build simple algorithms
 \begin{table}
   \centering
   \begin{tabular}{ll}
-    SIM & 0.7 \\
-    Number of jobs & 68 \\
-    Number of job types & 59 \\
+    SIM                 & 0.7 \\ 
+    Number of jobs      & 68  \\ 
+    Number of job types & 59  \\ 
   \end{tabular}
   \caption{Cluster statistics.}
   \label{tab:use_case:pm_quant:stats}
@@ -1682,20 +1683,22 @@ Mean value allow us to build simple algorithms
 
 \begin{table}
   \centering
-  \begin{tabular}{@{ }l@{ }@{ }l@{ }@{ }l@{ }@{ }l@{ }@{ }l@{ }@{ }l@{ }@{ }l@{ }@{ }l@{ }@{ }l@{ }@{ }l@{ }}
-    \dots & \dots & \dots & \dots & \dots & \dots & read\_calls & \dots & \dots & type \\
-    \hline
-    0: … :0 & 0: … :0 & 0: … :0 & 0: … :0 & 0: … :0 & 0: … :0 & 3:3:8:8:8:5:6:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8 & 0: … :0 & 0: … :0 & job \\
-    0: … :0 & 0: … :0 & 0: … :0 & 0: … :0 & 0: … :0 & 0: … :0 & 8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8 & 0: … :0 & 0: … :0 & centroid\\
-    &&&&&&&&& \\
-    \dots & \dots & \dots & \dots & \dots & \dots & read\_calls & \dots & \dots & count\\
-    \hline
-    0: … :0 & 0: … :0 & 0: … :0 & 0: … :0 & 0: … :0 & 0: … :0 & 8:8:8:8:8:2:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8 & 0: … :0 & 0: … :0 & 4 \\
-    0: … :0 & 0: … :0 & 0: … :0 & 0: … :0 & 0: … :0 & 0: … :0 & 8:8:8:8:8:3:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8 & 0: … :0 & 0: … :0 & 3 \\
-    0: … :0 & 0: … :0 & 0: … :0 & 0: … :0 & 0: … :0 & 0: … :0 & 7:7:7:7:7:2:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8 & 0: … :0 & 0: … :0 & 2 \\
-    0: … :0 & 0: … :0 & 0: … :0 & 0: … :0 & 0: … :0 & 0: … :0 & 8:8:8:8:8:5:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8 & 0: … :0 & 0: … :0 & 2 \\
-    0: … :0 & 0: … :0 & 0: … :0 & 0: … :0 & 0: … :0 & 0: … :0 & 8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8 & 0: … :0 & 0: … :0 & 2\\
-  \end{tabular}
+  \begin{tiny}
+    \begin{tabular}{@{ }l@{ }@{ }l@{ }@{ }l@{ }@{ }l@{ }@{ }l@{ }@{ }l@{ }@{ }l@{ }@{ }l@{ }@{ }l@{ }@{ }l@{ }}
+      \dots & \dots & \dots & \dots & \dots & \dots & read\_calls & \dots & \dots & Type \\
+      \hline
+      0:…:0     & 0:…:0 & 0:…:0 & 0:…:0 & 0:…:0 & 0:…:0 & 3:3:8:8:8:5:6:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8 & 0:…:0 & 0:…:0 & job      \\ 
+      0:…:0     & 0:…:0 & 0:…:0 & 0:…:0 & 0:…:0 & 0:…:0 & 8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8   & 0:…:0 & 0:…:0 & centroid \\ 
+                &       &       &       &       &       &                                                       &       &       &          \\ 
+      \dots     & \dots & \dots & \dots & \dots & \dots & read\_calls                                           & \dots & \dots & Count    \\ 
+      \hline
+      0:\dots:0 & 0:…:0 & 0:…:0 & 0:…:0 & 0:…:0 & 0:…:0 & 8:8:8:8:8:2:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8   & 0:…:0 & 0:…:0 & 4        \\ 
+      0:…:0     & 0:…:0 & 0:…:0 & 0:…:0 & 0:…:0 & 0:…:0 & 8:8:8:8:8:3:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8 & 0:…:0 & 0:…:0 & 3        \\ 
+      0:…:0     & 0:…:0 & 0:…:0 & 0:…:0 & 0:…:0 & 0:…:0 & 7:7:7:7:7:2:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8   & 0:…:0 & 0:…:0 & 2        \\ 
+      0:…:0     & 0:…:0 & 0:…:0 & 0:…:0 & 0:…:0 & 0:…:0 & 8:8:8:8:8:5:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8   & 0:…:0 & 0:…:0 & 2        \\ 
+      0:…:0     & 0:…:0 & 0:…:0 & 0:…:0 & 0:…:0 & 0:…:0 & 8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8   & 0:…:0 & 0:…:0 & 2        \\ 
+    \end{tabular}
+  \end{tiny}
   \caption{Job, centroid and Top 5 job types.}
   \label{tab:use_case:pm_quant:top_jobs}
 \end{table}
@@ -1728,12 +1731,10 @@ The\ current version of the PM algorithm ignores non-IO parts (sequences of zero
 These sequences would produce different average I/O loads on the storage.
 Intuitively, we would say these jobs have different I/O behaviour and should consider that in the approach.
 
-
 \begin{lstlisting}
 job1_metric1 : [0,0,0,0,1]
 job1_metric1 : [1]
 \end{lstlisting}
-
 
 One could also argue that the phase definition was chosen incorrectly.
 Currently, phases are defined for each metric individually, without consideration what is going on on other metrics.
@@ -1757,7 +1758,7 @@ In particular, feature selection is often quite challenging.
 This makes training of models a kind of try and error approach.
 Even if an optimal solution is found there is no guarantee that the approach with other data on other systems.
 
-As\ you might have noticed, quantization is not necessary for PM.
+As you might have noticed, quantization is not necessary for PM.
 It can perfectly work directly with floating point numbers, such as mean performance values.
 The main motivation behind the use of hexadecimal coding is that it makes PM comparable with other algorithms.
 For example, this allows us to see how the additional features affect the quality of clusters.
@@ -1767,18 +1768,14 @@ The reason is that similarity for short jobs exceeds SIM value very fast and thi
 An example illustrates a typical case.
 Assume there are two jobs: one running on 16 nodes and other running on 32 nodes.
 Both are one segment long and only one I/O node that writes data to storage with a moderate performance.
-Without quantization we would represent these jobs by the following sequences:  [...
-,[0.0625], $ \ldots $ ] and [..., [0.03125], ...], where only active metrics have values larger than zero.
+Without quantization we would represent these jobs by the following sequences:  [..., [0.0625], $ \ldots $ ] and [..., [0.03125], ...], where only active metrics have values larger than zero.
 Using the similarity function without quantization, i.e.
 with mean performance, would result in a similarity of 50$\%$ , and for SIM>0.5 they would be placed in separate clusters.
 
-The hexadecimal coding filters these jobs automatically.
-Segments with mean performance less than 0.125 are quantized to zero and zero sequences are removed from the dataset.
-This problem doesn’t occur.
-
-
+The hexadecimal coding filters these jobs automatically. Segments with mean performance less than 0.125 are quantized to zero and zero sequences are removed from the dataset. This problem doesn’t occur.
 Nevertheless, we think that we will overcome this problem in the future.
-S would make the results more precise and would make the quantization step obsolete.
+S would make the results more precise and would make the quantization step
+obsolete.
 
 \subsection{Conclusion}
 After a series of experiments with general purpose algorithms we could not achieve optimal results.
@@ -1853,4 +1850,7 @@ Therefore we need at least three further functions, that filter irrelevant clust
 %\end{thebibliography}
 
 %\printbibliography
+%\newpage
+\bibliographystyle{splncs04}
+\bibliography{bibliography}{}
 \end{document}
