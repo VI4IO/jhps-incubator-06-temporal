@@ -598,16 +598,12 @@ Firstly, the dimension reduction aggregates the file system and the node dimensi
 Secondly, the mean values are quantized into 16 levels -- 0 represents the interval [0,0.125), 1 [0.125,0.375), $ \ldots $ , f [3.625, 4].
 The example below shows hexadecimal coding for a job containing 6 segments.
 
-md\_file\_create [0:0:\textbf{2}:\textbf{2}:\textbf{2}:\textbf{9}]
-
-md\_file\_delete [0:0:0:0:0:0]
-
-md\_mod\ \ \ \ \ \ \ \  [0:0:0:0:0:0]
-
-md\_other\ \ \ \ \ \  [0:0:0:0:0:0]
-
-md\_read\ \ \ \ \ \ \  [0:0:0:\textbf{9}:3:0]
-
+\begin{tabular}
+md\_file\_create & [0:0:\textbf{2}:\textbf{2}:\textbf{2}:\textbf{9}] \\
+md\_file\_delete & [0:0:0:0:0:0] \\
+md\_mod           &  [0:0:0:0:0:0] \\
+md\_other          &  [0:0:0:0:0:0] \\
+md\_read\ \ \ \ \ \ \  [0:0:0:\textbf{9}:3:0] \\
 read\_bytes\ \ \ \  [\textbf{5}:0:0:0:0:0]
 
 read\_calls\ \ \ \  [0:0:0:0:0:0]
@@ -1854,4 +1850,3 @@ Therefore we need at least three further functions, that filter irrelevant clust
 \bibliographystyle{splncs04}
 \bibliography{bibliography}{}
 \end{document}
-xxxxx
