@@ -14,6 +14,7 @@
 \usepackage{url}
 \usepackage{hyperref}
 \usepackage{array}
+
 %\usepackage{caption}
 %\usepackage[position=t]{subcaption}
 %\captionsetup{compatibility=false}
@@ -204,7 +205,7 @@ Therefore, we explore clustering strategies on monitoring data, to reveal hidden
 This paper is organized as follows: Section 2 outlines the preliminary work and provides background knowledge that is important to understand the next sections.
 In Section 3, we discuss the key problem we are dealing with.
 In Section 4, we introduce\ alternative approaches for the clustering, as different goals for the analysis require different distance metrics, we discuss the variety of approaches.
- We start with a simple solution and increase complexity.
+We start with a simple solution and increase complexity.
 The results and discussion are attached to the methodology of each solution as subsections.
 Finally, in Section 5 we summarize the results.
 
@@ -260,7 +261,7 @@ In \Cref{fig:seg_example}, we can see the temporal behavior for this particular 
 We call \textbf{an I/O phase a contiguous sequence of non-zero segments} (where the score of the segment is larger than zero).
 For example, in the figure, we can see one phase for md\_file\_create, and two phases for md\_mod (one short and non-intrusive at the beginning, and one critical around 60 minutes).
 
-When looking at categorization at the metric level, i.e., after reduction of the nodes and file system dimensions, we can observe that many jobs have I/O phases. 
+When looking at categorization at the metric level, i.e., after reduction of the nodes and file system dimensions, we can observe that many jobs exhibit I/O phases. 
 
 \section{Similarity Between Jobs}
 The raw monitoring data of a job in our environment at DKRZ, we obtain a time series of 9 metrics per node, each metrics sampled at five seconds intervals.
@@ -465,35 +466,31 @@ Additionally, we introduce two operations on codings.
 One extracts I/O phases and the other one aggregates continuous zero segments to one zero segment.
 The operations are summarized in \Cref{tab:coding_ops}.
 
- %\includegraphics[width=3.32in,height=0.37in]{./media/image26.png}
-
 \begin{table}
-  \centering
-	\begin{tabularx}{\textwidth}{lX}
-    \hline
-    Operation &  Description \\
-    \hline
-		Binarization & Segments are mapped to 9-bit numbers (v), where each position (i) represents a metric. The bits are set by the following function:
-		\vbox{
-			\begin{equation}
-				v_i = 
-				\begin{cases}
-					\text{false if segment}_i = 0\\\text{true otherwise.}
-				\end{cases}, i \in [\text{enumerated metrics}]
-			\end{equation}
-		} 
-			%\url{\href{https://www.codecogs.com/eqnedit.php?latex=%5ctext%7bv%7d_%5ctext%7bi%7d%20%3d%20%5cbegin%7bcases%7d%20%5ctext%7bfalse%20if%20segment%7d_%5ctext%7bi%7d%20%3d%200%2c%5c%5c%5ctext%7btrue%20otherwise.%7d%5cend%7bcases%7d%2c%20i%20%5cin%20%5ctext%7b%5benumerated%20metrics%5d%7d#0}{}}
-		\\
-    \hline
-    Hex-Quantization & Quantize segments to 16 levels. \\
-    \hline
-    Zeros aggregation & Aggregates continuous occurrences of zero segments to one zero segment. \\
-    \hline 
-    Phase extraction &  Extract continuous sequences of non-zero segments. \par - Splits time series at zero segments in sub time series (I/O phases) and removes zero segments. \par - Preserves order of I/O phases. \\
-    \hline
-  \end{tabularx}
-  \caption{Coding operations.}
-  \label{tab:coding_ops}
+ \centering
+ \begin{tabularx}{\textwidth}{lX}
+	 \hline
+	 Operation &  Description \\
+	 \hline
+	 Binarization & Segments are mapped to 9-bit numbers (v), where each position (i) represents a metric. The bits are set by the following function:
+	 \vbox{
+		\begin{equation}
+			v_i = 
+			\begin{cases}
+				\text{false if segment}_i = 0\\\text{true otherwise.}
+			\end{cases}, i \in [\text{enumerated metrics}]
+		\end{equation}
+	 } \\
+	 \hline
+	 Hex-Quantization & Quantize segments to 16 levels. \\
+	 \hline
+	 Zeros aggregation & Aggregates continuous occurrences of zero segments to one zero segment. \\
+	 \hline 
+	 Phase extraction &  Extract continuous sequences of non-zero segments. \par - Splits time series at zero segments in sub time series (I/O phases) and removes zero segments. \par - Preserves order of I/O phases. \\
+	 \hline
+ \end{tabularx}
+ \caption{Coding operations.}
+ \label{tab:coding_ops}
 \end{table}
 
 
@@ -1015,15 +1012,21 @@ Due to lack of tools, we determine cluster quality on a small scale.
 All the experiments in this section are conducted with python 3.8.0.
 In particular we use the agglomerative clustering algorithm, decision trees, and the MinMaxScaler from the sklearn 0.22.1 library.
 
+\eb{Subfig fixen}
 \begin{figure}
-  \subfloat[Job-IO-Duration\label{fig:datasets_clustering_results:io_duration}]{
-    \includegraphics[width=0.45\textwidth]{./media/image10.png}
-  }
-  \subfloat[Job-IO-Metric\label{fig:datasets_clustering_results:io_metric}]{
-    \includegraphics[width=0.45\textwidth]{./media/image12.png}
-  }
-  \caption{The Top 20 largest clusters.}
-  \label{fig:datasets_clustering_results}
+%<<<<<<< HEAD
+%=======
+ %\begin{subfigure}[t]{3cm}
+
+%>>>>>>> f08b570cc12034e90fd9535da9b73fabcae372d6
+ \subfloat[Job-IO-Duration\label{fig:datasets_clustering_results:io_duration}]{
+	 \includegraphics[width=0.45\textwidth]{./media/image10.png}
+ }
+ \subfloat[Job-IO-Metric\label{fig:datasets_clustering_results:io_metric}]{
+	 \includegraphics[width=0.45\textwidth]{./media/image12.png}
+ }
+ \caption{The Top 20 largest clusters.}
+ \label{fig:datasets_clustering_results}
 \end{figure}
 
 \subsubsection{Clustering of the Job-IO-Metric and Job-IO-Duration datasets}
@@ -1816,6 +1819,46 @@ The biggest problem is probably the large number of clusters.
 We assume that there indeed are so many different types of jobs, but there are too many of them for manual labeling.
 Therefore we need at least three further functions, that filter irrelevant clusters, sort clusters by a criteria and label remaining ones.
 
+
+%\setlength{\parskip}{0.0pt}
+%\begin{thebibliography}{99}
+%\bibitem{item1}
+%\fontsize{10pt}{12.0pt}\selectfont Ahn, D., Garlick, J., Grondona, M., Lipari, D., Springmeyer, B., Schulz, M.: Flux: $``$A next-generation resource management framework for large hpc centers.$"$  pp. 9-17 (09 2014). \href{https://doi.org/10.1109/ICPPW.2014.15}{\textcolor[HTML]{1155CC}{\ul{https://doi.org/10.1109/ICPPW.2014.15}}}
+
+%\bibitem{item2}
+%\fontsize{10pt}{12.0pt}\selectfont DDN, $``$Worlds's most advanced application aware I/O acceleration solutions.$"$  \href{http://www.ddn.com/products/infinite-memory-engine-ime14k}{\textcolor[HTML]{1155CC}{\ul{ http://www.ddn.com/products/infinite-memory-engine-ime14k}}}
+
+%\bibitem{item3}
+%\fontsize{10pt}{12.0pt}\selectfont IBM, $``$Flash Storage.$"$ ,\href{http://www-03.ibm.com/systems/storage/flash}{\textcolor[HTML]{1155CC}{\ul{ http://www-03.ibm.com/systems/storage/flash}}}
+
+%\bibitem{item4}
+%\fontsize{10pt}{12.0pt}\selectfont Kove Corporation, $``$about xpress disk (xpd)$"$ , 2015
+
+%\bibitem{item5}
+%\fontsize{10pt}{12.0pt}\selectfont Kunkel,\ J., Zimmer, M., Hübbe, N., Aguilera, A., Mickler, H., Wang, X., Chut, A., Bönisch, T., Lüttgau, J., Michel, R., Weging, J., $``$The SIOX Architecture - Coupling Automatic Monitoring and Optimization of Parallel I/O.$"$ ,  In: Kunkel, J., Ludwig, T., Meuer, H. (eds.) Supercomputing. pp. 245-260. Supercomputing, ISC events, Lecture Notes in Computer Science, 2014
+
+%\bibitem{item6}
+%\fontsize{10pt}{12.0pt}\selectfont Liang, W., Chen, Y., Liu, J., An, H.: Cars, $``$A contention-aware scheduler for efficient resource management of hpc storage systems.$"$ , Parallel Computing 87, 25 - 34, 2019 \href{https://doi.org/https://doi.org/10.1016/j.parco.2019.04.010}{\textcolor[HTML]{1155CC}{\ul{https://doi.org/https://doi.org/10.1016/j.parco.2019.04.010}}}, \href{http://www.sciencedirect.com/science/article/pii/S016781911830382X}{\textcolor[HTML]{1155CC}{\ul{http://www.sciencedirect.com/science/article/pii/S016781911830382X}}}
+
+%\bibitem{item7}
+%\fontsize{10pt}{12.0pt}\selectfont Sivalingam, K., Richardson, H., Tate, A., Lafferty, M.: Lassi, $``$Metric based i/o analytics for hpc$"$ , 2019
+
+%\bibitem{item8}
+%\fontsize{10pt}{12.0pt}\selectfont Snyder, S., Carns, P., Harms, K., Ross, R., Lockwood, G.K., Wright, N.J., \\
+%$``$Modular hpc i/o characterization with darshan.$"$  In: 2016 5th Workshop on Extreme-Scale Programming Tools (ESPT). pp. 9-17, 2016
+
+%\bibitem{item9}
+%\fontsize{10pt}{12.0pt}\selectfont Kunkel, J., Markomanolis, G.,:Understanding Metadata Latency with MDWorkbench, In High Performance Computing: ISC High Performance 2018 International Workshops, Frankfurt/Main, Germany, June 28, 2018, Revised Selected Papers, Lecture Notes in Computer Science (11203), pp. 75-88, Springer, WOPSSS workshop, ISC HPC, Frankfurt, Germany, ISBN: 978-3-030-02465-9, \href{https://doi.org/10.1007/978-3-030-02465-9_5}{\textcolor[HTML]{1155CC}{\ul{https://doi.org/10.1007/978-3-030-02465-9\_5}}}
+
+%\bibitem{item10}
+%\href{http://jmlr.csail.mit.edu/papers/v12/pedregosa11a.html}{{\fontsize{10pt}{12.0pt}\selectfont \textcolor[HTML]{1155CC}{\ul{Scikit-learn: Machine Learning in Python}}}, Pedregosa \textit{et al.}, JMLR 12, pp. 2825-2830, 2011.
+
+%\bibitem{item11}
+%\fontsize{10pt}{12.0pt}\selectfont Betke, E., Kunkel. J.: Semi-automatic Assessment of I/O Behavior by Inspecting the Individual Client-Node Timelines -- An Explorative Study on 10$ \string^ $ 6 Jobs, ISC 2020 (Submission accepted, not published yet).
+%\end{thebibliography}
+
+%\printbibliography
+%\newpage
 \bibliographystyle{splncs04}
 \bibliography{bibliography}{}
 \end{document}
