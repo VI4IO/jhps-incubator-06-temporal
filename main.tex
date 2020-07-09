@@ -37,6 +37,7 @@
 \usepackage{multirow}
 \usepackage{soul}
 \usepackage{tabularx}
+\usepackage{mathtools}
 
 \usepackage{cleveref}
 \crefname{codecount}{Code}{Codes}
@@ -173,10 +174,11 @@ Even re-running the same simulation may lead to different behavior.
 We can distinguish between a temporal behavior, i.e., the operations performed over time such as long read/write phases, bursty I/O pattern, and concurrent metadata operations, and spatial access pattern of individual processes of the application as they can be, e.g., sequential or random.
 
 On different supercomputers, the same I/O patterns may result in different application runtimes depending on the nature of the access pattern.
-For example, machines equipped with burst buffers [2, 3, 4] may significantly reduce application runtimes by absorbing bursty I/O traffic.I/O congestion and file system performance degradation can occur when several I/O intensive jobs are running on the same machine at the same time.
-I/O aware schedulers, like CARS [6] and Flux [1], implement new scheduling strategies that utilize I/O metrics.
 
-The analysis of I/O is important not only when I/O begins to take a considerable amount of application runtime but when I/O patterns begin to degrade the performance of the shared file system affecting runtimes of other applications and worsening user experience by unresponsive file systems [9].
+For example, machines equipped with burst buffers \cite{10.1007/978-3-030-02465-9_9, 7004215} may significantly reduce application runtimes by absorbing bursty I/O traffic.
+I/O congestion and file system performance degradation can occur when several I/O intensive jobs are running on the same machine at the same time.
+I/O aware schedulers, like CARS~\cite{LIANG201925} and Flux~\cite{flux}, implement new scheduling strategies that utilize I/O metrics.
+The analysis of I/O is important not only when I/O begins to take a considerable amount of application runtime but when I/O patterns begin to degrade the performance of the shared file system affecting runtimes of other applications and worsening user experience by unresponsive file systems~\cite{10.1007/978-3-030-02465-9_5}.
 
 Understanding the exhibited I/O behavior and implications on the system would give users and administrators information to support analysis by revealing deficiencies and may indicate the potential for I/O optimization.
 Knowing the potential for optimization is important for the support staff, as it allows them to identify applications that benefit from I/O optimizations.
@@ -185,7 +187,7 @@ For example, a widely used parallel application that still utilizes sequential I
 The main question is how to identify such applications automatically from the observed data.
 Non-intrusive capturing of I/O metrics and the analysis can be challenging in many aspects.
 Firstly, in order to find optimization potential, data must be recorded in an appropriate level of detail to retain temporal characteristics.
-While capturing statistics on node level is supported by many monitoring tools, e.g., LASSi [7], Darshan [8], and SIOX [5].
+While capturing statistics on node level is supported by many monitoring tools, e.g., LASSi~\cite{sivalingam2019lassi}, Darshan\cite{hpcdarshan}, and SIOX\cite{TSACAMAOOP14}.
 Detailed metrics on file level are more difficult to obtain.
 A widespread method is re-implementation and pre-loading of an I/O interface, which contains monitoring code.
 
@@ -204,7 +206,7 @@ In Section 3, we discuss the key problem we are dealing with.
 In Section 4, we introduce\ alternative approaches for the clustering, as different goals for the analysis require different distance metrics, we discuss the variety of approaches.
  We start with a simple solution and increase complexity.
 The results and discussion are attached to the methodology of each solution as subsections.
-Finally, in Section 5 we summarize the results./
+Finally, in Section 5 we summarize the results.
 
 
 \section{Preliminary Work}
@@ -215,7 +217,7 @@ Additionally, the monitoring system obtains various job meta-information from th
 
 Our motivation for automatic analysis of parallel jobs is the monitoring situation at DKRZ.
 Mistral runs around 10.000 jobs a day, which is too much for manual analysis.
-In the previous work [11], we found a way to identify I/O intensive jobs and jobs with inefficient usage by deriving statistics from the node-level statistics.
+In the previous work~\cite{iocats2020}, we found a way to identify I/O intensive jobs and jobs with inefficient usage by deriving statistics from the node-level statistics.
 This information can aid the procurement of new HPC systems or support the extension of an existing one.
 While this approach helps to find individual jobs, it doesn’t provide a global overview, which might be more important for making decisions at the data center perspective.
 For example, a discovery of a large group of I/O-intensive and bursty applications would suggest attaching a burst buffer to the storage, to improve application runtimes.
@@ -229,7 +231,7 @@ Segmentation is a pre-processing step that splits data into equal-sized segments
 This stage preserves the performance units (e.g., Op/s, MiB/s) for each metric.
 As further calculations that involve different metrics is difficult for different metrics,, we introduced a categorization\textbf{ pre-processing} step that takes into account the performance of the underlying HPC system and assigns an ordered category to each segment.
 It takes the mean performance, that was calculated in the previous step, and assigns one of the three categories (LowIO = 0, HighIO = 1 and CriticalIO = 4).
-The category split points are based on the histogram of the obtained values [11].
+The category split points are based on the histogram of the obtained values~\cite{iocats2020}.
 This node-level data can then used to compute job-statistics by aggregating across time or nodes.
 
 In summary, this data representation has the following key advantages for data analysis.
@@ -463,6 +465,7 @@ Additionally, we introduce two operations on codings.
 One extracts I/O phases and the other one aggregates continuous zero segments to one zero segment.
 The operations are summarized in \Cref{tab:coding_ops}.
 
+ %\includegraphics[width=3.32in,height=0.37in]{./media/image26.png}
 
 \begin{table}
   \centering
@@ -470,9 +473,17 @@ The operations are summarized in \Cref{tab:coding_ops}.
     \hline
     Operation &  Description \\
     \hline
-    Binarization & Segments are mapped to 9-bit numbers (v), where each position (i) represents a metric. The bits are set by the following function: \eb{equation missing}\\
-  %\par \includegraphics[width=3.32in,height=0.37in]{./media/image26.png}
-  %\href{https://www.codecogs.com/eqnedit.php?latex=%5Ctext%7Bv%7D_%5Ctext%7Bi%7D%20%3D%20%5Cbegin%7Bcases%7D%20%5Ctext%7Bfalse%20if%20segment%7D_%5Ctext%7Bi%7D%20%3D%200%2C%5C%5C%5Ctext%7Btrue%20otherwise.%7D%5Cend%7Bcases%7D%2C%20i%20%5Cin%20%5Ctext%7B%5Benumerated%20metrics%5D%7D#0}{} \\
+		Binarization & Segments are mapped to 9-bit numbers (v), where each position (i) represents a metric. The bits are set by the following function:
+		\vbox{
+			\begin{equation}
+				v_i = 
+				\begin{cases}
+					\text{false if segment}_i = 0\\\text{true otherwise.}
+				\end{cases}, i \in [\text{enumerated metrics}]
+			\end{equation}
+		} 
+			%\url{\href{https://www.codecogs.com/eqnedit.php?latex=%5ctext%7bv%7d_%5ctext%7bi%7d%20%3d%20%5cbegin%7bcases%7d%20%5ctext%7bfalse%20if%20segment%7d_%5ctext%7bi%7d%20%3d%200%2c%5c%5c%5ctext%7btrue%20otherwise.%7d%5cend%7bcases%7d%2c%20i%20%5cin%20%5ctext%7b%5benumerated%20metrics%5d%7d#0}{}}
+		\\
     \hline
     Hex-Quantization & Quantize segments to 16 levels. \\
     \hline
@@ -1167,7 +1178,7 @@ All jobs in each cluster have exactly the same codings.
 The reason that both algorithms create the same clusters, is that the zero aggregation has no effect on formation of these clusters, because the jobs are too short (the minimum job length required for effective zero aggregation is at least three segments) and that the dataset contains a vast amount of such jobs.
 The largest cluster is even representative in Top10 relevant jobs in ref\_top\_ten.
 
-\begin{table}
+\begin{table}[h]
   \centering
   \begin{tabular}{ll}
     Coding sequence & Cluster size \\
@@ -1194,7 +1205,7 @@ The following observations are characteristic for this algorithm:
  \item Lengths of job types in a cluster are relatively close to the centroid.
 \end{enumerate}
 
-\begin{table}
+\begin{table}[h]
   \centering
   \begin{tabular}{ll}
     SIM & 0.7 \\
@@ -1206,7 +1217,8 @@ The following observations are characteristic for this algorithm:
   \label{tab:bin_all:stats}
 \end{table}
 
-\begin{table}
+\begin{table}[h]
+  \centering
 	\begin{tiny}
 		\begin{tabular}{@{ }l@{ }@{ }l@{ }}
 			coding                                                                                                 &  type    \\ 
@@ -1226,7 +1238,7 @@ The following observations are characteristic for this algorithm:
   \label{tab:bin_all:top_jobs}
 \end{table}
 
-\begin{figure}
+\begin{figure}[h]
   \centering
   \includegraphics[width=4.61in,height=1.39in]{./media/image20.png}
   \caption{Length distribution in the cluster.}
@@ -1245,7 +1257,7 @@ The following is characteristic for this algorithm:
  \item I/O intensive clusters appear to be cleaner than BIN\_ALL.
 \end{enumerate}
 
-\begin{table}
+\begin{table}[h]
   \begin{tabular}{ll}
     \centering
     SIM &  0.7 \\
@@ -1256,7 +1268,7 @@ The following is characteristic for this algorithm:
   \label{tab:bin_aggzeros:stats}
 \end{table}
 
-\begin{table}
+\begin{table}[h]
 	\centering
 	\begin{tiny}
 		\begin{tabular}{@{ }l@{ }@{ }l@{ }}
@@ -1303,7 +1315,7 @@ Cluster characteristics:
 
 %%%%%%%%%%%%%%%%%%%%% Table No: 12 starts here %%%%%%%%%%%%%%%%%%%%
 
-\begin{table}
+\begin{table}[h]
   \centering
   \begin{tabular}{ll}
     SIM & 0.9 \\
@@ -1314,21 +1326,21 @@ Cluster characteristics:
   \label{tab:hex_lev:stats}
 \end{table}
 
-\begin{table}
+\begin{table}[h]
 	\centering
 	\begin{tiny}
-		\begin{tabular}{@{ }l@{ }@{ }l@{ }@{ }l@{ }@{ }l@{ }@{ }l@{ }@{ }l@{ }@{ }l@{ }@{ }l@{ }@{ }l@{ }@{ }l@{ }}
-			md\_file\_create  & md\_file\_delete  & md\_mod           & md\_other & md\_read & read\_bytes & read\_calls       & write\_bytes & write\_calls & Type     \\ 
+		\begin{tabular}{@{ }l@{ }@{ }l@{ }@{ }l@{ }@{ }l@{ }@{ }l@{ }}
+			md\_file\_create  & md\_file\_delete  & md\_mod           & read\_calls       & Type     \\ 
 			\hline
-			0:...:0           & 0:0:0:1:0:0:0:0:0 & 0:...:0           & 0:...:0   & 0:...:0  & 0:...:0     & 0:...:0           & 0:...:0      & 0:...:0      & centroid \\ 
-			&                   &                   &           &          &             &                   &              &              &          \\ 
-			md\_file\_create  & md\_file\_delete  & md\_mod           & md\_other & md\_read & read\_bytes & read\_calls       & write\_bytes & write\_calls & Count    \\ 
+			0:...:0           & 0:0:0:1:0:0:0:0:0 & 0:...:0           & 0:...:0           & centroid \\ 
+			                  &                   &                   &                   &          \\
+			md\_file\_create  & md\_file\_delete  & md\_mod           & read\_calls       & Count    \\ 
 			\hline
-			0:...:0           & 0:0:0:0:0:0:1:0:0 & 0:...:0           & 0:...:0   & 0:...:0  & 0:...:0     & 0:...:0           & 0:...:0      & 0:...:0      & 606      \\ 
-			0:...:0           & 0:0:0:0:0:0:0:0:1 & 0:...:0           & 0:...:0   & 0:...:0  & 0:...:0     & 0:...:0           & 0:...:0      & 0:...:0      & 562      \\ 
-			0:...:0           & 0:...:0           & 0:...:0           & 0:...:0   & 0:...:0  & 0:...:0     & 0:0:0:0:0:0:1:0:0 & 0:...:0      & 0:...:0      & 429      \\ 
-			0:...:0           & 0:0:0:1:0:0:0:0:0 & 0:...:0           & 0:...:0   & 0:...:0  & 0:...:0     & 0:...:0           & 0:...:0      & 0:...:0      & 185      \\ 
-			0:0:0:0:0:0:1:1:1 & 0:...:0           & 0:0:0:0:0:0:1:0:0 & 0:...:0   & 0:...:0  & 0:...:0     & 0:...:0           & 0:...:0      & 0:...:0      & 75       \\ 
+			0:...:0           & 0:0:0:0:0:0:1:0:0 & 0:...:0           & 0:...:0           & 606      \\ 
+			0:...:0           & 0:0:0:0:0:0:0:0:1 & 0:...:0           & 0:...:0           & 562      \\ 
+			0:...:0           & 0:...:0           & 0:...:0           & 0:0:0:0:0:0:1:0:0 & 429      \\ 
+			0:...:0           & 0:0:0:1:0:0:0:0:0 & 0:...:0           & 0:...:0           & 185      \\ 
+			0:0:0:0:0:0:1:1:1 & 0:...:0           & 0:0:0:0:0:0:1:0:0 & 0:...:0           & 75       \\ 
 		\end{tabular}
 	\end{tiny}
   \caption{Centroid and Top 5 job types}
@@ -1336,7 +1348,7 @@ Cluster characteristics:
 \end{table}
 
 
-\begin{figure}
+\begin{figure}[h]
   \centering
   \includegraphics[width=4.61in,height=1.39in]{./media/image5.png}
   \caption{Length distribution in the cluster.}
@@ -1360,7 +1372,7 @@ Cluster characteristics:
  \item Low number of outliers
 \end{enumerate}
 
-\begin{table}
+\begin{table}[h]
   \centering
   \begin{tabular}{ll}
     SIM & 0.99 \\
@@ -1372,21 +1384,21 @@ Cluster characteristics:
 \end{table}
 
 
-\begin{table}
+\begin{table}[h]
 	\centering
 	\begin{tiny}
-		\begin{tabular}{@{ }l@{ }@{ }l@{ }@{ }l@{ }@{ }l@{ }@{ }l@{ }@{ }l@{ }@{ }l@{ }@{ }l@{ }@{ }l@{ }@{ }l@{ }}
-      md\_file\_create & md\_file\_delete & md\_mod   & md\_other & md\_read  & read\_bytes & read\_calls & write\_bytes & write\_calls & Type     \\ 
+		\begin{tabular}{@{ }l@{ }@{ }l@{ }@{ }l@{ }@{ }l@{ }}
+      md\_file\_delete & md\_mod   & md\_other & Type     \\ 
       \hline
-      0:\dots:0        & 0:\dots:0        & 0:0:1:0   & 0:0:1:0   & 0:\dots:0 & 0:\dots:0   & 0:\dots:0   & 0:\dots:0    & 0:\dots:0    & centroid \\ 
-                       &                  &           &           &           &             &             &              &              &          \\ 
-      md\_file\_create & md\_file\_delete & md\_mod   & md\_other & md\_read  & read\_bytes & read\_calls & write\_bytes & write\_calls & Count    \\ 
+      0:\dots:0        & 0:0:1:0   & 0:0:1:0   & centroid \\ 
+                       &           &           &          \\ 
+      md\_file\_delete & md\_mod   & md\_other & Count    \\ 
       \hline
-      0:\dots:0        & 0:\dots:0        & 0:\dots:0 & 0:0:1:0   & 0:\dots:0 & 0:\dots:0   & 0:\dots:0   & 0:\dots:0    & 0:\dots:0    & 5010     \\ 
-      0:\dots:0        & 0:\dots:0        & 0:\dots:0 & 0:0:2:0   & 0:\dots:0 & 0:\dots:0   & 0:\dots:0   & 0:\dots:0    & 0:\dots:0    & 1963     \\ 
-      0:\dots:0        & 0:0:1:0          & 0:\dots:0 & 0:\dots:0 & 0:\dots:0 & 0:\dots:0   & 0:\dots:0   & 0:\dots:0    & 0:\dots:0    & 1099     \\ 
-      0:\dots:0        & 0:\dots:0        & 0:\dots:0 & 0:1:0:0   & 0:\dots:0 & 0:\dots:0   & 0:\dots:0   & 0:\dots:0    & 0:\dots:0    & 911      \\ 
-      0:\dots:0        & 0:0:1:0          & 0:0:1:0   & 0:\dots:0 & 0:\dots:0 & 0:\dots:0   & 0:\dots:0   & 0:\dots:0    & 0:\dots:0    & 676      \\ 
+      0:\dots:0        & 0:\dots:0 & 0:0:1:0   & 5010     \\ 
+      0:\dots:0        & 0:\dots:0 & 0:0:2:0   & 1963     \\ 
+      0:0:1:0          & 0:\dots:0 & 0:\dots:0 & 1099     \\ 
+      0:\dots:0        & 0:\dots:0 & 0:1:0:0   & 911      \\ 
+      0:0:1:0          & 0:0:1:0   & 0:\dots:0 & 676      \\ 
 		\end{tabular}
 	\end{tiny}
   \caption{Centroid and Top 5 job types.}
@@ -1394,7 +1406,7 @@ Cluster characteristics:
 \end{table}
 
 
-\begin{figure}
+\begin{figure}[h]
   \centering
   \includegraphics[width=4.61in,height=1.39in]{./media/image8.png}
   \caption{Length distribution in the cluster.}
@@ -1424,7 +1436,7 @@ Cluster characteristics:
  \item I/O pattern 
 \end{enumerate}
 
-\begin{table}
+\begin{table}[h]
   \centering
   \begin{tabular}{ll}
     SIM & 0.7 \\
@@ -1435,28 +1447,28 @@ Cluster characteristics:
   \label{fig:pm_quant:stats}
 \end{table}
 
-\begin{table}
+\begin{table}[h]
   \centering
 	\begin{tiny}
-		\begin{tabular}{@{ }l@{ }@{ }l@{ }@{ }l@{ }@{ }l@{ }@{ }l@{ }@{ }l@{ }@{ }l@{ }@{ }l@{ }@{ }l@{ }@{ }l@{ }}
-			...     & md\_file\_delete & md\_mod     & ...     & ...     & ...     & ...     & ...     & ...     & Type     \\ 
-			\hline
-			0: … :0 & 4:0:0:0:0:0      & 4:0:0:0:0:0 & 0: … :0 & 0: … :0 & 0: … :0 & 0: … :0 & 0: … :0 & 0: … :0 & centroid \\ 
-			        &                  &             &         &         &         &         &         &         &          \\ 
-			...     & md\_file\_delete & md\_mod     & ...     & ...     & ...     & ...     & ...     & ...     & Count    \\ 
-			\hline
-			0: … :0 & 4                & 4           & 0: … :0 & 0: … :0 & 0: … :0 & 0: … :0 & 0: … :0 & 0: … :0 & 2329     \\ 
-			0: … :0 & 4:0:0:0:0:0      & 4:0:0:0:0:0 & 0: … :0 & 0: … :0 & 0: … :0 & 0: … :0 & 0: … :0 & 0: … :0 & 1773     \\ 
-			0: … :0 & 4:0              & 4:0         & 0: … :0 & 0: … :0 & 0: … :0 & 0: … :0 & 0: … :0 & 0: … :0 & 224      \\ 
-			0: … :0 & 2                & 4           & 0: … :0 & 0: … :0 & 0: … :0 & 0: … :0 & 0: … :0 & 0: … :0 & 65       \\ 
-			0: … :0 & 0:4              & 0:4         & 0: … :0 & 0: … :0 & 0: … :0 & 0: … :0 & 0: … :0 & 0: … :0 & 57       \\ 
+		\begin{tabular}{@{ }l@{ }@{ }l@{ }@{ }l@{ }}
+			  md\_file\_delete & md\_mod     & Type     \\ 
+			  \hline
+			  4:0:0:0:0:0      & 4:0:0:0:0:0 & centroid \\ 
+			                   &             &          \\ 
+			  md\_file\_delete & md\_mod     & Count    \\ 
+			  \hline
+			  4                & 4           & 2329     \\ 
+			  4:0:0:0:0:0      & 4:0:0:0:0:0 & 1773     \\ 
+			  4:0              & 4:0         & 224      \\ 
+			  2                & 4           & 65       \\ 
+			  0:4              & 0:4         & 57       \\ 
 		\end{tabular}
 	\end{tiny}
 	\caption{Centroid and Top 5 job types.}
   \label{fig:pm_quant:top_jobs}
 \end{table}
 
-\begin{figure}
+\begin{figure}[h]
   \centering
   \includegraphics[width=4.61in,height=1.39in]{./media/image21.png}
   \caption{Length distribution in the cluster.}
@@ -1466,7 +1478,7 @@ Cluster characteristics:
 \subsection{Use case: I/O intensive job}
 The demonstration in this section shows how this approach can be used to identify a cluster of I/O-intensive jobs similar to an existing job.
 
-\begin{figure}
+\begin{figure}[h]
   \centering
   \includegraphics[width=2.84in,height=2.85in]{./media/image1.png}
   \caption{One high I/O intensity job running on 46 nodes. Score is the sum of all nodes stacked by the node. A color represents one of the nodes.}
@@ -1483,7 +1495,7 @@ Now we investigate the cluster that contains this job for the different algorith
 \paragraph{BIN\_ALL}
 Information related to the cluster is in \Cref{tab:use_case:bin_all:stats}, \Cref{tab:use_case:bin_all:top_jobs}, and in \Cref{fig:use_case:bin_all:length}.
 
-\begin{table}
+\begin{table}[h]
   \centering
   \begin{tabular}{ll}
     SIM & 0.7 \\
@@ -1494,7 +1506,7 @@ Information related to the cluster is in \Cref{tab:use_case:bin_all:stats}, \Cre
   \label{tab:use_case:bin_all:stats}
 \end{table}
 
-\begin{table}
+\begin{table}[h]
   \centering
 	\begin{tiny}
 		\begin{tabular}{@{ }l@{ }@{ }l@{ }}
@@ -1516,7 +1528,7 @@ Information related to the cluster is in \Cref{tab:use_case:bin_all:stats}, \Cre
 	\label{tab:use_case:bin_all:top_jobs}
 \end{table}
 
-\begin{figure}
+\begin{figure}[h]
   \centering
   \includegraphics[width=4.61in,height=1.39in]{./media/image9.png}
   \caption{Length distribution in the cluster.}
@@ -1527,7 +1539,7 @@ Information related to the cluster is in \Cref{tab:use_case:bin_all:stats}, \Cre
 \paragraph{BIN\_AGGZEROS}
 Information related to the cluster is in \Cref{tab:use_case:bin_aggzeros:stats}, \Cref{tab:use_case:bin_aggzeros:top_jobs}, and in \Cref{fig:use_case:bin_aggzeros:length}.
 
-\begin{table}
+\begin{table}[h]
   \centering
   \begin{tabular}{ll}
     SIM & 0.7 \\
@@ -1538,7 +1550,7 @@ Information related to the cluster is in \Cref{tab:use_case:bin_aggzeros:stats},
   \label{tab:use_case:bin_aggzeros:stats}
 \end{table}
 
-\begin{table}
+\begin{table}[h]
 	\centering
 	\begin{tiny}
 		\begin{tabular}{@{ }l@{ }@{ }l@{ }}
@@ -1560,7 +1572,7 @@ Information related to the cluster is in \Cref{tab:use_case:bin_aggzeros:stats},
 	\label{tab:use_case:bin_aggzeros:top_jobs}
 \end{table}
 
-\begin{figure}
+\begin{figure}[h]
   \centering
   \includegraphics[width=4.61in,height=1.39in]{./media/image6.png}
   \caption{Length distribution in the cluster.}
@@ -1571,7 +1583,7 @@ Information related to the cluster is in \Cref{tab:use_case:bin_aggzeros:stats},
 \paragraph{HEX\_LEV}
 Information related to the cluster is in \Cref{tab:use_case:hex_lev:stats}, \Cref{tab:use_case:hex_lev:top_jobs}, and in \Cref{fig:use_case:hex_lev:length}.
 
-\begin{table}
+\begin{table}[h]
   \centering
   \begin{tabular}{ll}
     SIM & 0.9 \\
@@ -1582,7 +1594,7 @@ Information related to the cluster is in \Cref{tab:use_case:hex_lev:stats}, \Cre
   \label{tab:use_case:hex_lev:stats}
 \end{table}
 
-\begin{table}
+\begin{table}[h]
   \begin{tiny}
     \begin{tabular}{@{ }l@{ }@{ }l@{ }@{ }l@{ }}
       md\_other                                            & read\_calls                                            & name    \\ 
@@ -1614,7 +1626,7 @@ Information related to the cluster is in \Cref{tab:use_case:hex_lev:stats}, \Cre
 \paragraph{HEX\_NATIVE}
 Information related to the cluster is in \Cref{tab:use_case:hex_native:stats}, \Cref{tab:use_case:hex_native:job_centroid}, and in \Cref{fig:use_case:hex_native:length}.
 
-\begin{table}
+\begin{table}[h]
   \centering
   \begin{tabular}{ll}
     SIM & 0.99 \\
@@ -1625,29 +1637,29 @@ Information related to the cluster is in \Cref{tab:use_case:hex_native:stats}, \
   \label{tab:use_case:hex_native:stats}
 \end{table}
 
-\begin{table}
+\begin{table}[h]
   \centering
   \begin{tiny}
-    \begin{tabular}{@{ }l@{ }@{ }l@{ }@{ }l@{ }@{ }l@{ }@{ }l@{ }@{ }l@{ }@{ }l@{ }@{ }l@{ }@{ }l@{ }@{ }l@{ }}
-      \dots     & \dots     & \dots     & \dots.    & …         & \dots     & read\_calls                                           & \dots     & \dots     & Type     \\ 
-			\hline
-      0:\dots:0 & 0:\dots:0 & 0:\dots:0 & 0:\dots:0 & 0:\dots:0 & 0:\dots:0 & 3:3:8:8:8:5:6:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8 & 0:\dots:0 & 0:\dots:0 & job      \\ 
-      0:\dots:0 & 0:\dots:0 & 0:\dots:0 & 0:\dots:0 & 0:\dots:0 & 0:\dots:0 & 8:8:8:8:8:2:4:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8 & 0:\dots:0 & 0:\dots:0 & centroid \\ 
-      &           &           &           &           &           &                                                       &           &           &          \\ 
-      \dots     & \dots     & \dots     & \dots.    & …         & \dots     & read\_calls                                           & \dots     & \dots     & Count    \\ 
-			\hline
-      0:\dots:0 & 0:\dots:0 & 0:\dots:0 & 0:\dots:0 & 0:\dots:0 & 0:\dots:0 & 8:8:8:8:8:3:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8 & 0:\dots:0 & 0:\dots:0 & 3        \\ 
-      0:\dots:0 & 0:\dots:0 & 0:\dots:0 & 0:\dots:0 & 0:\dots:0 & 0:\dots:0 & 8:8:8:8:8:5:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8 & 0:\dots:0 & 0:\dots:0 & 2        \\ 
-      0:\dots:0 & 0:\dots:0 & 0:\dots:0 & 0:\dots:0 & 0:\dots:0 & 0:\dots:0 & 3:3:8:8:8:5:6:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8 & 0:\dots:0 & 0:\dots:0 & 1        \\ 
-      0:\dots:0 & 0:\dots:0 & 0:\dots:0 & 0:\dots:0 & 0:\dots:0 & 0:\dots:0 & 3:6:6:7:7:7:7:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8 & 0:\dots:0 & 0:\dots:0 & 1        \\ 
-      0:\dots:0 & 0:\dots:0 & 0:\dots:0 & 0:\dots:0 & 0:\dots:0 & 0:\dots:0 & 6:5:6:7:6:2:7:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8 & 0:\dots:0 & 0:\dots:0 & 1        \\ 
+    \begin{tabular}{@{ }l@{ }@{ }l@{ }}
+      read\_calls                                           & Type     \\ 
+		  \hline	
+      3:3:8:8:8:5:6:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8 & job      \\ 
+      8:8:8:8:8:2:4:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8 & centroid \\ 
+     & \\ 
+      read\_calls                                           & Count    \\ 
+		  \hline	
+      8:8:8:8:8:3:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8 & 3        \\ 
+      8:8:8:8:8:5:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8 & 2        \\ 
+      3:3:8:8:8:5:6:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8 & 1        \\ 
+      3:6:6:7:7:7:7:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8 & 1        \\ 
+      6:5:6:7:6:2:7:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8 & 1        \\ 
     \end{tabular}
   \end{tiny}
   \caption{Job and centroid coding sequences.}
   \label{tab:use_case:hex_native:job_centroid}
 \end{table}
 
-\begin{figure}
+\begin{figure}[h]
   \centering
   \includegraphics[width=4.61in,height=1.39in]{./media/image2.png}
   \caption{Figure 19. Length distribution in the cluster.}
@@ -1664,7 +1676,7 @@ The reason is that we use different reduction functions.
 While in the illustration we aggregate segments by the sum() function, for the coding we use quantization of the performance mean value.
 Mean value allow us to build simple algorithms
 
-\begin{table}
+\begin{table}[h]
   \centering
   \begin{tabular}{ll}
     SIM                 & 0.7 \\ 
@@ -1675,29 +1687,29 @@ Mean value allow us to build simple algorithms
   \label{tab:use_case:pm_quant:stats}
 \end{table}
 
-\begin{table}
+\begin{table}[h]
   \centering
   \begin{tiny}
-    \begin{tabular}{@{ }l@{ }@{ }l@{ }@{ }l@{ }@{ }l@{ }@{ }l@{ }@{ }l@{ }@{ }l@{ }@{ }l@{ }@{ }l@{ }@{ }l@{ }}
-      \dots & \dots & \dots & \dots & \dots & \dots & read\_calls & \dots & \dots & Type \\
-      \hline
-      0:…:0     & 0:…:0 & 0:…:0 & 0:…:0 & 0:…:0 & 0:…:0 & 3:3:8:8:8:5:6:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8 & 0:…:0 & 0:…:0 & job      \\ 
-      0:…:0     & 0:…:0 & 0:…:0 & 0:…:0 & 0:…:0 & 0:…:0 & 8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8   & 0:…:0 & 0:…:0 & centroid \\ 
-                &       &       &       &       &       &                                                       &       &       &          \\ 
-      \dots     & \dots & \dots & \dots & \dots & \dots & read\_calls                                           & \dots & \dots & Count    \\ 
-      \hline
-      0:\dots:0 & 0:…:0 & 0:…:0 & 0:…:0 & 0:…:0 & 0:…:0 & 8:8:8:8:8:2:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8   & 0:…:0 & 0:…:0 & 4        \\ 
-      0:…:0     & 0:…:0 & 0:…:0 & 0:…:0 & 0:…:0 & 0:…:0 & 8:8:8:8:8:3:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8 & 0:…:0 & 0:…:0 & 3        \\ 
-      0:…:0     & 0:…:0 & 0:…:0 & 0:…:0 & 0:…:0 & 0:…:0 & 7:7:7:7:7:2:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8   & 0:…:0 & 0:…:0 & 2        \\ 
-      0:…:0     & 0:…:0 & 0:…:0 & 0:…:0 & 0:…:0 & 0:…:0 & 8:8:8:8:8:5:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8   & 0:…:0 & 0:…:0 & 2        \\ 
-      0:…:0     & 0:…:0 & 0:…:0 & 0:…:0 & 0:…:0 & 0:…:0 & 8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8   & 0:…:0 & 0:…:0 & 2        \\ 
+    \begin{tabular}{@{ }l@{ }@{ }l@{ }}
+      read\_calls                                           & Type     \\ 
+      
+      3:3:8:8:8:5:6:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8 & job      \\ 
+      8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8   & centroid \\ 
+                                                            &          \\ 
+      read\_calls                                           & Count    \\ 
+      
+      8:8:8:8:8:2:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8   & 4        \\ 
+      8:8:8:8:8:3:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8 & 3        \\ 
+      7:7:7:7:7:2:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8   & 2        \\ 
+      8:8:8:8:8:5:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8   & 2        \\ 
+      8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8   & 2        \\ 
     \end{tabular}
   \end{tiny}
   \caption{Job, centroid and Top 5 job types.}
   \label{tab:use_case:pm_quant:top_jobs}
 \end{table}
 
-\begin{figure}
+\begin{figure}[h]
   \centering
   \includegraphics[width=4.61in,height=1.39in]{./media/image7.png}
   \caption{Length distribution in the cluster.}
@@ -1804,47 +1816,6 @@ The biggest problem is probably the large number of clusters.
 We assume that there indeed are so many different types of jobs, but there are too many of them for manual labeling.
 Therefore we need at least three further functions, that filter irrelevant clusters, sort clusters by a criteria and label remaining ones.
 
-
-
-%\setlength{\parskip}{0.0pt}
-%\begin{thebibliography}{99}
-%\bibitem{item1}
-%\fontsize{10pt}{12.0pt}\selectfont Ahn, D., Garlick, J., Grondona, M., Lipari, D., Springmeyer, B., Schulz, M.: Flux: $``$A next-generation resource management framework for large hpc centers.$"$  pp. 9–17 (09 2014). \href{https://doi.org/10.1109/ICPPW.2014.15}{\textcolor[HTML]{1155CC}{\ul{https://doi.org/10.1109/ICPPW.2014.15}}}
-
-%\bibitem{item2}
-%\fontsize{10pt}{12.0pt}\selectfont DDN, $``$Worlds’s most advanced application aware I/O acceleration solutions.$"$  \href{http://www.ddn.com/products/infinite-memory-engine-ime14k}{\textcolor[HTML]{1155CC}{\ul{ http://www.ddn.com/products/infinite-memory-engine-ime14k}}}
-
-%\bibitem{item3}
-%\fontsize{10pt}{12.0pt}\selectfont IBM, $``$Flash Storage.$"$ ,\href{http://www-03.ibm.com/systems/storage/flash}{\textcolor[HTML]{1155CC}{\ul{ http://www-03.ibm.com/systems/storage/flash}}}
-
-%\bibitem{item4}
-%\fontsize{10pt}{12.0pt}\selectfont Kove Corporation, $``$about xpress disk (xpd)$"$ , 2015
-
-%\bibitem{item5}
-%\fontsize{10pt}{12.0pt}\selectfont Kunkel,\ J., Zimmer, M., Hübbe, N., Aguilera, A., Mickler, H., Wang, X., Chut, A., Bönisch, T., Lüttgau, J., Michel, R., Weging, J., $``$The SIOX Architecture – Coupling Automatic Monitoring and Optimization of Parallel I/O.$"$ ,  In: Kunkel, J., Ludwig, T., Meuer, H. (eds.) Supercomputing. pp. 245–260. Supercomputing, ISC events, Lecture Notes in Computer Science, 2014
-
-%\bibitem{item6}
-%\fontsize{10pt}{12.0pt}\selectfont Liang, W., Chen, Y., Liu, J., An, H.: Cars, $``$A contention-aware scheduler for efficient resource management of hpc storage systems.$"$ , Parallel Computing 87, 25 – 34, 2019 \href{https://doi.org/https://doi.org/10.1016/j.parco.2019.04.010}{\textcolor[HTML]{1155CC}{\ul{https://doi.org/https://doi.org/10.1016/j.parco.2019.04.010}}}, \href{http://www.sciencedirect.com/science/article/pii/S016781911830382X}{\textcolor[HTML]{1155CC}{\ul{http://www.sciencedirect.com/science/article/pii/S016781911830382X}}}
-
-%\bibitem{item7}
-%\fontsize{10pt}{12.0pt}\selectfont Sivalingam, K., Richardson, H., Tate, A., Lafferty, M.: Lassi, $``$Metric based i/o analytics for hpc$"$ , 2019
-
-%\bibitem{item8}
-%\fontsize{10pt}{12.0pt}\selectfont Snyder, S., Carns, P., Harms, K., Ross, R., Lockwood, G.K., Wright, N.J., \\
-%$``$Modular hpc i/o characterization with darshan.$"$  In: 2016 5th Workshop on Extreme-Scale Programming Tools (ESPT). pp. 9–17, 2016
-
-%\bibitem{item9}
-%\fontsize{10pt}{12.0pt}\selectfont Kunkel, J., Markomanolis, G.,:Understanding Metadata Latency with MDWorkbench, In High Performance Computing: ISC High Performance 2018 International Workshops, Frankfurt/Main, Germany, June 28, 2018, Revised Selected Papers, Lecture Notes in Computer Science (11203), pp. 75–88, Springer, WOPSSS workshop, ISC HPC, Frankfurt, Germany, ISBN: 978-3-030-02465-9, \href{https://doi.org/10.1007/978-3-030-02465-9_5}{\textcolor[HTML]{1155CC}{\ul{https://doi.org/10.1007/978-3-030-02465-9\_5}}}
-
-%\bibitem{item10}
-%\href{http://jmlr.csail.mit.edu/papers/v12/pedregosa11a.html}{{\fontsize{10pt}{12.0pt}\selectfont \textcolor[HTML]{1155CC}{\ul{Scikit-learn: Machine Learning in Python}}}, Pedregosa \textit{et al.}, JMLR 12, pp. 2825-2830, 2011.
-
-%\bibitem{item11}
-%\fontsize{10pt}{12.0pt}\selectfont Betke, E., Kunkel. J.: Semi-automatic Assessment of I/O Behavior by Inspecting the Individual Client-Node Timelines — An Explorative Study on 10$ \string^ $ 6 Jobs, ISC 2020 (Submission accepted, not published yet).
-%\end{thebibliography}
-
-%\printbibliography
-%\newpage
 \bibliographystyle{splncs04}
 \bibliography{bibliography}{}
 \end{document}

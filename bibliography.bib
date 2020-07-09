@@ -1305,3 +1305,144 @@ year = {2019}
   author={Michael Gienger},
   year={2017}
 }
+
+@InProceedings{10.1007/978-3-030-02465-9_9,
+	author="Betke, Eugen
+		and Kunkel, Julian",
+	editor="Yokota, Rio
+		and Weiland, Mich{\`e}le
+		and Shalf, John
+		and Alam, Sadaf",
+	title="Benefit of DDN's IME-FUSE for I/O Intensive HPC Applications",
+	booktitle="High Performance Computing",
+	year="2018",
+	publisher="Springer International Publishing",
+	address="Cham",
+	pages="131--144",
+	abstract="Many scientific applications are limited by I/O performance offered by parallel file systems on conventional storage systems. Flash-based burst buffers provide significant better performance than HDD backed storage, but at the expense of capacity. Burst buffers are considered as the next step towards achieving wire-speed of interconnect and providing more predictable low latency I/O, which are the holy grail of storage.",
+	isbn="978-3-030-02465-9"
+}
+
+@INPROCEEDINGS{7004215,
+	author={T. {Wang} and S. {Oral} and Y. {Wang} and B. {Settlemyer} and S. {Atchley} and W. {Yu}},
+	booktitle={2014 IEEE International Conference on Big Data (Big Data)}, 
+	title={BurstMem: A high-performance burst buffer system for scientific applications}, 
+	year={2014},
+	volume={},
+	number={},
+	pages={71-79},
+}
+
+
+@misc{nextgenio2016,
+	author = {Farsarakis E., Weiland M., Jackson A., Parson M},
+	title = {{Monitoring and evaluating I/O performance of HPC systems}}, 
+	location = {Stockholm, Sweden},
+	publisher = {EASC}, 
+	year= {2016},
+	url = {http://www.nextgenio.eu/sites/default/files/documents/publications/EASC2016%20IO%20talk.pdf}
+}
+
+@inproceedings{TSACAMAOOP14,
+	author	 = {Julian Kunkel and Michaela Zimmer and Nathanael Hübbe and Alvaro Aguilera and Holger Mickler and Xuan Wang and Andrij Chut and Thomas Bönisch and Jakob Lüttgau and Roman Michel and Johann Weging},
+	title	 = {{The SIOX Architecture – Coupling Automatic Monitoring and Optimization of Parallel I/O}},
+	year	 = {2014},
+	booktitle	 = {{Supercomputing}},
+	editor	 = {Julian Kunkel and Thomas Ludwig and Hans Meuer},
+	publisher	 = {Lecture Notes in Computer Science},
+	series	 = {Supercomputing},
+	pages	 = {245--260},
+	conference	 = {ISC'14},
+	organization	 = {ISC events},
+	location	 = {Leipzig},
+	isbn	 = {978-3-319-07517-4},
+	%doi	 = {https://doi.org/10.1007/978-3-319-07518-1_16},
+	abstract	 = {Performance analysis and optimization of high-performance I/O systems is a daunting task. Mainly, this is due to the overwhelmingly complex interplay of the involved hardware and software layers. The Scalable I/O for Extreme Performance (SIOX) project provides a versatile environment for monitoring I/O activities and learning from this information. The goal of SIOX is to automatically suggest and apply performance optimizations, and to assist in locating and diagnosing performance problems. In this paper, we present the current status of SIOX. Our modular architecture covers instrumentation of POSIX, MPI and other high-level I/O libraries; the monitoring data is recorded asynchronously into a global database, and recorded traces can be visualized. Furthermore, we offer a set of primitive plug-ins with additional features to demonstrate the flexibility of our architecture: A surveyor plug-in to keep track of the observed spatial access patterns; an fadvise plug-in for injecting hints to achieve read-ahead for strided access patterns; and an optimizer plug-in which monitors the performance achieved with different MPI-IO hints, automatically supplying the best known hint-set when no hints were explicitly set. The presentation of the technical status is accompanied by a demonstration of some of these features on our 20 node cluster. In additional experiments, we analyze the overhead for concurrent access, for MPI-IO’s 4-levels of access, and for an instrumented climate application. While our prototype is not yet full-featured, it demonstrates the potential and feasibility of our approach.},
+}
+
+@misc{sivalingam2019lassi,
+    title={LASSi: Metric based I/O analytics for HPC},
+    author={Karthee Sivalingam and Harvey Richardson and Adrian Tate and Martin Lafferty},
+    year={2019},
+    eprint={1906.03884},
+    archivePrefix={arXiv},
+    primaryClass={cs.DC}
+}
+
+@INPROCEEDINGS{7830462,
+	author={S. {Snyder} and P. {Carns} and K. {Harms} and R. {Ross} and G. K. {Lockwood} and N. J. {Wright}},
+	booktitle={2016 5th Workshop on Extreme-Scale Programming Tools (ESPT)},
+	title={Modular HPC I/O Characterization with Darshan},
+	year={2016},
+	volume={},
+	number={},
+	pages={9-17},
+	%keywords={input-output programs;natural sciences computing;parallel processing;modular HPC IO characterization;Darshan;high-performance computing;large-scale HPC platforms;IO workloads;IO profiling tools;scientific applications;computing platforms;modular instrumentation methods;Instruments;Libraries;Buffer storage;Production systems;Writing;Runtime;Registers},
+	doi={10.1109/ESPT.2016.006},
+	ISSN={null},
+	month={Nov}
+}
+
+@article{LIANG201925,
+	title = "CARS: A contention-aware scheduler for efficient resource management of HPC storage systems",
+	journal = "Parallel Computing",
+	volume = "87",
+	pages = "25 - 34",
+	year = "2019",
+	issn = "0167-8191",
+	doi = "https://doi.org/10.1016/j.parco.2019.04.010",
+	url = "http://www.sciencedirect.com/science/article/pii/S016781911830382X",
+	author = "Weihao Liang and Yong Chen and Jialin Liu and Hong An",
+	keywords = "Burst buffer, Resource management, Scheduling algorithm, I/O system, Modeling, I/O contention",
+	abstract = "Many scientific applications are becoming more and more data intensive. As the data volume continues to grow, the data movement between storage and compute nodes has turned into a crucial performance bottleneck for many data-intensive applications. Burst buffer provides a promising solution for these applications by absorbing bursty I/O traffic. However, the resource allocation and management strategies for burst buffer are not well studied. The existing bandwidth based strategies may cause severe I/O contention when a large number of I/O-intensive jobs access the burst buffer system concurrently. In this study, we present a contention-aware resource scheduling (CARS) strategy to manage the burst buffer resources and coordinate concurrent data-intensive jobs. The experimental results show that the proposed CARS framework outperforms the existing allocation strategies and improves both the job performance and the system utilization."
+}
+
+@inproceedings{flux,
+	author = {Ahn, Dong and Garlick, Jim and Grondona, Mark and Lipari, Don and Springmeyer, Becky and Schulz, Martin},
+	year = {2014},
+	month = {09},
+	pages = {9-17},
+	title = {Flux: A Next-Generation Resource Management Framework for Large HPC Centers},
+	doi = {10.1109/ICPPW.2014.15}
+}
+
+@INPROCEEDINGS{7103433,
+	author={D. H. {Ahn} and J. {Garlick} and M. {Grondona} and D. {Lipari} and B. {Springmeyer} and M. {Schulz}},
+	booktitle={2014 43rd International Conference on Parallel Processing Workshops}, 
+	title={Flux: A Next-Generation Resource Management Framework for Large HPC Centers}, 
+	year={2014},
+	volume={},
+	number={},
+	pages={9-17},
+}
+
+
+@InProceedings{10.1007/978-3-030-02465-9_5,
+	author="Kunkel, Julian Martin
+		and Markomanolis, George S.",
+	editor="Yokota, Rio
+		and Weiland, Mich{\`e}le
+		and Shalf, John
+		and Alam, Sadaf",
+	title="Understanding Metadata Latency with MDWorkbench",
+	booktitle="High Performance Computing",
+	year="2018",
+	publisher="Springer International Publishing",
+	address="Cham",
+	pages="75--88",
+	abstract="While parallel file systems often satisfy the need of applications with bulk synchronous I/O, they lack capabilities of dealing with metadata intense workloads. Typically, in procurements, the focus lies on the aggregated metadata throughput using the MDTest benchmark (https://www.vi4io.org/tools/benchmarks/mdtest). However, metadata performance is crucial for interactive use. Metadata benchmarks involve even more parameters compared to I/O benchmarks. There are several aspects that are currently uncovered and, therefore, not in the focus of vendors to investigate. Particularly, response latency and interactive workloads operating on a working set of data. The lack of capabilities from file systems can be observed when looking at the IO-500 list, where metadata performance between best and worst system does not differ significantly.",
+	isbn="978-3-030-02465-9"
+}
+
+
+Betke, E., Kunkel. J.: Semi-automatic Assessment of I/O Behavior by Inspecting the Individual Client-Node Timelines — An Explorative Study on 10^6 Jobs, ISC 2020 (Submission accepted, not published yet).
+
+@INPROCEEDINGS{iocats2020,
+	author={Eugen Betke, Julian Kunkel},
+	booktitle={2014 43rd International Conference on Parallel Processing Workshops}, 
+	title={Semi-automatic Assessment of I/O Behavior by Inspecting the Individual Client-Node Timelines — An Explorative Study on $10^6$ Jobs}, 
+	conference= {ISC'20},
+	organization= {ISC Events},
+	year=2020,
+	note=(Submission accepted, not published yet),
+}
