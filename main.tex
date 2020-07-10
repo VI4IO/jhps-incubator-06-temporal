@@ -1466,6 +1466,7 @@ Information related to the cluster is in \Cref{tab:use_case:bin_aggzeros:stats},
   \label{tab:use_case:bin_aggzeros:top_jobs}
 \endgroup
 %\end{table}
+
 %\begin{figure}[h]
 \begingroup
   \centering
@@ -1474,6 +1475,7 @@ Information related to the cluster is in \Cref{tab:use_case:bin_aggzeros:stats},
   \label{fig:use_case:bin_aggzeros:length}
 \endgroup
 %\end{figure}
+
 \paragraph{HEX\_LEV}
 Information related to the cluster is in \Cref{tab:use_case:hex_lev:stats}, \Cref{tab:use_case:hex_lev:top_jobs}, and in \Cref{fig:use_case:hex_lev:length}.
 
@@ -1489,6 +1491,7 @@ Information related to the cluster is in \Cref{tab:use_case:hex_lev:stats}, \Cre
   \label{tab:use_case:hex_lev:stats}
 \endgroup
 %\end{table}
+
 %\begin{table}[h]
 \begingroup
   \begin{tiny}
@@ -1514,6 +1517,7 @@ Information related to the cluster is in \Cref{tab:use_case:hex_lev:stats}, \Cre
   \label{tab:use_case:hex_lev:top_jobs}
 \endgroup
 %\end{table}
+
 %\begin{figure}[h]
 \begingroup
   \centering
@@ -1522,6 +1526,7 @@ Information related to the cluster is in \Cref{tab:use_case:hex_lev:stats}, \Cre
   \label{fig:use_case:hex_lev:length}
 \endgroup
 %\end{figure}
+
 \paragraph{HEX\_NATIVE}
 Information related to the cluster is in \Cref{tab:use_case:hex_native:stats}, \Cref{tab:use_case:hex_native:job_centroid}, and in \Cref{fig:use_case:hex_native:length}.
 
@@ -1537,6 +1542,7 @@ Information related to the cluster is in \Cref{tab:use_case:hex_native:stats}, \
   \label{tab:use_case:hex_native:stats}
 \endgroup
 %\end{table}
+
 %\begin{table}[h]
 \begingroup
   \centering
@@ -1571,6 +1577,7 @@ Information related to the cluster is in \Cref{tab:use_case:hex_native:stats}, \
   \label{fig:use_case:hex_native:length}
 \endgroup
 %\end{figure}
+
 \paragraph{PM\_QUANT}
 Information\ related to the cluster is \Cref{tab:use_case:pm_quant:stats}, \Cref{tab:use_case:pm_quant:top_jobs}, and in \Cref{fig:use_case:pm_quant:length}.
 
@@ -1586,6 +1593,7 @@ Information\ related to the cluster is \Cref{tab:use_case:pm_quant:stats}, \Cref
   \label{tab:use_case:pm_quant:stats}
 \endgroup
 %\end{table}
+
 %\begin{table}[h]
 \begingroup
   \centering
@@ -1613,6 +1621,7 @@ Information\ related to the cluster is \Cref{tab:use_case:pm_quant:stats}, \Cref
   \label{tab:use_case:pm_quant:top_jobs}
 \endgroup
 %\end{table}
+
 %\begin{figure}[h]
 \begingroup
   \centering
@@ -1621,38 +1630,47 @@ Information\ related to the cluster is \Cref{tab:use_case:pm_quant:stats}, \Cref
   \label{fig:use_case:pm_quant:length}
 \endgroup
 %\end{figure}
+
 \subsubsection{Discussion}
 Indeed clustering of hexadecimal codings produces usable results.
 The examples in Table 2 show two randomly picked clusters.
 The similar I/O behavior.
+
 Another\ critical point of usage of Levenshtein distance is that it doesn't consider the performance.
 For example, the following three codings would be considered as similar, since they differ in one position only.
+
 \begin{lstlisting}
 phase_coding_1 : [2:2:2:2:2:9:2:2]
 phase_coding_2 : [2:2:2:2:2:8:2:2]
 phase_coding_3 : [2:2:2:2:2:0:2:2]
 \end{lstlisting}
+
 Intuitively, we would say that {phase\_coding\_1 and{ phase\_coding\_2 are more similar than {phase\_coding\_2 and {phase\_coding\_3 , because the difference at 6th position is in the first case smaller (9 and 8) is smaller than in the second case (8 and 0).
 Particularly bad affected are short coding, as the example in the previous sections shows.
+
 The current version of the PM algorithm ignores non-IO parts (sequences of zeros) of the monitoring data, and  handles segment sequences like [0,0,0,0,1] and [1] equally.
 These sequences would produce different average I/O loads on the storage.
 Intuitively, we would say these jobs have different I/O behaviour and should consider that in the approach.
+
 
 \begin{lstlisting}
 job1_metric1 : [0,0,0,0,1]
 job1_metric1 : [1]
 \end{lstlisting}
+
 One could also argue that the phase definition was chosen incorrectly.
 Currently, phases are defined for each metric individually, without consideration what is going on on other metrics.
 For illustration, consider the following two jobs.
 Currently, the algorithm recognizes the I/O pattern as 100$\%$  similar.
 Alternatively, one could say that running two metrics at the same time is another I/O pattern, as running them shifted, because on a storage system the jobs would produce different I/O loads.
+
 \begin{lstlisting}
 job1_metric1 : [0:1]
 job1_metric2 : [1:0]
 job2_metric1 : [1:0]
 job2_metric2 : [1:0]
 \end{lstlisting}
+
 The benefit of ignoring these both aspects is simplicity.
 This reduces the number of clusters and the results are easier to understand.
 It also needs to be investigated, if these considerations are correct for HPC systems that are running hundreds of jobs in parallel, because one job alone would typically not be able to produce a significant amount of I/O that can slow down the file system performance.
