@@ -1855,11 +1855,16 @@ Both are one segment long and only one I/O node that writes data to storage with
 Without quantization we would represent these jobs by the following sequences:  [..., [0.0625], $ \ldots $ ] and [..., [0.03125], ...], where only active metrics have values larger than zero.
 Using the similarity function without quantization, i.e.
 with mean performance, would result in a similarity of 50$\%$ , and for SIM>0.5 they would be placed in separate clusters.
+The hexadecimal coding filters these jobs automatically. Segments with mean performance less than 0.125 are quantized to zero and zero sequences are removed from the dataset. This problem doesn’t occur.
 
+The main question remains what characterizes I/O and which characteristics should be involved in job comparison. 
+Are two jobs similar if they have similar I/O phases? 
+Are two jobs similar if one job has an I/O phase at the beginning and the other at the same I/O phase at the end?
+Are two jobs similar if they have different lengths, but similar I/O phases?
+To answer these questions we need a discussion with the community and a study of more use cases.
 The hexadecimal coding filters these jobs automatically. Segments with mean performance less than 0.125 are quantized to zero and zero sequences are removed from the dataset. This problem doesn't occur.
 Nevertheless, we think that we will overcome this problem in the future.
-S would make the results more precise and would make the quantization step
-obsolete.
+S would make the results more precise and would make the quantization step dobsolete.
 
 \subsection{Conclusion}
 After a series of experiments with general purpose algorithms we could not achieve optimal results.
@@ -1868,9 +1873,7 @@ One problem might be that we apply a combination of a clustering and a classific
 The classification algorithm is trained by the potential erroneous output of the clustering algorithm and it can itself produce erroneous output, which multiples the total error.
 Another problem might be that both algorithms are not aware of I/O performance and I/O phases.
 As this work shows, this might be quite important.
-At least, we achieve better results by considering both aspects.
-
-
+At least, we achieve better results by considering both aspects.
 The Levenshtein-distance based algorithms produce better, but still not sophisticated results.
 This is a direct consequence of the usage of the Levenshtein distance, which is illustrated in the following example.
 Suppose two jobs {[0:6:0:0]and [0:388:174:0] are in the same cluster with the centroid {[0:388:0:0].
@@ -1883,8 +1886,9 @@ Absolute coding aggregates three dimensions (Metric, Nodes, and FileSystems) res
 Having more data, a more precise computation.
 The integration of the awareness of I/O performance produces better, but still not sophisticated results.
 We suppose that the I/O phase awareness is the missing feature for success.
+The final algorithm that detects phases and differentiates performance values produces at first sight clean results.
+Due to the huge amount of clusters and lack of automatic evaluation tools, we can not prove this statement for all clustres.
 
-The final algorithm that detects phases and differentiates performance values produces at first sight clean results.Due to the huge amount of clusters and lack of automatic evaluation tools, we can not prove this statement for all clustres.
 \subsection{Future work}
 We see a high potential in the new clustering algorithm, but it requires some improvements to be useful.
 Although groping seems to work well, the algorithm has at least one serious issue.
