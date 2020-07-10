@@ -57,7 +57,7 @@
 \lstset{%
 	numberbychapter=false,
 	belowskip=-10pt,
-	aboveskip=-10pt,
+	aboveskip=10pt,
 }
 
 \lstdefinestyle{lstcodebox}{%
@@ -88,7 +88,7 @@
   deletekeywords={...},            % if you want to delete keywords from the given language
   %escapeinside={\%*}{*)},          % if you want to add LaTeX within your code
   extendedchars=true,              % lets you use non-ASCII characters; for 8-bits encodings only, does not work with UTF-8
-  frame=none,	                   % adds a frame around the code
+  frame=none,                    % adds a frame around the code
   keepspaces=true,                 % keeps spaces in text, useful for keeping indentation of code (possibly needs columns=flexible)
   keywordstyle=\bf\ttfamily,       % keyword style
   language=C,                 % the language of the code
@@ -102,13 +102,13 @@
   showtabs=false,                  % show tabs within strings adding particular underscores
   stepnumber=1,                    % the step between two line-numbers. If it's 1, each line will be numbered
   %stringstyle=\color{mymauve},     % string literal style
-  tabsize=2,	                   % sets default tabsize to 2 spaces
+  tabsize=2,                    % sets default tabsize to 2 spaces
   title=\lstname                   % show the filename of files included with \lstinputlisting; also try caption instead of title
 }
 
 
 \lstset{ %
-	autogobble=true,
+  autogobble=true,
   backgroundcolor=\color{white},   % choose the background color; you must add \usepackage{color} or \usepackage{xcolor}
   basicstyle=\scriptsize\ttfamily,       % the size of the fonts that are used for the code
   breakatwhitespace=false,         % sets if automatic breaks should only happen at whitespace
@@ -118,7 +118,7 @@
   deletekeywords={...},            % if you want to delete keywords from the given language
   escapeinside={(*}{*)},          % if you want to add LaTeX within your code
   extendedchars=true,              % lets you use non-ASCII characters; for 8-bits encodings only, does not work with UTF-8
-  frame=none,	                   % (none, single) adds a frame around the code
+  frame=none,                    % (none, single) adds a frame around the code
   keepspaces=true,                 % keeps spaces in text, useful for keeping indentation of code (possibly needs columns=flexible)
   keywordstyle=\color{blue},       % keyword style
   language=Octave,                 % the language of the code
@@ -132,8 +132,8 @@
   showtabs=false,                  % show tabs within strings adding particular underscores
   stepnumber=1,                    % the step between two line-numbers. If it's 1, each line will be numbered
   stringstyle=\color{blue},     % string literal style
-  tabsize=2,	                   % sets default tabsize to 2 spaces
-  title=\lstname                   % show the filename of files included with \lstinputlisting; also try caption instead of title
+  tabsize=2,                     % sets default tabsize to 2 spaces
+  title=\lstname,                  % show the filename of files included with \lstinputlisting; also try caption instead of title
 }
 
 
@@ -246,16 +246,16 @@ Finally, irrelevant data is hidden by the LowIO category and doesn't distract fr
 In our previous work, we computed three high-level metrics per job that aid users to understand job profiles: 
 
 \begin{itemize}
- \item \textbf{Job-I/O-Balance:} indicates how I/O load is distributed between nodes during job runtime.
- \item \textbf{Job-I/O-Utilization:} shows the average I/O load during I/O-phases.
- \item \textbf{Job-I/O-Problem-Time} is the fraction of job runtime that is I/O-intensive; it is approximated by the fractions of segments that are considered I/O intensive.
+	\item \textbf{Job-I/O-Balance:} indicates how I/O load is distributed between nodes during job runtime.
+	\item \textbf{Job-I/O-Utilization:} shows the average I/O load during I/O-phases.
+	\item \textbf{Job-I/O-Problem-Time} is the fraction of job runtime that is I/O-intensive; it is approximated by the fractions of segments that are considered I/O intensive.
 \end{itemize}
 
 \begin{figure}
 	\centering
-	 \includegraphics[width=2.02in,height=2.52in]{./media/image4.png}
-	 \caption{Metric Level View of an Example Job. Score is the sum of individual node scores.}
-	 \label{fig:seg_example}
+	\includegraphics[width=2.02in,height=2.52in]{./media/image4.png}
+	\caption{Metric Level View of an Example Job. Score is the sum of individual node scores.}
+	\label{fig:seg_example}
 \end{figure}
 
 In \Cref{fig:seg_example}, we can see the temporal behavior for this particular job when summing up the node-level metrics.
@@ -387,12 +387,12 @@ Generally, deriving a fingerprint, can be done using one of the following approa
 
 
 \begin{itemize}
- \item \textbf{Segment statistics} compute for each segment a fixed statistics, such as the mean value across all nodes.
-This basically preserves the time series and depends on the job-length.
- \item \textbf{Phase statistics} computes high-level statistics by analyzing the temporal behavior of IO phases further, e.g., compute the average length of IO segments with CriticalIO.
-This approach is independent of the job length but requires identifying phases and determining meaningful job metrics.
- \item \textbf{Job profiles} compute statistics across the whole job by eliminating the temporal component by applying reduction operations such as the arithmetic mean.
-A drawback of this simplification is that any temporal pattern is lost.
+	\item \textbf{Segment statistics} compute for each segment a fixed statistics, such as the mean value across all nodes.
+		This basically preserves the time series and depends on the job-length.
+	\item \textbf{Phase statistics} computes high-level statistics by analyzing the temporal behavior of IO phases further, e.g., compute the average length of IO segments with CriticalIO.
+		This approach is independent of the job length but requires identifying phases and determining meaningful job metrics.
+	\item \textbf{Job profiles} compute statistics across the whole job by eliminating the temporal component by applying reduction operations such as the arithmetic mean.
+		A drawback of this simplification is that any temporal pattern is lost.
 \end{itemize}
 
 Once we picked the fingerprinting strategy, we must define a \textbf{similarity metric} between two fingerprints to allow clustering.
@@ -408,8 +408,9 @@ Hierarchical clustering creates a hierarchy of jobs where similar jobs are linke
 In this paper, we explore the following combination of fingerprinting strategies and similarity metrics:
 
 \begin{itemize}
- \item \textbf{Job profiles:} compute high-level statistics from the time series and apply a hierarchical clustering algorithm to group similar jobs automatically.
- \item \textbf{Segment statistics using Levenshtein distance:} convert segments into a time series of numbers and computes job similarity based on Levenshtein distance for all job pairs. \textbf{Phases matching:} extract phases from the segment statistics, finds best match between phases and computes job similarity for all job pairs.
+	\item \textbf{Job profiles:} compute high-level statistics from the time series and apply a hierarchical clustering algorithm to group similar jobs automatically.
+	\item \textbf{Segment statistics using Levenshtein distance:} convert segments into a time series of numbers and computes job similarity based on Levenshtein distance for all job pairs.
+		\textbf{Phases matching:} extract phases from the segment statistics, finds best match between phases and computes job similarity for all job pairs.
 \end{itemize}
 
 Finally, we need to assess the quality of the obtained clusters.
@@ -458,8 +459,6 @@ The result of the data-preprocessing is a coding of the initial time series data
 \end{table}
 
 
-
-
 \subsubsection{Coding}
 Segmented data can still contain too much information as necessary for the analysis.
 To deal with that we introduce two further condensed data representations called binary and hexadecimal coding.
@@ -486,7 +485,7 @@ The operations are summarized in \Cref{tab:coding_ops}.
 	 Hex-Quantization & Quantize segments to 16 levels. \\
 	 \hline
 	 Zeros aggregation & Aggregates continuous occurrences of zero segments to one zero segment. \\
-	 \hline 
+	 \hline
 	 Phase extraction &  Extract continuous sequences of non-zero segments. \par - Splits time series at zero segments in sub time series (I/O phases) and removes zero segments. \par - Preserves order of I/O phases. \\
 	 \hline
  \end{tabularx}
@@ -574,14 +573,11 @@ To reduce the 4-dimensional data, we reduce that structure to two dimensions (se
 In the resulting table we leave zero scores, and change scores larger than zero to one.
 
 
-After coding each segment, the jobs can be represented as a sequence of numbers, e.g., 
+After coding each segment, the jobs can be represented as a sequence of numbers, e.g.,
 
-
-$ \{ $ 'jobid': 'jobA',
-
-'coding': [1:5:0:0:0:0:0:0:96:96:96:96:96:96:96],
-
-'length': 15$ \} $ 
+\begin{lstlisting}
+'jobid': 'jobA', 'coding': [1:5:0:0:0:0:0:0:96:96:96:96:96:96:96], 'length': 15
+\end{lstlisting}
 
 
 The monitoring dataset doesn't provide information about what happens during the zero segments.
@@ -590,12 +586,9 @@ It can also be that the job script cannot start immediately or run on a slow net
 To catch such jobs, we aggregate multiple consecutive zero segments into one zero segment, thus the coding of the previous job would be:
 
 
-$ \{ $ 'jobid': 'jobA',
-
-'coding': [1:5:0:96:96:96:96:96:96:96],
-
-'length': 15$ \} $ 
-
+\begin{lstlisting}
+'jobid': 'jobA', 'coding': [1:5:0:96:96:96:96:96:96:96], 'length': 15
+\end{lstlisting}
 
 Note, that the job length does not change, only the sequence length.
 
@@ -605,19 +598,24 @@ As the name suggests, a segment is converted into a hexadecimal number.
 The numbers are obtained in two steps.
 Firstly, the dimension reduction aggregates the file system and the node dimensions and computes a mean value for each metric and segment, which lies in interval [0,4].
 Secondly, the mean values are quantized into 16 levels -- 0 represents the interval [0,0.125), 1 [0.125,0.375), $ \ldots $ , f [3.625, 4].
-The example below shows hexadecimal coding for a job containing 6 segments.
+The example in \Cref{tab:hex_example} shows hexadecimal coding for a job containing 6 segments.
 
-\begin{tabular}{ll}
-md\_file\_create & [0:0:\textbf{2}:\textbf{2}:\textbf{2}:\textbf{9}] \\
-md\_file\_delete & [0:0:0:0:0:0] \\
-md\_mod           &  [0:0:0:0:0:0] \\
-md\_other          &  [0:0:0:0:0:0] \\
-md\_read       & [0:0:0:\textbf{9}:3:0] \\
-read\_bytes   & [\textbf{5}:0:0:0:0:0]  \\
-read\_calls    &  [0:0:0:0:0:0]  \\
-write\_bytes   & [0:0:0:0:\textbf{F}:\textbf{F}]  \\
-write\_calls    &  [0:0:0:0:0:0]
-\end{tabular}
+\begin{table}
+  \centering
+  \begin{tabular}{ll}
+    md\_file\_create & [0:0:\textbf{2}:\textbf{2}:\textbf{2}:\textbf{9}] \\ 
+    md\_file\_delete & [0:0:0:0:0:0]                                     \\ 
+    md\_mod          & [0:0:0:0:0:0]                                     \\ 
+    md\_other        & [0:0:0:0:0:0]                                     \\ 
+    md\_read         & [0:0:0:\textbf{9}:3:0]                            \\ 
+    read\_bytes      & [\textbf{5}:0:0:0:0:0]                            \\ 
+    read\_calls      & [0:0:0:0:0:0]                                     \\ 
+    write\_bytes     & [0:0:0:0:\textbf{f}:\textbf{f}]                   \\ 
+    write\_calls     & [0:0:0:0:0:0]
+  \end{tabular}
+  \caption{Example of a hexadecimal coding.}
+  \label{tab:hex_example}
+\end{table}
 
 \subsubsection{Similarity}
 Determining the resemblance between two jobs is the main task of this work.
@@ -898,6 +896,7 @@ The example below illustrates that.
 We find the best match, when we the shift shorter coding five position to the right.
 
 
+\noindent\begin{minipage}{0.33\textwidth}
 \begin{lstlisting}
 [2:2:2:2:8:2:2]
 [9:3:-:-:-:-:-]
@@ -910,7 +909,11 @@ similarity
 similarity 
 = (2/9+2/3)/7 
 = 13%
-
+\end{lstlisting}
+\end{minipage}
+%
+\begin{minipage}{0.33\textwidth}
+\begin{lstlisting}
 [2:2:2:2:8:2:2]
 [-:-:9:3:-:-:-]
 similarity 
@@ -922,7 +925,11 @@ similarity
 similarity 
 = (2/9+3/8)/7
 = 8%
-
+\end{lstlisting}
+\end{minipage}
+%
+\noindent\begin{minipage}{0.33\textwidth}
+\begin{lstlisting}
 [2:2:2:2:8:2:2]
 [-:-:-:-:9:3:-]
 similarity
@@ -935,6 +942,7 @@ similarity
 = (2/9+2/3)/7 
 = 13%
 \end{lstlisting}
+\end{minipage}
 
 
 After repeating this step for all possible combinations of I/O phases we chose those with the pairs with the highest similarity, and compute match between them.
@@ -1157,7 +1165,7 @@ To give you an  impression of cluster qualities for different SIM values, we def
 The colors indicate the mean similarity of jobs to the cluster centroid.
 The number above the bar denotes the mean job length of the cluster.
 
-\begin{figure}		
+\begin{figure}
   \centering
   \includegraphics[width=2.5in,height=0.12in]{./media/image16.png}
   \caption{Equation}
@@ -1201,12 +1209,12 @@ The largest cluster is even representative in Top10 relevant jobs in ref\_top\_t
   \begin{tabular}{ll}
     Coding sequence & Cluster size \\
     \hline
-		$[511]$ &  37,272 \\
-		$[32]$ &  14,536 \\
-		$[272]$ &  11,338 \\
-    $[160]$ &  11,014 \\
-    $[128]$ &  10,228 \\
-    $[8]$ &  9,446 \\
+    $[511]$ & 37,272 \\ 
+    $[32]$  & 14,536 \\ 
+    $[272]$ & 11,338 \\ 
+    $[160]$ & 11,014 \\ 
+    $[128]$ & 10,228 \\ 
+    $[8]$   & 9,446  \\ 
   \end{tabular}
   \caption{Top 6 largest clusters created by BIN algorithms with SIM = 0.7.}
   \label{tab:bin:largest_clusters}
@@ -1236,21 +1244,21 @@ The following observations are characteristic for this algorithm:
 
 \begin{table}[h]
   \centering
-	\begin{tiny}
-		\begin{tabular}{@{ }l@{ }|@{ }r@{ }}
-			Binary coding                                                                                    &  Type     \\ 
-			\hline
-			0:0:0:0:0:0:294:0:0:0:0:32:0:0:0:0:0:0:0:0:0:0:0:32:0:0:0:0:0:0:0:0:0:0:0:32:0:0:0:0:0:0:0:0:0:0 &  centroid \\ 
-			\multicolumn{2}{l}{}                                                                             \\ 
-			Binary coding                                                                                    &  Count    \\ 
-			\hline
-			0:0:0:0:0:0:359:96:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0   &  95       \\ 
-			0:0:0:0:0:0:295:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0    &  62       \\ 
-			0:0:0:0:0:0:0:0:0:0:0:0:4:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0  &  47       \\ 
-			0:0:0:0:0:0:359:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0    &  44       \\ 
-			0:0:0:0:0:6:6:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0  &  40       \\ 
-		\end{tabular}
-	\end{tiny}
+  \begin{tiny}
+    \begin{tabular}{@{ }l@{ }|@{ }r@{ }}
+      Binary coding                                                                                    &  Type     \\ 
+      \hline
+      0:0:0:0:0:0:294:0:0:0:0:32:0:0:0:0:0:0:0:0:0:0:0:32:0:0:0:0:0:0:0:0:0:0:0:32:0:0:0:0:0:0:0:0:0:0 &  centroid \\ 
+      \multicolumn{2}{l}{}                                                                             \\ 
+      Binary coding                                                                                    &  Count    \\ 
+      \hline
+      0:0:0:0:0:0:359:96:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0   &  95       \\ 
+      0:0:0:0:0:0:295:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0    &  62       \\ 
+      0:0:0:0:0:0:0:0:0:0:0:0:4:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0  &  47       \\ 
+      0:0:0:0:0:0:359:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0    &  44       \\ 
+      0:0:0:0:0:6:6:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0  &  40       \\ 
+    \end{tabular}
+  \end{tiny}
   \caption{Centroid and Top 5 job types.}
   \label{tab:bin_all:top_jobs}
 \end{table}
@@ -1286,22 +1294,22 @@ The following is characteristic for this algorithm:
 \end{table}
 
 \begin{table}[h]
-	\centering
-	\begin{tiny}
-		\begin{tabular}{@{ }l@{ }|@{ }r@{ }}
-			Binary coding                                                                          &  Type     \\ 
-			\hline
-			272:272:272:272:272:278:286:272:272:272:272:272:272:272:272:272:272:272:272            &  centroid \\ 
-			\multicolumn{2}{l}{}                                                                   \\ 
-			\hline
-			Binary coding                                                                          &  Count    \\ 
-			272:272:272:272:272:278:286:272:272:272:272:272:272:272:272:272:272:272:272            &  528      \\ 
-			272:272:272:272:272:406:286:272:272:272:272:272:272:272:272:272                        &  96       \\ 
-			272:272:272:272:272:279:31:272:272:272:272:272:272:272:272:272:272:272:272:272:272:272 &  53       \\ 
-			272:272:272:272:272:272:272:272:272:272:272:279:319:272:272:272:272:272:272:272:272    &  52       \\ 
-			272:272:272:272:272:279:319:272:272:272:272:272:272:272:272:272:272:272:272:272:272    &  50       \\ 
-		\end{tabular}
-	\end{tiny}
+  \centering
+  \begin{tiny}
+    \begin{tabular}{@{ }l@{ }|@{ }r@{ }}
+      Binary coding                                                                          &  Type     \\ 
+      \hline
+      272:272:272:272:272:278:286:272:272:272:272:272:272:272:272:272:272:272:272            &  centroid \\ 
+      \multicolumn{2}{l}{}                                                                   \\ 
+      \hline
+      Binary coding                                                                          &  Count    \\ 
+      272:272:272:272:272:278:286:272:272:272:272:272:272:272:272:272:272:272:272            &  528      \\ 
+      272:272:272:272:272:406:286:272:272:272:272:272:272:272:272:272                        &  96       \\ 
+      272:272:272:272:272:279:31:272:272:272:272:272:272:272:272:272:272:272:272:272:272:272 &  53       \\ 
+      272:272:272:272:272:272:272:272:272:272:272:279:319:272:272:272:272:272:272:272:272    &  52       \\ 
+      272:272:272:272:272:279:319:272:272:272:272:272:272:272:272:272:272:272:272:272:272    &  50       \\ 
+    \end{tabular}
+  \end{tiny}
   \caption{Centroid and Top 5 job types}
   \label{tab:bin_aggzeros:top_jobs}
 \end{table}
@@ -1344,23 +1352,23 @@ Cluster characteristics:
 \end{table}
 
 \begin{table}[h]
-	\centering
-	\begin{tiny}
-		\begin{tabular}{@{ }l@{ }@{ }l@{ }@{ }l@{ }@{ }l@{ }|@{ }r@{ }}
-			\multicolumn{4}{@{ }l|@{ }}{Hexadecimal coding} & \\
-			md\_file\_create  & md\_file\_delete  & md\_mod           & read\_calls       & Type     \\ 
-			\hline
-			0:...:0           & 0:0:0:1:0:0:0:0:0 & 0:...:0           & 0:...:0           & centroid \\ 
-			\multicolumn{5}{l}{}\\
-			md\_file\_create  & md\_file\_delete  & md\_mod           & read\_calls       & Count    \\ 
-			\hline
-			0:...:0           & 0:0:0:0:0:0:1:0:0 & 0:...:0           & 0:...:0           & 606      \\ 
-			0:...:0           & 0:0:0:0:0:0:0:0:1 & 0:...:0           & 0:...:0           & 562      \\ 
-			0:...:0           & 0:...:0           & 0:...:0           & 0:0:0:0:0:0:1:0:0 & 429      \\ 
-			0:...:0           & 0:0:0:1:0:0:0:0:0 & 0:...:0           & 0:...:0           & 185      \\ 
-			0:0:0:0:0:0:1:1:1 & 0:...:0           & 0:0:0:0:0:0:1:0:0 & 0:...:0           & 75       \\ 
-		\end{tabular}
-	\end{tiny}
+  \centering
+  \begin{tiny}
+    \begin{tabular}{@{ }l@{ }@{ }l@{ }@{ }l@{ }@{ }l@{ }|@{ }r@{ }}
+      \multicolumn{4}{@{ }l|@{ }}{Hexadecimal coding} & \\
+      md\_file\_create  & md\_file\_delete  & md\_mod           & read\_calls       & Type     \\ 
+      \hline
+      0:...:0           & 0:0:0:1:0:0:0:0:0 & 0:...:0           & 0:...:0           & centroid \\ 
+      \multicolumn{5}{l}{}\\
+      md\_file\_create  & md\_file\_delete  & md\_mod           & read\_calls       & Count    \\ 
+      \hline
+      0:...:0           & 0:0:0:0:0:0:1:0:0 & 0:...:0           & 0:...:0           & 606      \\ 
+      0:...:0           & 0:0:0:0:0:0:0:0:1 & 0:...:0           & 0:...:0           & 562      \\ 
+      0:...:0           & 0:...:0           & 0:...:0           & 0:0:0:0:0:0:1:0:0 & 429      \\ 
+      0:...:0           & 0:0:0:1:0:0:0:0:0 & 0:...:0           & 0:...:0           & 185      \\ 
+      0:0:0:0:0:0:1:1:1 & 0:...:0           & 0:0:0:0:0:0:1:0:0 & 0:...:0           & 75       \\ 
+    \end{tabular}
+  \end{tiny}
   \caption{Centroid and Top 5 job types}
   \label{tab:hex_lev:top_jobs}
 \end{table}
@@ -1403,9 +1411,9 @@ Cluster characteristics:
 
 
 \begin{table}[h]
-	\centering
-	\begin{tiny}
-		\begin{tabular}{@{ }l@{ }@{ }l@{ }@{ }l@{ }|@{ }r@{ }}
+  \centering
+  \begin{tiny}
+    \begin{tabular}{@{ }l@{ }@{ }l@{ }@{ }l@{ }|@{ }r@{ }}
       \multicolumn{3}{@{ }l|@{ }}{Hexadecimal coding} &            \\ 
       md\_file\_delete     &  md\_mod   & md\_other & Type     \\ 
       \hline
@@ -1418,8 +1426,8 @@ Cluster characteristics:
       0:0:1:0              &  0:\dots:0 & 0:\dots:0 & 1,099    \\ 
       0:\dots:0            &  0:\dots:0 & 0:1:0:0   & 911      \\ 
       0:0:1:0              &  0:0:1:0   & 0:\dots:0 & 676      \\ 
-		\end{tabular}
-	\end{tiny}
+    \end{tabular}
+  \end{tiny}
   \caption{Centroid and Top 5 job types.}
   \label{tab:hex_native:top_jobs}
 \end{table}
@@ -1468,23 +1476,23 @@ Cluster characteristics:
 
 \begin{table}[h]
   \centering
-	\begin{tiny}
-		\begin{tabular}{@{ }l@{ }@{ }l@{ }|@{ }r@{ }}
-			\multicolumn{2}{@{ }l|@{ }}{Hexadecimal coding} &              \\ 
-			md\_file\_delete     &  md\_mod     & Type     \\ 
-			\hline
-			4:0:0:0:0:0          &  4:0:0:0:0:0 & centroid \\ 
-			\multicolumn{3}{l}{} \\ 
-			md\_file\_delete     &  md\_mod     & Count    \\ 
-			\hline
-			4                    &  4           & 2329     \\ 
-			4:0:0:0:0:0          &  4:0:0:0:0:0 & 1773     \\ 
-			4:0                  &  4:0         & 224      \\ 
-			2                    &  4           & 65       \\ 
-			0:4                  &  0:4         & 57       \\ 
-		\end{tabular}
-	\end{tiny}
-	\caption{Centroid and Top 5 job types.}
+  \begin{tiny}
+    \begin{tabular}{@{ }l@{ }@{ }l@{ }|@{ }r@{ }}
+      \multicolumn{2}{@{ }l|@{ }}{Hexadecimal coding} &              \\ 
+      md\_file\_delete     &  md\_mod     & Type     \\ 
+      \hline
+      4:0:0:0:0:0          &  4:0:0:0:0:0 & centroid \\ 
+      \multicolumn{3}{l}{} \\ 
+      md\_file\_delete     &  md\_mod     & Count    \\ 
+      \hline
+      4                    &  4           & 2329     \\ 
+      4:0:0:0:0:0          &  4:0:0:0:0:0 & 1773     \\ 
+      4:0                  &  4:0         & 224      \\ 
+      2                    &  4           & 65       \\ 
+      0:4                  &  0:4         & 57       \\ 
+    \end{tabular}
+  \end{tiny}
+  \caption{Centroid and Top 5 job types.}
   \label{fig:pm_quant:top_jobs}
 \end{table}
 
@@ -1528,24 +1536,24 @@ Information related to the cluster is in \Cref{tab:use_case:bin_all:stats}, \Cre
 
 \begin{table}[h]
   \centering
-	\begin{tiny}
-		\begin{tabular}{@{ }l@{ }|@{ }r@{ }}
-			Binary coding                                                                                          &  Type     \\ 
-			\hline
-			192:192:192:192:192:192:196:192:192:192:192:192:192:192:192:192:192:192:192:192:192:192:64:64:64:64:64 &  job      \\ 
-			192:192:192:192:192:192:192:192:192:192:192:454:230:192:192:192:192:192:192:192:192:192:192:192        &  centroid \\ 
-			\multicolumn{2}{l}{}                                                                                   \\ 
-			coding                                                                                                 &  Count    \\ 
-			\hline
-			192:192:192:192:192:454:198:192:192:192:192:192:192:192:192:192:192:192:192:192:192:192:192:192        &  5        \\ 
-			192:192:192:192:192:192:192:192:192:192:192:454:230:192:192:192:192:192:192:192:192:192:192:192        &  3        \\ 
-			192:192:192:192:192:454:230:192:192:192:192:192:192:192:192:192:192:192:192:192:192:192:192:192        &  3        \\ 
-			192:192:192:192:192:192:192:192:192:192:192:454:230:192:192:192:192:192:192:192:192:192:192            &  2        \\ 
-			228:192:192:192:192:192:192:192:192:192:192:192:192:192:192:192:192:192                                &  2        \\ 
-		\end{tabular}
-	\end{tiny}
-	\caption{Job, centroid and Top 5 job types.}
-	\label{tab:use_case:bin_all:top_jobs}
+  \begin{tiny}
+    \begin{tabular}{@{ }l@{ }|@{ }r@{ }}
+      Binary coding                                                                                          &  Type     \\ 
+      \hline
+      192:192:192:192:192:192:196:192:192:192:192:192:192:192:192:192:192:192:192:192:192:192:64:64:64:64:64 &  job      \\ 
+      192:192:192:192:192:192:192:192:192:192:192:454:230:192:192:192:192:192:192:192:192:192:192:192        &  centroid \\ 
+      \multicolumn{2}{l}{}                                                                                   \\ 
+      coding                                                                                                 &  Count    \\ 
+      \hline
+      192:192:192:192:192:454:198:192:192:192:192:192:192:192:192:192:192:192:192:192:192:192:192:192        &  5        \\ 
+      192:192:192:192:192:192:192:192:192:192:192:454:230:192:192:192:192:192:192:192:192:192:192:192        &  3        \\ 
+      192:192:192:192:192:454:230:192:192:192:192:192:192:192:192:192:192:192:192:192:192:192:192:192        &  3        \\ 
+      192:192:192:192:192:192:192:192:192:192:192:454:230:192:192:192:192:192:192:192:192:192:192            &  2        \\ 
+      228:192:192:192:192:192:192:192:192:192:192:192:192:192:192:192:192:192                                &  2        \\ 
+    \end{tabular}
+  \end{tiny}
+  \caption{Job, centroid and Top 5 job types.}
+  \label{tab:use_case:bin_all:top_jobs}
 \end{table}
 
 \begin{figure}[h]
@@ -1571,25 +1579,25 @@ Information related to the cluster is in \Cref{tab:use_case:bin_aggzeros:stats},
 \end{table}
 
 \begin{table}[h]
-	\centering
-	\begin{tiny}
-		\begin{tabular}{@{ }l@{ }|@{ }r@{ }}
-			Binary coding                                                                                             &  Type     \\ 
-			\hline
-			192:192:192:192:192:192:196:192:192:192:192:192:192:192:192:192:192:192:192:192:192:192:64:64:64:64:64    &  job      \\ 
-			511:238:192:510:192:224:228:192:192:192:192:192:192:192:192:192:192:192:192:192:192:64:64:64:64:64        &  centroid \\ 
-			\multicolumn{2}{l}{}                                                                                      \\ 
-			coding                                                                                                    &  Count    \\ 
-			\hline
-			0:224:192:192:192:192:228:192:192:192:192:192:192:192:192:192:192:192:192:192:192:64:64:64:64:64          &  1        \\ 
-			192:192:192:192:192:192:196:192:192:192:192:192:192:192:192:192:192:192:192:192:192:192:64:64:64:64:64    &  1        \\ 
-			192:192:193:196:192:192:192:192:192:192:192:192:192:192:192:192:192:192:192:192:64:64:64:64               &  1        \\ 
-			192:193:193:198:192:192:192:192:192:192:192:192:192:192:192:192:192:192:192:192:192:64:64:64:64:64:64     &  1        \\ 
-			207:463:225:495:246:224:198:192:192:192:192:192:192:192:192:192:192:192:192:192:192:192:64:64:64:64:64:64 &  1        \\ 
-		\end{tabular}
-	\end{tiny}
-	\caption{Job, centroid and Top 5 job types.}
-	\label{tab:use_case:bin_aggzeros:top_jobs}
+  \centering
+  \begin{tiny}
+    \begin{tabular}{@{ }l@{ }|@{ }r@{ }}
+      Binary coding                                                                                             &  Type     \\ 
+      \hline
+      192:192:192:192:192:192:196:192:192:192:192:192:192:192:192:192:192:192:192:192:192:192:64:64:64:64:64    &  job      \\ 
+      511:238:192:510:192:224:228:192:192:192:192:192:192:192:192:192:192:192:192:192:192:64:64:64:64:64        &  centroid \\ 
+      \multicolumn{2}{l}{}                                                                                      \\ 
+      coding                                                                                                    &  Count    \\ 
+      \hline
+      0:224:192:192:192:192:228:192:192:192:192:192:192:192:192:192:192:192:192:192:192:64:64:64:64:64          &  1        \\ 
+      192:192:192:192:192:192:196:192:192:192:192:192:192:192:192:192:192:192:192:192:192:192:64:64:64:64:64    &  1        \\ 
+      192:192:193:196:192:192:192:192:192:192:192:192:192:192:192:192:192:192:192:192:64:64:64:64               &  1        \\ 
+      192:193:193:198:192:192:192:192:192:192:192:192:192:192:192:192:192:192:192:192:192:64:64:64:64:64:64     &  1        \\ 
+      207:463:225:495:246:224:198:192:192:192:192:192:192:192:192:192:192:192:192:192:192:192:64:64:64:64:64:64 &  1        \\ 
+    \end{tabular}
+  \end{tiny}
+  \caption{Job, centroid and Top 5 job types.}
+  \label{tab:use_case:bin_aggzeros:top_jobs}
 \end{table}
 
 \begin{figure}[h]
@@ -1617,7 +1625,7 @@ Information related to the cluster is in \Cref{tab:use_case:hex_lev:stats}, \Cre
 \begin{table}[h]
   \begin{tiny}
     \begin{tabular}{@{ }l@{ }@{ }l@{ }|@{ }r@{ }}
-			\multicolumn{2}{@{ }l|@{ }}{Hexadecimal coding} & \\
+      \multicolumn{2}{@{ }l|@{ }}{Hexadecimal coding} & \\
       md\_other                                           &  read\_calls                                           & Type     \\ 
       \hline
       0:\dots:0                                           &  3:3:8:8:8:5:6:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8 & job      \\ 
@@ -1662,14 +1670,14 @@ Information related to the cluster is in \Cref{tab:use_case:hex_native:stats}, \
   \centering
   \begin{tiny}
     \begin{tabular}{@{ }l@{ }|@{ }r@{ }}
-			Hexadecimal coding & \\
+      Hexadecimal coding & \\
       read\_calls                                           & Type     \\ 
-		  \hline	
+      \hline	
       3:3:8:8:8:5:6:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8 & job      \\ 
       8:8:8:8:8:2:4:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8 & centroid \\ 
-			\multicolumn{2}{l}{}\\ 
+      \multicolumn{2}{l}{}\\ 
       read\_calls                                           & Count    \\ 
-		  \hline	
+      \hline	
       8:8:8:8:8:3:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8 & 3        \\ 
       8:8:8:8:8:5:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8 & 2        \\ 
       3:3:8:8:8:5:6:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8 & 1        \\ 
@@ -1713,14 +1721,14 @@ Mean value allow us to build simple algorithms
   \centering
   \begin{tiny}
     \begin{tabular}{@{ }l@{ }|@{ }r@{ }}
-			Hexadecimal coding & \\
+      Hexadecimal coding & \\
       read\_calls                                           & Type     \\ 
-			\hline
+      \hline
       3:3:8:8:8:5:6:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8 & job      \\ 
       8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8   & centroid \\ 
-			\multicolumn{2}{l}{}\\
+      \multicolumn{2}{l}{}\\
       read\_calls                                           & Count    \\ 
-			\hline
+      \hline
       8:8:8:8:8:2:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8   & 4        \\ 
       8:8:8:8:8:3:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8 & 3        \\ 
       7:7:7:7:7:2:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8   & 2        \\ 
@@ -1879,6 +1887,7 @@ Therefore we need at least three further functions, that filter irrelevant clust
 
 %\printbibliography
 %\newpage
+\clearpage
 \bibliographystyle{splncs04}
 \bibliography{bibliography}{}
 \end{document}
