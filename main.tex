@@ -333,34 +333,31 @@ For these reasons, we decided to explore a variety of alternative options for di
 
 
 \section{Related work}
-There are many tracing and profiling tools that are able to record I/O information~\cite{TFAPIKBBCF19}; we will discuss a selection of them in more detail in the following.Most of them focus on individual jobs, and only a few of them apply machine learning for data analysis, in particular across jobs. As the purpose of applications is computation and, thus, I/O is just a byproduct, applications often spend less than 10\% time with I/O.The issue of performance profiles is that they remove the temporal dimension and make it difficult to identify relevant I/O phases.The Ellexus tools\footnote{\url{https://www.ellexus.com/products/}} include Breeze, a user-friendly offline I/O profiling software, an automatic I/O report generator Healthcheck, and command line tool Mistral which purpose is to report on and resolve I/O performance issues when running complex Linux applications on high performance compute clusters.Mistral is a small program that allows you to monitor application I/O patterns in real time, and log undesirable behaviour using rules defined in a configuration file called a contract.Ellexus tools support POSIX and MPI (MPICH, MVAPICH, OpenMPI) I/O interfaces.
+There are many tracing and profiling tools that are able to record I/O information~\cite{TFAPIKBBCF19}; we will discuss a selection of them in more detail in the following.Most of them focus on individual jobs, and only a few of them apply machine learning for data analysis, in particular across jobs. As the purpose of applications is computation and, thus, I/O is just a byproduct, applications often spend less than 10\% time with I/O.The issue of performance profiles is that they remove the temporal dimension and make it difficult to identify relevant I/O phases.The Ellexus tools\footnote{\url{https://www.ellexus.com/products/}} include Breeze, a user-friendly offline I/O profiling software, an automatic I/O report generator Healthcheck, and command line tool Mistral which purpose is to report on and resolve I/O performance issues when running complex Linux applications on high performance compute clusters.Mistral is a small program that allows you to monitor application I/O patterns in real time, and log undesirable behaviour using rules defined in a configuration file called a contract.
+Darshan~\cite{carns2011understanding-toc,hpcdarshan} is an open source I/O characterization tool for post-mortem analysis of HPC applications' I/O behavior.Its primary objective is to capture concise but useful information with minimal overhead.Darshan accomplishes this by eschewing end-to-end tracing in favor of compact statistics such as elapsed time, access sizes, access patterns, and file names for each file opened by an application.These statistics are captured in a bounded amount of memory per process as the application executes.When the application shuts down, it is reduced, compressed, and stored in a unified log file.%Utilities included with Darshan can then be used to analyze, visualize, and summarize the Darshan log information.Because of Darshan's low overhead, it is suitable for system-wide deployment on large-scale systems.In this deployment model, Darshan can be used not just to investigate the I/O behavior of individual applications but also to capture a broad view of system workloads for use by facility operators and I/O researchers.
 
-Darshan~\cite{carns2011understanding-toc,hpcdarshan} is an open source I/O characterization tool for post-mortem analysis of HPC applications' I/O behavior.Its primary objective is to capture concise but useful information with minimal overhead.Darshan accomplishes this by eschewing end-to-end tracing in favor of compact statistics such as elapsed time, access sizes, access patterns, and file names for each file opened by an application.These statistics are captured in a bounded amount of memory per process as the application executes.When the application shuts down, it is reduced, compressed, and stored in a unified log file.Utilities included with Darshan can then be used to analyze, visualize, and summarize the Darshan log information.Because of Darshan's low overhead, it is suitable for system-wide deployment on large-scale systems.In this deployment model, Darshan can be used not just to investigate the I/O behavior of individual applications but also to capture a broad view of system workloads for use by facility operators and I/O researchers.
+There are approaches that monitor record storage behavior and aim to identify inefficient applications in a cluster.
 TOKIO~\cite{lockwood2018tokio} integrates logs from various sources to allow an analysis of data. 
 It allows to find certain inefficient access patterns in the data.
-%Darshan supports several types of instrumentation via software modules.%Each module provides its own statistical counters and function wrappers while sharing a common infrastructure for reduction, compression, and storage.%The most full-featured modules provide instrumentation for POSIX, MPI-I/O and standard I/O library function calls, while additional modules provide limited PNetCDF and HDF5 instrumentation.%Other modules collect system information, such as Blue Gene runtime system parameters or Lustre file system striping parameters.%The Darshan eXtended Tracing (DXT) module can be enabled at runtime to increase fidelity by recording a complete trace of all MPI-I/O and POSIX I/O operations.%Darshan uses LD\_PRELOAD to intercept I/O calls at runtime in dynamically linked executables and link-time wrappers to intercept I/O calls at compile time in statically linked executables.%For example, to override POSIX I/O calls, the GNU C Library is overloaded so that Darshan can intercept all the read, write and metadata operations.%In order to measure MPI I/O, the MPI libraries must be similarly overridden.%This technique allows an application to be traced without modification and with reasonably low overhead.
-
 The LASSi tool~\cite{DBLP:journals/corr/abs-1906-03884} was developed for detecting, the so called, victim and aggressor applications.An aggressor can steal I/O resources from the victim and negatively affect its runtime.To identify such applications, LASSi calculates metrics from Lustre job-stats and information from the job scheduler.One metric category shows file system load and another category describes applications I/O behavior.The correlation of these metrics can help to identify applications that cause the file system to slow down.In the LASSi workflow this is a manual step, where a support team is involved in the identification of applications during file system slow down.Manual steps are disadvantageous when processing large amounts of data and must be avoided in unsupervised I/O behavior identification.LASSi's indicates that the main target group are system maintainers.Understanding LASSi reports may be challenging for ordinary HPC users, who do not have knowledge about the underlying storage system.
 
 In~\cite{TUISVPKB19}, the authors utilized probes to detect file system slow-down.A probing tool measures file system response times by periodically sending metadata and read/write requests.An increase of response times correlates to the overloading of the file system.This approach allows the calculation of a slow-down factor identification of the slow-down time period.This approach is able to detect a file system slow-down, but cannot detect the jobs that cause the slow-down.
 The Nextgenio monitoring system~\cite{nextgenio2016}, has four main collectors.The first two, the PBS and ALPS tools, collect job scheduling information.The proprietary Cray I/O monitoring tool exploits Lustre I/O counters to capture file system usage on OSTs of all OSSs and allocated compute nodes.The MAP component provides information about cpu, memory and network usage.Then all the collected data is clustered for the analysis of system usage and performance evaluation.In contrast to existing approaches, our approach focuses on the analysis of job data and investigates clustering strategy to group similar jobs.
 
 \section{Methodology}
-Generally, machine learning algorithms expect a fixed number of features.
-As the number of time series  depends on the number of captured metrics, allocated nodes, and application runtime, this dynamic-sized monitoring data cannot be process directly.
-Therefore, several post-processing steps must be applied from the raw time series and several choices must be made regarding the algorithmic processing using clustering algorithms.
 
-To simplify the interpretation of results and the choice distance metrics, it is beneficial to have the same unit for all features which is why we use our category classification which creates a unitless order (see Section 2).
-We also partition the data into segments of 10 minutes which we found previously is a good trade-off to represent the temporal behavior of the application while it reduces the size of the time series.
-Hence, for a job and for each of our 9 client-side recorded metrics, we obtain a coarse-grained time series.
-Each point represents a value across all nodes (such as mean, sum, or max) for the 10 minute interval.
+The goal of this article is to research the impact of clustering strategies on a large number of jobs. Generally, machine learning algorithms expect a fixed number of features, therefore, the time series of statistics that is retrieved on the node-level needs to be pre-processed.
+The application of a “specific algorithm” can be understood as a number of successive processing steps on data. Roughly speaking, there are three basic steps: data pre-processing including coding, similarity computation, and clustering. 
+We call one of such a combination a \textit{clustering stack}.
+The pre-processing converts the dynamic-sized monitoring data which depends on the number of captured metrics, allocated nodes, and application runtime into a suitable representation for the clustering algorithm.
+Then the clustering is applied. Finally, the clustering result needs to be assessed, i.e., how suitable is this strategy for our IO statistics and use cases?
 
-In a \textbf{pre-processing} step, we extract a fixed number of features and compile them into what we call fingerprints.
-A fingerprint represents a job's IO behavior.
+In the following, we have dedicated a section to each step discussing potential alternatives. The list does not intend to be complete but shows a variety of options.
+\subsubsection{Data pre-processing}
+The 4-dimensional data from our monitoring system is to fine-grain mass analys. To be able to analyse millions of jobs, we apply some data reduction techniques that are listed in \Cref{tab:reduction_techniques}.
+The result of the data-preprocessing is a coding of the initial time series data into one or multiple vectors.
 
-Generally, deriving a fingerprint, can be done using one of the following approaches:
-
-
+On the high-level, the following strategies could be considered:
 \begin{itemize}
 	\item \textbf{Segment statistics} compute for each segment a fixed statistics, such as the mean value across all nodes.
 		This basically preserves the time series and depends on the job-length.
@@ -370,42 +367,12 @@ Generally, deriving a fingerprint, can be done using one of the following approa
 		A drawback of this simplification is that any temporal pattern is lost.
 \end{itemize}
 
-Once we picked the fingerprinting strategy, we must define a \textbf{similarity metric} between two fingerprints to allow clustering.
-There are many possible choices that depend on the representation of the data.
-If we consider fingerprints that are fixed size vectors such as for job profiles or phase statistics, then, e.g., cosine similarity or hamming distance can be applied.
-If we aim to preserve the time series for segment statistics, then we can consider the vectors to be a string and, e.g., utilize the \textbf{Levenshtein distance} that counts the minimum number of modifications (inserts/deletes) between two strings.
+We decided to distinguish the different dimensions of a job (Node, File System, Metric, and Time), which defines how a dimension is aggregated (if at all).
+Regardless of this decision, we first convert the time series into segments of 10 minutes which we found previously is a good trade-off to represent the temporal behavior of the application while it reduces the size of the time series.
+Hence, for a job and for each of our 9 client-side recorded metrics, we obtain a coarse-grained time series.
+To simplify the interpretation of results and the choice distance metrics, it is beneficial to have the same unit for all features which is why we use our category classification which creates a unitless order.
+For example, when reduced by node, file system, and across metrics, a point may represent the mean value across all time series for the job for the 10 minute interval.
 
-Finally, the \textbf{clustering algorithm} needs to be selected.
-Algorithms with a fixed number of clusters such as k-means, are not useful as the number of expressed job behaviors are unknown at the beginning.
-Similarity clustering algorithms like DBSCAN or Agglomerative Clustering generate clusters depending on a user-chosen similarity value EPS.
-Hierarchical clustering creates a hierarchy of jobs where similar jobs are linked closely together but suffer from quadratic runtimes.
-
-In this paper, we explore the following combination of fingerprinting strategies and similarity metrics:
-
-\begin{itemize}
-	\item \textbf{Job profiles:} compute high-level statistics from the time series and apply a hierarchical clustering algorithm to group similar jobs automatically.
-	\item \textbf{Segment statistics using Levenshtein distance:} convert segments into a time series of numbers and computes job similarity based on Levenshtein distance for all job pairs.
-		\textbf{Phases matching:} extract phases from the segment statistics, finds best match between phases and computes job similarity for all job pairs.
-\end{itemize}
-
-Finally, we need to assess the quality of the obtained clusters.
-Unfortunately, there are no tools that can do the cluster quality assessment automatically.
-Therefore, we will inspect the clusters manually by using quantitative metrics such as the number of generated clusters and their sizes and qualitatively by exploring clusters of relevant jobs.
-At this point we want to emphasize that our goal is to find similar jobs and not similar fingerprints.
-Therefore, for the clustering quality assessment we look inside clusters and inspect segment sequences of the corresponding jobs.
-In the same cluster we expect the sequences to be similar.
-If not, clustering is not effective.
-
-Depending on data, the clustering algorithms create thousands of clusters.
-Unfortunately, it is not feasible to analyse all of them qualitatively with reasonable effort.
-Therefore our analysis strategy is to find clusters with the characteristic weaknesses and discuss them.
-
-\subsection{Overview}
-In this work, we investigate several clustering algorithms for a large set of potential combinations of algorithms. The application of one algorithm can be understood as a number of successive processing steps on data. Roughly speaking, there are three basic steps: data pre-processing including coding, similarity computation, and clustering. In the following, we have dedicated a section to each step discussing potential alternatives. The list does not intend to be complete but shows a variety of options.
-
-\subsubsection{Data pre-processing}
-The 4-dimensional data from our monitoring system is to fine-grain mass analys. To be able to analyse millions of jobs, we apply some data reduction techniques that are listed in \Cref{tab:reduction_techniques}.
-The result of the data-preprocessing is a coding of the initial time series data into one or multiple vectors.
 
 \begin{table}
 	\centering
@@ -432,8 +399,6 @@ The result of the data-preprocessing is a coding of the initial time series data
 	\caption{Data reduction techniques.}
 	\label{tab:reduction_techniques}
 \end{table}
-
-
 \subsubsection{Coding}
 Segmented data can still contain too much information as necessary for the analysis.
 To deal with that we introduce two further condensed data representations called binary and hexadecimal coding.
@@ -446,8 +411,7 @@ The operations are summarized in \Cref{tab:coding_ops}.
  \begin{tabularx}{\textwidth}{lX}
 	 \hline
 	 Operation &  Description \\
-	 \hline
-	 Binarization & Segments are mapped to 9-bit numbers (v), where each position (i) represents a metric. The bits are set by the following function:
+	 \hline	 Binarization & Segments are mapped to 9-bit numbers (v), where each position (i) represents a metric. The bits are set by the following function:
 	 \vbox{
 		\begin{equation}
 			v_i = 
@@ -467,8 +431,6 @@ The operations are summarized in \Cref{tab:coding_ops}.
  \caption{Coding operations.}
  \label{tab:coding_ops}
 \end{table}
-
-
 \paragraph{Binary coding}
 Binary coding represents monitoring data as a sequence of numbers, where each number stands for a kind of file system usage.
 The number depends on activities found in the segment.
@@ -480,13 +442,8 @@ On one side, by doing this, we lose information about performance intensity, but
 In our implementation, we use a 9-bit number to represent each segment, where each bit represents a metric.
 The bit is 1 if the corresponding metric is active, and 0 if not.
 Translated to the decimal representation, metric segments can be coded as 1, 2, 4, 8, 16, and so on.
-%\textcolor[HTML]{1155CC}{\uline{Table 5}} shows codings used in this work.
-
 Using this kind of coding we can compute a number for each segment, that describes unambiguously the file system usage, e.g., a situation where intensive usage of md\_read (Code=16) and read\_bytes (Code=32) occur at the same time and no other significant loads are registered is coded by the value 48.
 Coding is reversible, e.g., when having value 48, the computation of active metrics is straightforward.
-
-%%%%%%%%%%%%%%%%%%%%% Table No: 3 starts here %%%%%%%%%%%%%%%%%%%%
-
 
 %\begin{table}[H]
 %       \centering
@@ -524,49 +481,31 @@ Coding is reversible, e.g., when having value 48, the computation of active metr
 %\multicolumn{1}{p{0.8in}}{read\_calls} & 
 %\multicolumn{1}{p{0.8in}}{ \tabto{0.25in}  \tabto{0.39in} \tab 64} \\
 %\hhline{~~}
-%%row no:9
-%\multicolumn{1}{p{0.8in}}{write\_bytes} & 
-%\multicolumn{1}{p{0.8in}}{ \tabto{0.25in}  \tabto{0.39in} \tab 128} \\
+%%row no:9%\multicolumn{1}{p{0.8in}}{write\_bytes} & %\multicolumn{1}{p{0.8in}}{ \tabto{0.25in}  \tabto{0.39in} \tab 128} \\
 %\hhline{~~}
 %%row no:10
 %\multicolumn{1}{p{0.8in}}{write\_calls} & 
 %\multicolumn{1}{p{0.8in}}{ \tabto{0.25in}  \tabto{0.39in} \tab 256} \\
 %\hhline{~~}
-
 %\end{tabular}
 % \end{table}
 
-
-%%%%%%%%%%%%%%%%%%%%% Table No: 3 ends here %%%%%%%%%%%%%%%%%%%%
-
-%\begin{Center}
-%Table 5. Metric codes 
-%\end{Center}
-
-
 To reduce the 4-dimensional data, we reduce that structure to two dimensions (segments metrics) by aggregating other dimensions by applying sum() function on score values.
 In the resulting table we leave zero scores, and change scores larger than zero to one.
-
-
 After coding each segment, the jobs can be represented as a sequence of numbers, e.g.,
-
 \begin{lstlisting}
 'jobid': 'jobA', 'coding': [1:5:0:0:0:0:0:0:96:96:96:96:96:96:96], 'length': 15
 \end{lstlisting}
-
-
 The monitoring dataset doesn't provide information about what happens during the zero segments.
 It can be anything, like a job is waiting for resources, or computing something.
 It can also be that the job script cannot start immediately or run on a slow network.
 To catch such jobs, we aggregate multiple consecutive zero segments into one zero segment, thus the coding of the previous job would be:
-
 
 \begin{lstlisting}
 'jobid': 'jobA', 'coding': [1:5:0:96:96:96:96:96:96:96], 'length': 15
 \end{lstlisting}
 
 Note, that the job length does not change, only the sequence length.
-
 \paragraph*{Hexadecimal coding}
 Hexadecimal coding preserves monitoring data for each metric and each segment.
 As the name suggests, a segment is converted into a hexadecimal number.
@@ -574,7 +513,6 @@ The numbers are obtained in two steps.
 Firstly, the dimension reduction aggregates the file system and the node dimensions and computes a mean value for each metric and segment, which lies in interval [0,4].
 Secondly, the mean values are quantized into 16 levels -- 0 represents the interval [0,0.125), 1 [0.125,0.375), $ \ldots $ , f [3.625, 4].
 The example in \Cref{tab:hex_example} shows hexadecimal coding for a job containing 6 segments.
-
 \begin{table}
   \centering
   \begin{tabular}{ll}
@@ -591,7 +529,6 @@ The example in \Cref{tab:hex_example} shows hexadecimal coding for a job contain
   \caption{Example of a hexadecimal coding.}
   \label{tab:hex_example}
 \end{table}
-
 \subsubsection{Similarity}
 Determining the resemblance between two jobs is the main task of this work.
 We developed a couple of strategies to do that task.
@@ -600,7 +537,7 @@ As we will see later, under some circumstances they can be used together in one 
 
 \begin{table}
   \centering
-	\begin{tabularx}{\textwidth}{lX}
+  \begin{tabularx}{\textwidth}{lX}
     \hline
     Operation & Description \\
     \hline
@@ -626,8 +563,7 @@ For scalability reasons, we derived two algorithms that are able to handle the l
 
 \begin{table}
   \centering
-  %\begin{tabular}{p{0.99in}p{3.2in}}
-	\begin{tabularx}{\textwidth}{lX}
+  \begin{tabularx}{\textwidth}{lX}
     \hline
     Algorithm & Description \\
     \hline
@@ -645,8 +581,6 @@ For scalability reasons, we derived two algorithms that are able to handle the l
   \caption{Clustering algorithms}
   \label{tab:clustering_algorithms}
 \end{table}
-
-
 \paragraph{ClusteringTree algorithm}
 This algorithm involves three steps:
 
@@ -656,20 +590,15 @@ This algorithm involves three steps:
  \item Clustering with the decision tree
 \end{enumerate}
 
-%\eb{(Move generic stuff up here from below or write that details are described below).}
-
-\paragraph{SimplifiedDensity algorithm}
-Clusters are formed around centroids.
-That are job codings that form clusters by attracting similar jobs.
+\paragraph{SimplifiedDensity algorithm}Clusters are formed around centroids.That are job codings that form clusters by attracting similar jobs.
 All jobs in a cluster fulfill only one condition, the similarity (SIM) to the centroid has to be larger than the user defined minimum.
 The jobs are put in the first cluster, where the condition is fulfilled.
 If there is no such a cluster, the job forms a new one.
 
 These low requirements allow a performant implementation, but they also allow a job to be in one cluster, even if a centroid of another cluster is much closer, as long as the condition is true.
-The result depends on the processing order of the jobs, though but it is deterministic.
+The result depends on the processing order of the jobs, though it is deterministic.
 
 The algorithm can be summarized as follows.
-
 \begin{enumerate}
  \item Pick one arbitrary job from the dataset, which will serve as a cluster centroid, and compute similarity to all other jobs.
  \item Create a cluster of jobs that have a minimum similarity and remove them from the dataset.
@@ -680,14 +609,12 @@ The algorithm can be summarized as follows.
 There are several combinations possible.
 In this work, we investigate six of them.
 The operation stack used in each is visualized \Cref{fig:clustering_stacks}.
-
 \begin{figure}
   \centering
   \includegraphics[width=4.61in,height=2.38in]{./media/image3.png}
   \caption{Algorithms and their actual clustering stacks.}
   \label{fig:clustering_stacks}
 \end{figure}
-
 \begin{itemize}
  \item Approach 1 (ML) uses a set of\textbf{ traditional machine learning} techniques. 
  \item Approach 2 (BIN\_ALL): \textbf{Levenshtein} distance on \textbf{binary codings.}
@@ -701,13 +628,9 @@ During our research, we explored various additional combinations: (kurze Liste),
 
 \subsection{Algorithms }
 \subsubsection{ML general-purpose machine learning algorithms}
-In the preprocessing step, the MinMaxScaler scales the features are scaled to values between 0 and 1 using MinMax normalization.
-Therefore, the highest distance between two points can be at most EPS\_MAX =  \( d^{1/d} \) , where d is the dimension of the dataset.
-
-
+In the preprocessing step, the MinMaxScaler scales the features to values between 0 and 1 using MinMax normalization.Therefore, the highest distance between two points can be at most EPS\_MAX =  \( d^{1/d} \) , where d is the dimension of the dataset.
 The agglomerative clustering algorithm uses euclidean distance as a similarity measure, i.e., if the distance between two points is shorter than a maximum distance (EPS), then these points belong to the same cluster.
 We explore several EPS between 0 and EPS\_MAX and use the best value for further evaluation.
-
 
 The application of general-purpose machine learning algorithms on fingerprints of data is simple.
 With little effort, the fixed-size fingerprints can be transformed into the fixed size input format accepted by the algorithm, but we find quickly that the size of our datasets is the first obstacle to the suitable clustering algorithms.
@@ -729,7 +652,6 @@ This function works with binary coding.
 \begin{equation}
 similarity \left( job_{A}\text{, jo}b_{B} \right) =1- \frac{levenshtein \left( coding_{A}\text{, codin}g_{B} \right) }{max \left( length_{A}\text{, lengt}h_{B} \right) }
 \end{equation}
-
 \begin{lstlisting}
 {'jobid': 'jobA',
 'coding': [1:5:0:0:0:0:0:0:96:96:96:96:96:96:96],
@@ -739,12 +661,10 @@ similarity \left( job_{A}\text{, jo}b_{B} \right) =1- \frac{levenshtein \left( c
 'coding': [0:0:0:0:0:0:0:0:0:96:96:96:96:96:98],
 'length': 15}
 \end{lstlisting}
-
 The similarity between these two jobs according to this equation is 73 percent.
 
 \subsubsection{BIN\_AGGZEROS}
-As a variation we investigated also the case where the the zero-sequences in are reduced to a single zero segment. This allow us to focus on I/O intensive parts of the job. The example below shows reduced codings from the previous example. Note, that the job did not change.
-
+As a variation we investigated also the case where the zero-sequences in are reduced to a single zero segment. This allows us to focus on I/O intensive parts of the job. The example below shows reduced codings from the previous example. Note, that the job did not change.
 \begin{equation}
 similarity \left( job_{A}\text{, jo}b_{B} \right) =1- \frac{levenshtein \left( coding_{A}\text{, codin}g_{B} \right) }{max \left( length_{A}\text{, lengt}h_{B} \right) }
 \end{equation}
@@ -761,8 +681,6 @@ similarity \left( job_{A}\text{, jo}b_{B} \right) =1- \frac{levenshtein \left( c
 
 The computation of similarity do not change.
 For this coding it is 53 percent.
-
-
 \subsubsection{HEX\_LEV}
 This similarity function works on the same principle like the BIN functions, with the difference that it computes the similarity for all metrics, and then the mean value of the similarities.
 This adaption allows to apply Levenshtein-based similarity on hexadecimal coding.
@@ -800,7 +718,6 @@ float maxCodingSimilarity(CA, CB) {
   return max
 }
 \end{lstlisting}
-
 The sliceSimilarity() computes similarity between two codings of the same length.
 This function maps the difference between performance levels of the same segments (values between 0 and 16) to a relative value between 0 and 1.
 
@@ -815,8 +732,6 @@ We developed a clustering strategy tailored to the IO phases.
 \paragraph{Hexadecimal coding}
 Suppose there are hexadecimal codings of two jobs with different lengths.
 In the example below bold\ font emphasizes I/O intensive  metrics and red colored numbers emphasize I/O intensive metric segments.
-
-
 \begin{lstlisting}
 { 
 'jobid': jobA,
@@ -846,31 +761,23 @@ write_bytes    [0:0:0:0:0:0:0:0:0:0:0:5:0:0:0]
 write_calls    [0:0:0:0:0:0:0:0:0:0:0:0:0:0:0]
 'length': 15} 
 \end{lstlisting}
-
 \paragraph{Phase detection}
 According to our I/O phase definition, phases are separated by zeros.
 This definition makes the detection of individual phases to a trivial task.
 Relevant for similarity computation are only metrics that contain at least one non-zero segment.
 In this example, that is md\_file\_create, read\_bytes and write\_bytes metrics.
 The according phases are illustrated below.
-
 \begin{lstlisting}
 job_1_md_file_create : [[2,2,2,9,3], [9,1,1,1]]
 job_1_read_bytes : [[9,3], [1]]
 job_1_write_bytes : []
-
 job_2_md_file_create : [[1]]
 job_2_read_bytes : [[2,2,2,2,8,2,2], [1], [8,1,1]]
 job_2_write_bytes : [[5]]
 \end{lstlisting}
-
-
 \paragraph{Phase matching}
 Sliding the shorter coding over a longer one, and computing similarity to the corresponding part, we can find the best match.
-The example below illustrates that.
-We find the best match, when we the shift shorter coding five position to the right.
-
-
+The example below illustrates that.We find the best match, when we shift shorter coding five positions to the right.
 \noindent\begin{minipage}{0.33\textwidth}
 \begin{lstlisting}
 [2:2:2:2:8:2:2]
@@ -887,7 +794,7 @@ similarity
 \end{lstlisting}
 \end{minipage}
 %
-\begin{minipage}{0.33\textwidth}
+\noindent\begin{minipage}{0.33\textwidth}
 \begin{lstlisting}
 [2:2:2:2:8:2:2]
 [-:-:9:3:-:-:-]
@@ -919,12 +826,10 @@ similarity
 \end{lstlisting}
 \end{minipage}
 
-
-After repeating this step for all possible combinations of I/O phases we chose those with the pairs with the highest similarity, and compute match between them.
+After repeating this step for all possible combinations of I/O phases we chose those with the pairs with the highest similarity, and computed the match between them.
 To compute the match we divide low hex value by high hex value for each segment and sum up the values.
 I/O phases without a pair are assigned virtually to empty phases, and their match is zero.
 The example below shows I/O phases pairs and their matches.
-
 \begin{lstlisting}
 job1_md_file_create : [[2:2:2:9:3], [9:1:1:1]]
 job2_md_file_create : [[-:-:-:-:-], [-:1:-:-]]
@@ -933,14 +838,12 @@ match_md_file_create = [(match:0; len:5), (match:1; len:4)]
 job1_read_bytes : [[-:-:-:-:9:3:-], [1], [-:-:-]]
 job2_read_bytes : [[2:2:2:2:8:2:2], [1], [8:1:1]]
 match_read_bytes = [match:(8/9 + 2/3); len:7), (match:1; len:1), (match:0; len:3)]
-
 job1_write_bytes = [[-]]
 job2_write_bytes = [[5]]
 match_write_bytes = [(match:0; len:1)]
 \end{lstlisting}
 
 \paragraph{Similarity}
-
 Next, the similarity for coding with different lengths must be adjusted. Similarity between two jobs is the sum of matches divided by the sum of lengths of the longer phases. In this example, we get a similarity of 17$\%$ .
 
 similarity = (0 + 1 + 8/9 + 2/3 + 1 + 0 + 1) / (5 + 4 + 1 + 7 + 3 + 1) = 0.17
@@ -957,10 +860,9 @@ The\ number of zero-jobs is different for hexadecimal and absolute mode codings.
 The reason is the quantization to HEX coding, which firstly computes mean performance values for all segments, and then quantizes them to 16 levels.
 Hereby some segments can be quantized to zeros, if the mean value becomes sufficiently low.
 Therefore, it may happen that some jobs fall into the zero-job category, if all segments are quantized to zeros.
- It can not happen in BIN coding, because it preserves all the active segments, so that no job may change the category.
+It can not happen in BIN coding, because it preserves all the active segments, so that no job may change the category.
 Interestingly, it affects around 14$\%$  of jobs.
 \Cref{tab:n_intensive_jobs} shows the number of jobs that are used for clustering algorithms.
-
 \begin{table}
   \centering
   \begin{tabular}{ll}
@@ -988,10 +890,14 @@ We suppose this characteristic can be exploited in clustering algorithms to achi
   \label{fig:phases_stats}
 \end{figure}
 
+
+\subsubsection{Assessment}
+Lastly, the quality of the obtained clusters must be assessed.Unfortunately, there are no tools that can do the cluster quality assessment automatically.Therefore, we will inspect the clusters manually by using quantitative metrics such as the number of generated clusters and their sizes and qualitatively by exploring clusters of relevant jobs.At this point we want to emphasize that our goal is to find similar jobs and not similar fingerprints.Therefore, for the clustering quality assessment we look inside clusters and inspect segment sequences of the corresponding jobs.In the same cluster we expect the sequences to be similar.If not, clustering is not effective.Depending on data, the clustering algorithms create thousands of clusters.Unfortunately, it is not feasible to analyse all of them qualitatively with reasonable effort.Therefore our analysis strategy is to find clusters with the characteristic weaknesses and discuss them.
+
+
 \subsection{Evaluation of general-purpose clustering algorithms}
 This section contains data statistics, and the clustering results in \Cref{fig:datasets_clustering_results} of the Job-IO-Metric and Job-IO-Duration datasets with general-purpose machine learning algorithms.
 Due to lack of tools, we determine cluster quality on a small scale.
-
 \subsubsection{Test environment}
 All the experiments in this section are conducted with python 3.8.0.
 In particular we use the agglomerative clustering algorithm, decision trees, and the MinMaxScaler from the sklearn 0.22.1 library.
@@ -1011,21 +917,18 @@ In particular we use the agglomerative clustering algorithm, decision trees, and
  \caption{The Top 20 largest clusters.}
  \label{fig:datasets_clustering_results}
 \end{figure}
-
 \subsubsection{Clustering of the Job-IO-Metric and Job-IO-Duration datasets}
 As already mentioned in the related work section, the Job-IO-Metric dataset has 3 features, Job-I/O-Balance, Job-I/O-Utilization, and Job-I/O-Problem-Time.
 After the data pre-processing, we obtain a set of 3-dimensional data points with a domain between 0 and 1.
 According to the formula, the EPS\_MAX is 1.44.
 We conducted several experiments with different EPS values between 0 and EPS\_MAX and visualized the results in \Cref{fig:datasets_clustering_results:io_metric} on the right side.
 It shows the cluster sizes of Top 20 largest clusters and the total number of clusters.
-
 The\ Job-IO-Duration dataset contains the fraction of runtime jobs spent doing I/O.
- The 27 columns are named according to the following scheme: metric\_category, e.g, bytes\_read\_0 or md\_file\_delete\_4.
+The 27 columns are named according to the following scheme: metric\_category, e.g, bytes\_read\_0 or md\_file\_delete\_4.
 The first part is the one of the nine metric names and the second part is the category number (LowIO=0, HighIO=1 and CriticalIO=4).
 These columns are used for machine learning as input features.
 There is a constraint for each metric (metric\_0 + metric\_1 + metric\_4 = 1), that makes 9 features redundant, because they can be computed from the other features, so that we have to deal with 18 features only, and EPS\_MAX is 1.17.
 We visualized the results in \Cref{fig:datasets_clustering_results:io_duration} on the left side.
-
 A look inside clusters reveals chaotic clustering results.
 For both datasets and for all EPS values we could find many coding sequences in a cluster that don't belong in the same cluster.
 For example a cluster can contain the following sequences.
@@ -1076,7 +979,6 @@ The red line approximates the overall number of clusters, the green line shows h
 Coding with 100$\%$  similarity are of the same job type, i.e, they have exactly the same length and I/O behavior.
 In \Cref{fig:clustering_progress} the threshold is visualized by the grey line.
 
-
 Apparently, for each algorithm (except HEX) there is some SIM value, when the clustering algorithms start working contra-productive, i.e., the number of clusters with more than two jobs is decreasing.
 This happens, because more clusters are splitted in individual jobs than created.
 That is something we usually want to prevent, because the algorithms stop finding similar jobs, but focus on refining clusters.
@@ -1086,10 +988,10 @@ The clustering time depends heavily on the number of created clusters (see \Cref
 The reason is that the algorithm tries to put each job in existing clusters first.
 It iterates over them, and only if it is not able to find a suitable cluster, it creates a new one.
 The more clusters exist, the longer is the processing time.
-Since, for low SIM values there are low number of clusters, the clustering is much faster.
+Since, for low SIM values there is a low number of clusters, the clustering is much faster.
 PM\_QUANT has exceptionally high runtimes due to quadratic runtimes of phase matching.
 In one case the runtimes clustering of 10,000 jobs took up to 4.3 hours (the outliers are not shown in the picture).
-We suppose, this lies on the quadratic runtimes of the phase matching procedure.
+We suppose this lies on the quadratic runtimes of the phase matching procedure.
 We didn't spend time to optimize the algorithm further.
 
 \begin{figure}
@@ -1112,7 +1014,6 @@ We didn't spend time to optimize the algorithm further.
   \caption{Cumulative number of jobs with different sizes.}
   \label{fig:cum_num_job_sizes}
 \end{figure}
-
 Another quality indicator is the number of small clusters.
 \Cref{fig:cum_num_job_sizes} the final clustering result.
 Obviously, the ABS algorithms tend to create many small clusters.
@@ -1124,46 +1025,34 @@ To give you an  impression of cluster qualities for different SIM values, we def
 \Cref{fig:top10_relevant_jobs}.
 The colors indicate the mean similarity of jobs to the cluster centroid.
 The number above the bar denotes the mean job length of the cluster.
-
 \begin{figure}
   \centering
   \includegraphics[width=2.5in,height=0.12in]{./media/image16.png}
   \caption{Equation}
   \label{fig:equation}
 \end{figure}
-
-%~\href{https://www.codecogs.com/eqnedit.php?latex=%5Ctext%7BRelevance%7D%3D%5Ctext%7BClusterSize%7D%5Ccdot%5Ctext%7BMeanJobLength%7D#0}{}
-
 The idea behind the relevance definition is the following: the larger the cluster and the longer the jobs, the more potential load these jobs can produce.
 Therefore it is worth investigating these clusters first.
 In principle, the figure confirms that SIM values larger than optimum provide not much improvement, but nevertheless, it does not mean that the cluster quality is acceptable.
 After investigation of some clusters we noticed SIM value independent characteristics.
 To explain them, it is sufficient to look in one cluster of each algorithm, as we do in the next sections.
-
 \begin{figure}
   \centering
    \includegraphics[width=4.61in,height=6.44in]{./media/image11.png}
    \caption{Top 10 relevant jobs ordered by relevance.}
    \label{fig:top10_relevant_jobs}
 \end{figure}
-
 \subsubsection{Cluster presentation format}
-
 The next sections we have the following format, a description of any particular observations if necessary, followed by a table containing the most important statistics, and by the codings for job, centroid and and the Top 5 job types.
-At the end we include an illustration which describe the length distribution of the cluster.
-
-
+At the end we include an illustration which describes the length distribution of the cluster.
 \subsubsection{Algorithm characteristics}
 \paragraph{BIN\_ALL}
-%\Cref{tab:bin:largest_clusters}, \textcolor[HTML]{1155CC}{\uline{Table 8}}, \textcolor[HTML]{1155CC}{\uline{Table 9}}, and \textcolor[HTML]{1155CC}{\uline{Figure 10}}.
 Information related to the cluster is in \Cref{tab:bin:largest_clusters}, \Cref{tab:bin_all:stats}, \Cref{tab:bin_all:top_jobs}, and \Cref{fig:bin_all:length}.
-
 One of the first observations we did for BIN family algorithms is that the six largest clusters contain the shortest jobs (one segment long).
 They are listed in \Cref{tab:bin:largest_clusters}.
 All jobs in each cluster have exactly the same codings.
 The reason that both algorithms create the same clusters, is that the zero aggregation has no effect on formation of these clusters, because the jobs are too short (the minimum job length required for effective zero aggregation is at least three segments) and that the dataset contains a vast amount of such jobs.
 The largest cluster is even representative in Top10 relevant jobs in ref\_top\_ten.
-
 %\begin{table}[h]
 \begingroup
   \centering
@@ -1177,11 +1066,10 @@ The largest cluster is even representative in Top10 relevant jobs in ref\_top\_t
     $[128]$ & 10,228 \\ 
     $[8]$   & 9,446  \\ 
   \end{tabular}
-	\captionof{table}{Top 6 largest clusters created by BIN algorithms with SIM = 0.7.}
+  \captionof{table}{Top 6 largest clusters created by BIN algorithms with SIM = 0.7.}
   \label{tab:bin:largest_clusters}
 \endgroup
 %\end{table}
-
 Most jobs in the cluster are shorter than 49 segments, because the main Mistral partitions can allocate jobs for at most 8 hours, and that is the majority of jobs.
 The other jobs must be special allocations.
 Since each segment is 10 min long, the runtime of jobs with 49 segments is about 8.16 hours.
@@ -1192,7 +1080,6 @@ The following observations are characteristic for this algorithm:
  \item Job types can significantly differ from centroid and from each other.
  \item Lengths of job types in a cluster are relatively close to the centroid.
 \end{enumerate}
-
 %\begin{table}[h]
 \begingroup
   \centering
@@ -1201,22 +1088,21 @@ The following observations are characteristic for this algorithm:
     Number of jobs & 7615 \\
     Number of job types & 3306 \\
   \end{tabular}
-	\captionof{table}{Cluster statistics.}
+  \captionof{table}{Cluster statistics.}
   \label{tab:bin_all:stats}
 \endgroup
 %\end{table}
-
 %\begin{table}[h]
 \begingroup
   \centering
   \begin{tiny}
     \begin{tabular}{@{ }l@{ }|@{ }r@{ }}
-			\rowcolor{tabhcolor}\rowstyle{\bfseries}
+      \rowcolor{tabhcolor}\rowstyle{\bfseries}
       Binary coding                                                                                    &  Type     \\ 
       \hline
       0:0:0:0:0:0:294:0:0:0:0:32:0:0:0:0:0:0:0:0:0:0:0:32:0:0:0:0:0:0:0:0:0:0:0:32:0:0:0:0:0:0:0:0:0:0 &  centroid \\ 
       \multicolumn{2}{l}{}                                                                             \\ 
-			\rowcolor{tabhcolor}\rowstyle{\bfseries}
+      \rowcolor{tabhcolor}\rowstyle{\bfseries}
       Binary coding                                                                                    &  Count    \\ 
       \hline
       0:0:0:0:0:0:359:96:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0   &  95       \\ 
@@ -1226,24 +1112,20 @@ The following observations are characteristic for this algorithm:
       0:0:0:0:0:6:6:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0  &  40       \\ 
     \end{tabular}
   \end{tiny}
-	\captionof{table}{Centroid and Top 5 job types.}
+  \captionof{table}{Centroid and Top 5 job types.}
   \label{tab:bin_all:top_jobs}
 \endgroup
 %\end{table}
-
 %\begin{figure}[h]
 \begingroup
   \centering
   \includegraphics[width=4.61in,height=1.39in]{./media/image20.png}
-	\captionof{figure}{Length distribution in the cluster.}
+  \captionof{figure}{Length distribution in the cluster.}
   \label{fig:bin_all:length}
 \endgroup
 %\end{figure}
-
-
 \paragraph{BIN\_AGGZEROS}
 Information related to the cluster is in \Cref{tab:bin_aggzeros:stats}, \Cref{tab:bin_aggzeros:top_jobs}, and in \Cref{fig:bin_aggzeros:length}.
-
 The following is characteristic for this algorithm:
 
 \begin{enumerate}
@@ -1260,23 +1142,22 @@ The following is characteristic for this algorithm:
     Number of jobs & 1295 \\
     Number of job types & 336 \\
   \end{tabular}
-	\captionof{table}{Cluster statistics.}
+  \captionof{table}{Cluster statistics.}
   \label{tab:bin_aggzeros:stats}
 \endgroup
 %\end{table}
-
 %\begin{table}[h]
 \begingroup
   \centering
   \begin{tiny}
     \begin{tabular}{@{ }l@{ }|@{ }r@{ }}
-			\rowcolor{tabhcolor}\rowstyle{\bfseries}
+      \rowcolor{tabhcolor}\rowstyle{\bfseries}
       Binary coding                                                                          &  Type     \\ 
       \hline
       272:272:272:272:272:278:286:272:272:272:272:272:272:272:272:272:272:272:272            &  centroid \\ 
       \multicolumn{2}{l}{}                                                                   \\ 
       \hline
-			\rowcolor{tabhcolor}\rowstyle{\bfseries}
+      \rowcolor{tabhcolor}\rowstyle{\bfseries}
       Binary coding                                                                          &  Count    \\ 
       272:272:272:272:272:278:286:272:272:272:272:272:272:272:272:272:272:272:272            &  528      \\ 
       272:272:272:272:272:406:286:272:272:272:272:272:272:272:272:272                        &  96       \\ 
@@ -1285,37 +1166,30 @@ The following is characteristic for this algorithm:
       272:272:272:272:272:279:319:272:272:272:272:272:272:272:272:272:272:272:272:272:272    &  50       \\ 
     \end{tabular}
   \end{tiny}
-	\captionof{table}{Centroid and Top 5 job types}
+  \captionof{table}{Centroid and Top 5 job types}
   \label{tab:bin_aggzeros:top_jobs}
 \endgroup
 %\end{table}
-
 %\begin{figure}[h]
 \begingroup
   \centering
   \includegraphics[width=4.61in,height=1.38in]{./media/image13.png}
-	\captionof{figure}{Job length distribution in the cluster.}
+  \captionof{figure}{Job length distribution in the cluster.}
   \label{fig:bin_aggzeros:length}
 \endgroup
 %\end{figure}
-
-
 \paragraph{HEX\_LEV}
 Information related to the cluster is in \Cref{tab:hex_lev:stats}, \Cref{tab:hex_lev:top_jobs}, and in \Cref{fig:hex_lev:length}.
-
 HEX\_LEV reacts slowly to the increasing SIM value, due to the longer hexadecimal codings, compared to binary codings.
 Therefore, we chose a SIM value higher than for BIN algorithms.
 But even with a high SIM value, we can observe that some jobs have a different I/O behavior than the centroid and the rest of the jobs.
 The reason is that Levenshtein distance is not performance aware, i.e., the distance between value 1 and 2 is the same as for 1 and 8.
 There is no such a job in the example below, but we can observe this in other clusters.
-
 Cluster characteristics:
-
 \begin{enumerate}
  \item Similar job lengths
  \item Mostly clean clusters, but can contain outlier jobs
 \end{enumerate}
-
 %\begin{table}[h]
 \begingroup
 	\centering
@@ -1328,21 +1202,19 @@ Cluster characteristics:
 	\label{tab:hex_lev:stats}
 \endgroup
 %\end{table}
-
-
 %\begin{table}[h]
 \begingroup
   \centering
   \begin{tiny}
     \begin{tabular}{@{ }l@{ }@{ }l@{ }@{ }l@{ }@{ }l@{ }|@{ }r@{ }}
-			\rowcolor{tabhcolor}
+      \rowcolor{tabhcolor}
       \multicolumn{4}{@{ }l|@{ }}{\rowstyle{\bfseries}Hexadecimal coding} & \\
-			\rowcolor{tabhcolor}\rowstyle{\bfseries}
+      \rowcolor{tabhcolor}\rowstyle{\bfseries}
       md\_file\_create  & md\_file\_delete  & md\_mod           & read\_calls       & Type     \\ 
       \hline
       0:...:0           & 0:0:0:1:0:0:0:0:0 & 0:...:0           & 0:...:0           & centroid \\ 
       \multicolumn{5}{l}{}\\
-			\rowcolor{tabhcolor}\rowstyle{\bfseries}
+      \rowcolor{tabhcolor}\rowstyle{\bfseries}
       md\_file\_create  & md\_file\_delete  & md\_mod           & read\_calls       & Count    \\ 
       \hline
       0:...:0           & 0:0:0:0:0:0:1:0:0 & 0:...:0           & 0:...:0           & 606      \\ 
@@ -1352,37 +1224,28 @@ Cluster characteristics:
       0:0:0:0:0:0:1:1:1 & 0:...:0           & 0:0:0:0:0:0:1:0:0 & 0:...:0           & 75       \\ 
     \end{tabular}
   \end{tiny}
-	\captionof{table}{Centroid and Top 5 job types}
+  \captionof{table}{Centroid and Top 5 job types}
   \label{tab:hex_lev:top_jobs}
 \endgroup
 %\end{table}
-
-
 %\begin{figure}[h]
 \begingroup
   \centering
   \includegraphics[width=4.61in,height=1.39in]{./media/image5.png}
-	\captionof{figure}{Length distribution in the cluster.}
+  \captionof{figure}{Length distribution in the cluster.}
   \label{fig:hex_lev:length}
 \endgroup
 %\end{figure}
-
-
 \paragraph{HEX\_NATIVE}
 Information related to the cluster is in \Cref{tab:hex_native:stats}, \Cref{tab:hex_native:top_jobs}, and in \Cref{fig:hex_native:length}.
-
-The SIM value exploration shows, that this algorithm works best with high SIM values.
+The SIM value exploration shows that this algorithm works best with high SIM values.
 Clustering with SIM=0.99 results in clusters that have equal job lengths.
-(For SIM=0.99 the centroid must be longer than 100 segments to attract jobs with other lengths.) 
-
-Cluster characteristics:
-
+(For SIM=0.99 the centroid must be longer than 100 segments to attract jobs with other lengths.) Cluster characteristics:
 \begin{enumerate}
  \item Similar job lengths
  \item Jobs are relatively close to the centroid
  \item Low number of outliers
 \end{enumerate}
-
 %\begin{table}[h]
 \begingroup
   \centering
@@ -1391,25 +1254,23 @@ Cluster characteristics:
     Number of jobs & 20908 \\
     Number of job types & 11997 \\
   \end{tabular}
-	\captionof{table}{Cluster statistics.}
+  \captionof{table}{Cluster statistics.}
   \label{tab:hex_native:stats}
 \endgroup
 %\end{table}
-
-
 %\begin{table}[h]
 \begingroup
   \centering
   \begin{tiny}
     \begin{tabular}{@{ }l@{ }@{ }l@{ }@{ }l@{ }|@{ }r@{ }}
-			\rowcolor{tabhcolor}
+      \rowcolor{tabhcolor}
       \multicolumn{3}{@{ }l|@{ }}{\rowstyle{\bfseries}Hexadecimal coding} &            \\ 
-			\rowcolor{tabhcolor}\rowstyle{\bfseries}
+      \rowcolor{tabhcolor}\rowstyle{\bfseries}
       md\_file\_delete     &  md\_mod   & md\_other & Type     \\ 
       \hline
       0:\dots:0            &  0:0:1:0   & 0:0:1:0   & centroid \\ 
       \multicolumn{4}{l}{} \\ 
-			\rowcolor{tabhcolor}\rowstyle{\bfseries}
+      \rowcolor{tabhcolor}\rowstyle{\bfseries}
       md\_file\_delete     &  md\_mod   & md\_other & Count    \\ 
       \hline
       0:\dots:0            &  0:\dots:0 & 0:0:1:0   & 5,010    \\ 
@@ -1419,28 +1280,19 @@ Cluster characteristics:
       0:0:1:0              &  0:0:1:0   & 0:\dots:0 & 676      \\ 
     \end{tabular}
   \end{tiny}
-	\captionof{table}{Centroid and Top 5 job types.}
-  \label{tab:hex_native:top_jobs}
-\endgroup
+  \captionof{table}{Centroid and Top 5 job types.}
+  \label{tab:hex_native:top_jobs}\endgroup
 %\end{table}
-
-
 %\begin{figure}[h]
 \begingroup
   \centering
   \includegraphics[width=4.61in,height=1.39in]{./media/image8.png}
-	\captionof{figure}{Length distribution in the cluster.}
+  \captionof{figure}{Length distribution in the cluster.}
   \label{fig:hex_native:length}
 \endgroup
 %\end{figure}
-
-
-
-
-
 \paragraph{PM\_QUANT}
 Information\ related to the cluster is in \Cref{fig:pm_quant:stats}, \Cref{fig:pm_quant:top_jobs}, and in \Cref{fig:pm_quant:length}.
-
 The first thing to mention are the high generalization capabilities of the algorithm, i.e., that many jobs are mapped to a relatively low number of types.
 The next typical property is shown in \Cref{fig:pm_quant:length}, where we can see that almost the full range of job lengths is represented in the cluster.
 This happens, because the PM ignores zero segments completely.
@@ -1448,7 +1300,6 @@ We saw that already in BIN\_AGGZEROS, where a similar effect was caused by the a
 For example, for PM, the job types in \Cref{fig:pm_quant:top_jobs} in the row one and two are 100$\%$  similar.
 Remarkable is also the cleanliness of the clusters.
 The centroid and the jobs contain quite similar I/O patterns.
-
 Cluster characteristics:
 
 \begin{enumerate}
@@ -1456,7 +1307,6 @@ Cluster characteristics:
  \item Relatively large number of job lengths
  \item I/O pattern 
 \end{enumerate}
-
 %\begin{table}[h]
 \begingroup
   \centering
@@ -1465,19 +1315,18 @@ Cluster characteristics:
     Number of jobs & 5175 \\
     Number of job types & 154 \\
   \end{tabular}
-	\captionof{table}{Cluster statistics.}
+  \captionof{table}{Cluster statistics.}
   \label{fig:pm_quant:stats}
 \endgroup
 %\end{table}
-
 %\begin{table}[h]
 \begingroup
   \centering
   \begin{tiny}
     \begin{tabular}{@{ }l@{ }@{ }l@{ }|@{ }r@{ }}
-			\rowcolor{tabhcolor}
-			\multicolumn{2}{@{ }l|@{ }}{\rowstyle{\bfseries}Hexadecimal coding} &              \\ 
-			\rowcolor{tabhcolor}\rowstyle{\bfseries}
+      \rowcolor{tabhcolor}
+      \multicolumn{2}{@{ }l|@{ }}{\rowstyle{\bfseries}Hexadecimal coding} &              \\ 
+      \rowcolor{tabhcolor}\rowstyle{\bfseries}
       md\_file\_delete     &  md\_mod     & Type     \\ 
       \hline
       4:0:0:0:0:0          &  4:0:0:0:0:0 & centroid \\ 
@@ -1492,40 +1341,43 @@ Cluster characteristics:
       0:4                  &  0:4         & 57       \\ 
     \end{tabular}
   \end{tiny}
-	\captionof{table}{Centroid and Top 5 job types.}
+  \captionof{table}{Centroid and Top 5 job types.}
   \label{fig:pm_quant:top_jobs}
 \endgroup
 %\end{table}
-
 %\begin{figure}[h]
 \begingroup
   \centering
   \includegraphics[width=4.61in,height=1.39in]{./media/image21.png}
-	\captionof{figure}{Length distribution in the cluster.}
+  \captionof{figure}{Length distribution in the cluster.}
   \label{fig:pm_quant:length}
 \endgroup
 %\end{figure}
-
 \subsection{Use case: I/O intensive job}
 The demonstration in this section shows how this approach can be used to identify a cluster of I/O-intensive jobs similar to an existing job.
-
 \begin{figure}[h]
   \centering
   \includegraphics[width=2.84in,height=2.85in]{./media/image1.png}
   \caption{One high I/O intensity job running on 46 nodes. Score is the sum of all nodes stacked by the node. A color represents one of the nodes.}
   \label{fig:use_case}
 \end{figure}
-
-Firstly,\ we find a job that we like to identify similar jobs.
-To do that, we rank jobs by using the equation below and pick a job from the top of the sorted list.
+Firstly, we find an I/O intensive job that we use to identify similar jobs.
 The selected job is visualized in \Cref{fig:use_case}.
 We can see that this job reads data over the whole runtime.
 At beginning, only a subset of the nodes is reading most of the data, later more nodes participate in the reading The amount of transmitted data is not large, but the amount of read calls is exceptionally high and may potentially degrade the file system performance.
 Now we investigate the cluster that contains this job for the different algorithms.
 
+In the following, an attentive reader may notice that there is a discrepancy between the job visualization in  \Cref{fig:use_case} and the hexadecimal job codings. 
+While in the figure we can see a less intensive phase in the beginning and a high intensive phase afterwards, the hexadecimal coding contains a more or less single high intensive I/O phase. 
+The reason is that we use different reduction functions. While in the illustration we aggregate segments by the sum() function, for the coding we use mean() function for the same set of values. 
+While sum() is better for visualization, the mean value allows us to build simple algorithms.
+
+By accident, we have good conditions for all algorithms, and all the algorithms work well in this use case. 
+We have a relatively long job with one heavily used metric, and we can identify a cluster with similar jobs. 
+We omit comments. 
+The reader can make up his own mind.
 \paragraph{BIN\_ALL}
 Information related to the cluster is in \Cref{tab:use_case:bin_all:stats}, \Cref{tab:use_case:bin_all:top_jobs}, and in \Cref{fig:use_case:bin_all:length}.
-
 %\begin{table}[h]
 \begingroup
   \centering
@@ -1534,23 +1386,22 @@ Information related to the cluster is in \Cref{tab:use_case:bin_all:stats}, \Cre
     Number of jobs & 27 \\
     Number of job types & 17 \\
   \end{tabular}
-	\captionof{table}{Cluster statistics.}
+  \captionof{table}{Cluster statistics.}
   \label{tab:use_case:bin_all:stats}
 \endgroup
 %\end{table}
-
 %\begin{table}[h]
 \begingroup
   \centering
   \begin{tiny}
     \begin{tabular}{@{ }l@{ }|@{ }r@{ }}
-			\rowcolor{tabhcolor}\rowstyle{\bfseries}
+      \rowcolor{tabhcolor}\rowstyle{\bfseries}
       Binary coding                                                                                          &  Type     \\ 
       \hline
       192:192:192:192:192:192:196:192:192:192:192:192:192:192:192:192:192:192:192:192:192:192:64:64:64:64:64 &  job      \\ 
       192:192:192:192:192:192:192:192:192:192:192:454:230:192:192:192:192:192:192:192:192:192:192:192        &  centroid \\ 
       \multicolumn{2}{l}{}                                                                                   \\ 
-			\rowcolor{tabhcolor}\rowstyle{\bfseries}
+      \rowcolor{tabhcolor}\rowstyle{\bfseries}
       Binary coding                                                                                          &  Count    \\ 
       \hline
       192:192:192:192:192:454:198:192:192:192:192:192:192:192:192:192:192:192:192:192:192:192:192:192        &  5        \\ 
@@ -1560,7 +1411,7 @@ Information related to the cluster is in \Cref{tab:use_case:bin_all:stats}, \Cre
       228:192:192:192:192:192:192:192:192:192:192:192:192:192:192:192:192:192                                &  2        \\ 
     \end{tabular}
   \end{tiny}
-	\captionof{table}{Job, centroid and Top 5 job types.}
+  \captionof{table}{Job, centroid and Top 5 job types.}
   \label{tab:use_case:bin_all:top_jobs}
 \endgroup
 %\end{table}
@@ -1569,15 +1420,12 @@ Information related to the cluster is in \Cref{tab:use_case:bin_all:stats}, \Cre
 \begingroup
   \centering
   \includegraphics[width=4.61in,height=1.39in]{./media/image9.png}
-	\captionof{figure}{Length distribution in the cluster.}
+  \captionof{figure}{Length distribution in the cluster.}
   \label{fig:use_case:bin_all:length}
 \endgroup
 %\end{figure}
-
-
 \paragraph{BIN\_AGGZEROS}
 Information related to the cluster is in \Cref{tab:use_case:bin_aggzeros:stats}, \Cref{tab:use_case:bin_aggzeros:top_jobs}, and in \Cref{fig:use_case:bin_aggzeros:length}.
-
 %\begin{table}[h]
 \begingroup
   \centering
@@ -1586,7 +1434,7 @@ Information related to the cluster is in \Cref{tab:use_case:bin_aggzeros:stats},
     Number of jobs & 8 \\
     Number of job types & 8 \\
   \end{tabular}
-	\captionof{table}{Cluster statistics.}
+  \captionof{table}{Cluster statistics.}
   \label{tab:use_case:bin_aggzeros:stats}
 \endgroup
 %\end{table}
@@ -1596,13 +1444,13 @@ Information related to the cluster is in \Cref{tab:use_case:bin_aggzeros:stats},
   \centering
   \begin{tiny}
     \begin{tabular}{@{ }l@{ }|@{ }r@{ }}
-			\rowcolor{tabhcolor}\rowstyle{\bfseries}
+      \rowcolor{tabhcolor}\rowstyle{\bfseries}
       Binary coding                                                                                             &  Type     \\ 
       \hline
       192:192:192:192:192:192:196:192:192:192:192:192:192:192:192:192:192:192:192:192:192:192:64:64:64:64:64    &  job      \\ 
       511:238:192:510:192:224:228:192:192:192:192:192:192:192:192:192:192:192:192:192:192:64:64:64:64:64        &  centroid \\ 
       \multicolumn{2}{l}{}                                                                                      \\ 
-			\rowcolor{tabhcolor}\rowstyle{\bfseries}
+      \rowcolor{tabhcolor}\rowstyle{\bfseries}
       Binary coding                                                                                             &  Count    \\ 
       \hline
       0:224:192:192:192:192:228:192:192:192:192:192:192:192:192:192:192:192:192:192:192:64:64:64:64:64          &  1        \\ 
@@ -1612,24 +1460,20 @@ Information related to the cluster is in \Cref{tab:use_case:bin_aggzeros:stats},
       207:463:225:495:246:224:198:192:192:192:192:192:192:192:192:192:192:192:192:192:192:192:64:64:64:64:64:64 &  1        \\ 
     \end{tabular}
   \end{tiny}
-	\captionof{table}{Job, centroid and Top 5 job types.}
+  \captionof{table}{Job, centroid and Top 5 job types.}
   \label{tab:use_case:bin_aggzeros:top_jobs}
 \endgroup
 %\end{table}
-
 %\begin{figure}[h]
 \begingroup
   \centering
   \includegraphics[width=4.61in,height=1.39in]{./media/image6.png}
-	\captionof{figure}{Length distribution in the cluster.}
+  \captionof{figure}{Length distribution in the cluster.}
   \label{fig:use_case:bin_aggzeros:length}
 \endgroup
 %\end{figure}
-
-
 \paragraph{HEX\_LEV}
 Information related to the cluster is in \Cref{tab:use_case:hex_lev:stats}, \Cref{tab:use_case:hex_lev:top_jobs}, and in \Cref{fig:use_case:hex_lev:length}.
-
 %\begin{table}[h]
 \begingroup
   \centering
@@ -1638,25 +1482,23 @@ Information related to the cluster is in \Cref{tab:use_case:hex_lev:stats}, \Cre
     Number of jobs & 209 \\
     Number of job types & 189 \\
   \end{tabular}
-	\captionof{table}{Cluster statistics.}
+  \captionof{table}{Cluster statistics.}
   \label{tab:use_case:hex_lev:stats}
 \endgroup
 %\end{table}
-
 %\begin{table}[h]
 \begingroup
   \begin{tiny}
     \begin{tabular}{@{ }l@{ }@{ }l@{ }|@{ }r@{ }}
-			\rowcolor{tabhcolor}
-			\multicolumn{2}{@{ }l|@{ }}{\rowstyle{\bfseries}Hexadecimal coding} & \\
-			\rowcolor{tabhcolor}\rowstyle{\bfseries}
+      \rowcolor{tabhcolor}
+      \multicolumn{2}{@{ }l|@{ }}{\rowstyle{\bfseries}Hexadecimal coding} & \\
+      \rowcolor{tabhcolor}\rowstyle{\bfseries}
       md\_other                                           &  read\_calls                                           & Type     \\ 
       \hline
       0:\dots:0                                           &  3:3:8:8:8:5:6:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8 & job      \\ 
       0:\dots:0                                           &  8:8:8:8:8:2:6:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8 & centroid \\ 
       \multicolumn{3}{l}{}                                \\ 
-			\rowcolor{tabhcolor}\rowstyle{\bfseries}
-      md\_other                                           &  read\_calls                                           & Count    \\ 
+      \rowcolor{tabhcolor}\rowstyle{\bfseries}      md\_other                                           &  read\_calls                                           & Count    \\ 
       \hline
       0:\dots:0                                           &  0:0:0:0:0:0:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8   & 4        \\ 
       0:\dots:0                                           &  8:8:8:8:8:2:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8   & 4        \\ 
@@ -1665,24 +1507,20 @@ Information related to the cluster is in \Cref{tab:use_case:hex_lev:stats}, \Cre
       0:\dots:0                                           &  0:0:0:0:0:0:2:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8   & 2        \\ 
     \end{tabular}
   \end{tiny}
-	\captionof{table}{Job, centroid and Top 5 job types.}
+  \captionof{table}{Job, centroid and Top 5 job types.}
   \label{tab:use_case:hex_lev:top_jobs}
 \endgroup
 %\end{table}
-
 %\begin{figure}[h]
 \begingroup
   \centering
   \includegraphics[width=4.61in,height=1.39in]{./media/image17.png}
-	\captionof{figure}{Length distribution in the cluster.}
+  \captionof{figure}{Length distribution in the cluster.}
   \label{fig:use_case:hex_lev:length}
 \endgroup
 %\end{figure}
-
-
 \paragraph{HEX\_NATIVE}
 Information related to the cluster is in \Cref{tab:use_case:hex_native:stats}, \Cref{tab:use_case:hex_native:job_centroid}, and in \Cref{fig:use_case:hex_native:length}.
-
 %\begin{table}[h]
 \begingroup
   \centering
@@ -1691,19 +1529,18 @@ Information related to the cluster is in \Cref{tab:use_case:hex_native:stats}, \
     Number of jobs & 20 \\
     Number of job types & 20 \\
   \end{tabular}
-	\captionof{table}{Cluster statistics.}
+  \captionof{table}{Cluster statistics.}
   \label{tab:use_case:hex_native:stats}
 \endgroup
 %\end{table}
-
 %\begin{table}[h]
 \begingroup
   \centering
   \begin{tiny}
     \begin{tabular}{@{ }l@{ }|@{ }r@{ }}
-			\rowcolor{tabhcolor}\rowstyle{\bfseries}
+      \rowcolor{tabhcolor}\rowstyle{\bfseries}
       Hexadecimal coding & \\
-			\rowcolor{tabhcolor}\rowstyle{\bfseries}
+      \rowcolor{tabhcolor}\rowstyle{\bfseries}
       read\_calls                                           & Type     \\ 
       \hline	
       3:3:8:8:8:5:6:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8 & job      \\ 
@@ -1719,30 +1556,19 @@ Information related to the cluster is in \Cref{tab:use_case:hex_native:stats}, \
       6:5:6:7:6:2:7:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8 & 1        \\ 
     \end{tabular}
   \end{tiny}
-	\captionof{table}{Job and centroid coding sequences.}
+  \captionof{table}{Job and centroid coding sequences.}
   \label{tab:use_case:hex_native:job_centroid}
 \endgroup
 %\end{table}
-
-%\begin{figure}[h]
-\begingroup
+%\begin{figure}[h]\begingroup
   \centering
   \includegraphics[width=4.61in,height=1.39in]{./media/image2.png}
-	\captionof{figure}{Figure 19. Length distribution in the cluster.}
+  \captionof{figure}{Length distribution in the cluster.}
   \label{fig:use_case:hex_native:length}
 \endgroup
 %\end{figure}
-
-
 \paragraph{PM\_QUANT}
 Information\ related to the cluster is \Cref{tab:use_case:pm_quant:stats}, \Cref{tab:use_case:pm_quant:top_jobs}, and in \Cref{fig:use_case:pm_quant:length}.
-
-An attentive reader may notice that there is a discrepancy between the job visualization in \Cref{fig:use_case} and the job coding in \Cref{tab:use_case:pm_quant:top_jobs}.
-While in the figure we can see a less intensive phase in the beginning and a high intensive phase afterwards, the coding contains a more or less single high intensive I/O phase.
-The reason is that we use different reduction functions.
-While in the illustration we aggregate segments by the sum() function, for the coding we use quantization of the performance mean value.
-Mean value allow us to build simple algorithms
-
 %\begin{table}[h]
 \begingroup
   \centering
@@ -1751,26 +1577,24 @@ Mean value allow us to build simple algorithms
     Number of jobs      & 68  \\ 
     Number of job types & 59  \\ 
   \end{tabular}
-	\captionof{table}{Cluster statistics.}
+  \captionof{table}{Cluster statistics.}
   \label{tab:use_case:pm_quant:stats}
 \endgroup
 %\end{table}
-
-
 %\begin{table}[h]
 \begingroup
   \centering
   \begin{tiny}
     \begin{tabular}{@{ }l@{ }|@{ }r@{ }}
-			\rowcolor{tabhcolor}\rowstyle{\bfseries}
+      \rowcolor{tabhcolor}\rowstyle{\bfseries}
       Hexadecimal coding & \\
-			\rowcolor{tabhcolor}\rowstyle{\bfseries}
-			read\_calls                                           & Type     \\ 
+      \rowcolor{tabhcolor}\rowstyle{\bfseries}
+      read\_calls                                           & Type     \\ 
       \hline
       3:3:8:8:8:5:6:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8 & job      \\ 
       8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8   & centroid \\ 
       \multicolumn{2}{l}{}\\
-			\rowcolor{tabhcolor}\rowstyle{\bfseries}
+      \rowcolor{tabhcolor}\rowstyle{\bfseries}
       read\_calls                                           & Count    \\ 
       \hline
       8:8:8:8:8:2:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8   & 4        \\ 
@@ -1780,38 +1604,32 @@ Mean value allow us to build simple algorithms
       8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8   & 2        \\ 
     \end{tabular}
   \end{tiny}
-	\captionof{table}{Job, centroid and Top 5 job types.}
+  \captionof{table}{Job, centroid and Top 5 job types.}
   \label{tab:use_case:pm_quant:top_jobs}
 \endgroup
 %\end{table}
-
 %\begin{figure}[h]
 \begingroup
   \centering
   \includegraphics[width=4.61in,height=1.39in]{./media/image7.png}
-	\captionof{figure}{Length distribution in the cluster.}
+  \captionof{figure}{Length distribution in the cluster.}
   \label{fig:use_case:pm_quant:length}
 \endgroup
 %\end{figure}
-
 \subsubsection{Discussion}
 Indeed clustering of hexadecimal codings produces usable results.
 The examples in Table 2 show two randomly picked clusters.
 The similar I/O behavior.
-
 Another\ critical point of usage of Levenshtein distance is that it doesn't consider the performance.
 For example, the following three codings would be considered as similar, since they differ in one position only.
-
 \begin{lstlisting}
 phase_coding_1 : [2:2:2:2:2:9:2:2]
 phase_coding_2 : [2:2:2:2:2:8:2:2]
 phase_coding_3 : [2:2:2:2:2:0:2:2]
 \end{lstlisting}
-
 Intuitively, we would say that {phase\_coding\_1 and{ phase\_coding\_2 are more similar than {phase\_coding\_2 and {phase\_coding\_3 , because the difference at 6th position is in the first case smaller (9 and 8) is smaller than in the second case (8 and 0).
 Particularly bad affected are short coding, as the example in the previous sections shows.
-
-The\ current version of the PM algorithm ignores non-IO parts (sequences of zeros) of the monitoring data, and  handles segment sequences like [0,0,0,0,1] and [1] equally.
+The current version of the PM algorithm ignores non-IO parts (sequences of zeros) of the monitoring data, and  handles segment sequences like [0,0,0,0,1] and [1] equally.
 These sequences would produce different average I/O loads on the storage.
 Intuitively, we would say these jobs have different I/O behaviour and should consider that in the approach.
 
@@ -1819,20 +1637,17 @@ Intuitively, we would say these jobs have different I/O behaviour and should con
 job1_metric1 : [0,0,0,0,1]
 job1_metric1 : [1]
 \end{lstlisting}
-
 One could also argue that the phase definition was chosen incorrectly.
 Currently, phases are defined for each metric individually, without consideration what is going on on other metrics.
 For illustration, consider the following two jobs.
 Currently, the algorithm recognizes the I/O pattern as 100$\%$  similar.
 Alternatively, one could say that running two metrics at the same time is another I/O pattern, as running them shifted, because on a storage system the jobs would produce different I/O loads.
-
 \begin{lstlisting}
 job1_metric1 : [0:1]
 job1_metric2 : [1:0]
 job2_metric1 : [1:0]
 job2_metric2 : [1:0]
 \end{lstlisting}
-
 The benefit of ignoring these both aspects is simplicity.
 This reduces the number of clusters and the results are easier to understand.
 It also needs to be investigated, if these considerations are correct for HPC systems that are running hundreds of jobs in parallel, because one job alone would typically not be able to produce a significant amount of I/O that can slow down the file system performance.
@@ -1853,19 +1668,17 @@ An example illustrates a typical case.
 Assume there are two jobs: one running on 16 nodes and other running on 32 nodes.
 Both are one segment long and only one I/O node that writes data to storage with a moderate performance.
 Without quantization we would represent these jobs by the following sequences:  [..., [0.0625], $ \ldots $ ] and [..., [0.03125], ...], where only active metrics have values larger than zero.
-Using the similarity function without quantization, i.e.
-with mean performance, would result in a similarity of 50$\%$ , and for SIM>0.5 they would be placed in separate clusters.
+Using the similarity function without quantization, i.e. with mean performance, would result in a similarity of 50$\%$ , and for SIM>0.5 they would be placed in separate clusters.
 The hexadecimal coding filters these jobs automatically. Segments with mean performance less than 0.125 are quantized to zero and zero sequences are removed from the dataset. This problem doesn’t occur.
-
 The main question remains what characterizes I/O and which characteristics should be involved in job comparison. 
-Are two jobs similar if they have similar I/O phases? 
-Are two jobs similar if one job has an I/O phase at the beginning and the other at the same I/O phase at the end?
-Are two jobs similar if they have different lengths, but similar I/O phases?
-To answer these questions we need a discussion with the community and a study of more use cases.
-The hexadecimal coding filters these jobs automatically. Segments with mean performance less than 0.125 are quantized to zero and zero sequences are removed from the dataset. This problem doesn't occur.
-Nevertheless, we think that we will overcome this problem in the future.
-S would make the results more precise and would make the quantization step dobsolete.
 
+\begin{itemize}
+	\item Are two jobs similar if they have similar I/O phases? 
+	\item Are two jobs similar if one job has an I/O phase at the beginning and the other at the same I/O phase at the end?
+	\item Are two jobs similar if they have different lengths, but similar I/O phases?
+\end{itemize}
+
+To answer these questions we need a discussion with the community and a study of more use cases.
 \subsection{Conclusion}
 After a series of experiments with general purpose algorithms we could not achieve optimal results.
 The investigation of resulting clusters shows that they are obviously polluted.
@@ -1873,14 +1686,13 @@ One problem might be that we apply a combination of a clustering and a classific
 The classification algorithm is trained by the potential erroneous output of the clustering algorithm and it can itself produce erroneous output, which multiples the total error.
 Another problem might be that both algorithms are not aware of I/O performance and I/O phases.
 As this work shows, this might be quite important.
-At least, we achieve better results by considering both aspects.
+At least, we achieve better results by considering both aspects.
 The Levenshtein-distance based algorithms produce better, but still not sophisticated results.
 This is a direct consequence of the usage of the Levenshtein distance, which is illustrated in the following example.
 Suppose two jobs {[0:6:0:0]and [0:388:174:0] are in the same cluster with the centroid {[0:388:0:0].
 Even if in both cases the similarity between the cluster and the centroid is 75$\%$  (only one change is required), we would intuitively say that these jobs are completely different, not even close to the 75$\%$  mark.
 We can easily construct another sequence, e.g., {[0:389:0:0], where the 75$\%$  are justified.
 The reason for such clustering failures, ist that Levenshtein distance is not able to extract and to use the meaning that was coded into the numbers.
-
 Job comparison by means of hexadecimal coding is more precise, because hexadecimal coding sequences are much longer.
 Absolute coding aggregates three dimensions (Metric, Nodes, and FileSystems) resulting in a nine times shorter coding sequence than hexadecimal coding, which aggregates only two dimensions (Nodes, and FileSystems).
 Having more data, a more precise computation.
@@ -1888,7 +1700,6 @@ The integration of the awareness of I/O performance produces better, but still n
 We suppose that the I/O phase awareness is the missing feature for success.
 The final algorithm that detects phases and differentiates performance values produces at first sight clean results.
 Due to the huge amount of clusters and lack of automatic evaluation tools, we can not prove this statement for all clustres.
-
 \subsection{Future work}
 We see a high potential in the new clustering algorithm, but it requires some improvements to be useful.
 Although groping seems to work well, the algorithm has at least one serious issue.
@@ -1896,42 +1707,7 @@ The biggest problem is probably the large number of clusters.
 We assume that there indeed are so many different types of jobs, but there are too many of them for manual labeling.
 Therefore we need at least three further functions, that filter irrelevant clusters, sort clusters by a criteria and label remaining ones.
 
-
 %\setlength{\parskip}{0.0pt}
-%\begin{thebibliography}{99}
-%\bibitem{item1}
-%\fontsize{10pt}{12.0pt}\selectfont Ahn, D., Garlick, J., Grondona, M., Lipari, D., Springmeyer, B., Schulz, M.: Flux: $``$A next-generation resource management framework for large hpc centers.$"$  pp. 9-17 (09 2014). \href{https://doi.org/10.1109/ICPPW.2014.15}{\textcolor[HTML]{1155CC}{\ul{https://doi.org/10.1109/ICPPW.2014.15}}}
-%\bibitem{item2}
-%\fontsize{10pt}{12.0pt}\selectfont DDN, $``$Worlds's most advanced application aware I/O acceleration solutions.$"$  \href{http://www.ddn.com/products/infinite-memory-engine-ime14k}{\textcolor[HTML]{1155CC}{\ul{ http://www.ddn.com/products/infinite-memory-engine-ime14k}}}
-
-%\bibitem{item3}
-%\fontsize{10pt}{12.0pt}\selectfont IBM, $``$Flash Storage.$"$ ,\href{http://www-03.ibm.com/systems/storage/flash}{\textcolor[HTML]{1155CC}{\ul{ http://www-03.ibm.com/systems/storage/flash}}}
-%\bibitem{item4}
-%\fontsize{10pt}{12.0pt}\selectfont Kove Corporation, $``$about xpress disk (xpd)$"$ , 2015
-
-%\bibitem{item5}
-%\fontsize{10pt}{12.0pt}\selectfont Kunkel,\ J., Zimmer, M., Hübbe, N., Aguilera, A., Mickler, H., Wang, X., Chut, A., Bönisch, T., Lüttgau, J., Michel, R., Weging, J., $``$The SIOX Architecture - Coupling Automatic Monitoring and Optimization of Parallel I/O.$"$ ,  In: Kunkel, J., Ludwig, T., Meuer, H. (eds.) Supercomputing. pp. 245-260. Supercomputing, ISC events, Lecture Notes in Computer Science, 2014
-
-%\bibitem{item6}
-%\fontsize{10pt}{12.0pt}\selectfont Liang, W., Chen, Y., Liu, J., An, H.: Cars, $``$A contention-aware scheduler for efficient resource management of hpc storage systems.$"$ , Parallel Computing 87, 25 - 34, 2019 \href{https://doi.org/https://doi.org/10.1016/j.parco.2019.04.010}{\textcolor[HTML]{1155CC}{\ul{https://doi.org/https://doi.org/10.1016/j.parco.2019.04.010}}}, \href{http://www.sciencedirect.com/science/article/pii/S016781911830382X}{\textcolor[HTML]{1155CC}{\ul{http://www.sciencedirect.com/science/article/pii/S016781911830382X}}}
-
-%\bibitem{item7}
-%\fontsize{10pt}{12.0pt}\selectfont Sivalingam, K., Richardson, H., Tate, A., Lafferty, M.: Lassi, $``$Metric based i/o analytics for hpc$"$ , 2019
-
-%\bibitem{item8}
-%\fontsize{10pt}{12.0pt}\selectfont Snyder, S., Carns, P., Harms, K., Ross, R., Lockwood, G.K., Wright, N.J., \\
-%$``$Modular hpc i/o characterization with darshan.$"$  In: 2016 5th Workshop on Extreme-Scale Programming Tools (ESPT). pp. 9-17, 2016
-
-%\bibitem{item9}
-%\fontsize{10pt}{12.0pt}\selectfont Kunkel, J., Markomanolis, G.,:Understanding Metadata Latency with MDWorkbench, In High Performance Computing: ISC High Performance 2018 International Workshops, Frankfurt/Main, Germany, June 28, 2018, Revised Selected Papers, Lecture Notes in Computer Science (11203), pp. 75-88, Springer, WOPSSS workshop, ISC HPC, Frankfurt, Germany, ISBN: 978-3-030-02465-9, \href{https://doi.org/10.1007/978-3-030-02465-9_5}{\textcolor[HTML]{1155CC}{\ul{https://doi.org/10.1007/978-3-030-02465-9\_5}}}
-
-%\bibitem{item10}
-%\href{http://jmlr.csail.mit.edu/papers/v12/pedregosa11a.html}{{\fontsize{10pt}{12.0pt}\selectfont \textcolor[HTML]{1155CC}{\ul{Scikit-learn: Machine Learning in Python}}}, Pedregosa \textit{et al.}, JMLR 12, pp. 2825-2830, 2011.
-
-%\bibitem{item11}
-%\fontsize{10pt}{12.0pt}\selectfont Betke, E., Kunkel. J.: Semi-automatic Assessment of I/O Behavior by Inspecting the Individual Client-Node Timelines -- An Explorative Study on 10$ \string^ $ 6 Jobs, ISC 2020 (Submission accepted, not published yet).
-%\end{thebibliography}
-
 %\printbibliography
 %\newpage
 %\clearpage
