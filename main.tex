@@ -24,6 +24,7 @@
 \usepackage{subcaption}
 %\usepackage[caption=false]{subfig}
 
+\usepackage{array}
 \usepackage{cite}
 \usepackage{amsmath,amssymb,amsfonts}
 \usepackage{algorithmic}
@@ -49,6 +50,15 @@
 \usepackage{todonotes}
 \newcommand{\jk}[1]{\todo[inline]{JK:\@#1}}
 \newcommand{\eb}[1]{\todo[inline]{EB:\@#1}}
+
+\definecolor{tabhcolor}{rgb}{0.63, 0.79, 0.95}
+\newcolumntype{$}{>{\global\let\currentrowstyle\relax}}
+\newcolumntype{^}{>{\currentrowstyle}}
+\newcommand{\rowstyle}[1]{\gdef\currentrowstyle{#1}%
+	  #1\ignorespaces
+	}
+
+
 
 
 \usepackage{graphicx}
@@ -1238,10 +1248,12 @@ The following observations are characteristic for this algorithm:
   \centering
   \begin{tiny}
     \begin{tabular}{@{ }l@{ }|@{ }r@{ }}
+			\rowcolor{tabhcolor}\rowstyle{\bfseries}
       Binary coding                                                                                    &  Type     \\ 
       \hline
       0:0:0:0:0:0:294:0:0:0:0:32:0:0:0:0:0:0:0:0:0:0:0:32:0:0:0:0:0:0:0:0:0:0:0:32:0:0:0:0:0:0:0:0:0:0 &  centroid \\ 
       \multicolumn{2}{l}{}                                                                             \\ 
+			\rowcolor{tabhcolor}\rowstyle{\bfseries}
       Binary coding                                                                                    &  Count    \\ 
       \hline
       0:0:0:0:0:0:359:96:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0   &  95       \\ 
@@ -1295,11 +1307,13 @@ The following is characteristic for this algorithm:
   \centering
   \begin{tiny}
     \begin{tabular}{@{ }l@{ }|@{ }r@{ }}
+			\rowcolor{tabhcolor}\rowstyle{\bfseries}
       Binary coding                                                                          &  Type     \\ 
       \hline
       272:272:272:272:272:278:286:272:272:272:272:272:272:272:272:272:272:272:272            &  centroid \\ 
       \multicolumn{2}{l}{}                                                                   \\ 
       \hline
+			\rowcolor{tabhcolor}\rowstyle{\bfseries}
       Binary coding                                                                          &  Count    \\ 
       272:272:272:272:272:278:286:272:272:272:272:272:272:272:272:272:272:272:272            &  528      \\ 
       272:272:272:272:272:406:286:272:272:272:272:272:272:272:272:272                        &  96       \\ 
@@ -1339,7 +1353,6 @@ Cluster characteristics:
  \item Mostly clean clusters, but can contain outlier jobs
 \end{enumerate}
 
-%%%%%%%%%%%%%%%%%%%%% Table No: 12 starts here %%%%%%%%%%%%%%%%%%%%
 %\begin{table}[h]
 \begingroup
 	\centering
@@ -1351,17 +1364,22 @@ Cluster characteristics:
 	\captionof{table}{Cluster statistics.}
 	\label{tab:hex_lev:stats}
 \endgroup
+%\end{table}
+
 
 %\begin{table}[h]
 \begingroup
   \centering
   \begin{tiny}
     \begin{tabular}{@{ }l@{ }@{ }l@{ }@{ }l@{ }@{ }l@{ }|@{ }r@{ }}
-      \multicolumn{4}{@{ }l|@{ }}{Hexadecimal coding} & \\
+			\rowcolor{tabhcolor}
+      \multicolumn{4}{@{ }l|@{ }}{\rowstyle{\bfseries}Hexadecimal coding} & \\
+			\rowcolor{tabhcolor}\rowstyle{\bfseries}
       md\_file\_create  & md\_file\_delete  & md\_mod           & read\_calls       & Type     \\ 
       \hline
       0:...:0           & 0:0:0:1:0:0:0:0:0 & 0:...:0           & 0:...:0           & centroid \\ 
       \multicolumn{5}{l}{}\\
+			\rowcolor{tabhcolor}\rowstyle{\bfseries}
       md\_file\_create  & md\_file\_delete  & md\_mod           & read\_calls       & Count    \\ 
       \hline
       0:...:0           & 0:0:0:0:0:0:1:0:0 & 0:...:0           & 0:...:0           & 606      \\ 
@@ -1389,7 +1407,6 @@ Cluster characteristics:
 
 \paragraph{HEX\_NATIVE}
 Information related to the cluster is in \Cref{tab:hex_native:stats}, \Cref{tab:hex_native:top_jobs}, and in \Cref{fig:hex_native:length}.
-
 
 The SIM value exploration shows, that this algorithm works best with high SIM values.
 Clustering with SIM=0.99 results in clusters that have equal job lengths.
@@ -1422,11 +1439,14 @@ Cluster characteristics:
   \centering
   \begin{tiny}
     \begin{tabular}{@{ }l@{ }@{ }l@{ }@{ }l@{ }|@{ }r@{ }}
-      \multicolumn{3}{@{ }l|@{ }}{Hexadecimal coding} &            \\ 
+			\rowcolor{tabhcolor}
+      \multicolumn{3}{@{ }l|@{ }}{\rowstyle{\bfseries}Hexadecimal coding} &            \\ 
+			\rowcolor{tabhcolor}\rowstyle{\bfseries}
       md\_file\_delete     &  md\_mod   & md\_other & Type     \\ 
       \hline
       0:\dots:0            &  0:0:1:0   & 0:0:1:0   & centroid \\ 
       \multicolumn{4}{l}{} \\ 
+			\rowcolor{tabhcolor}\rowstyle{\bfseries}
       md\_file\_delete     &  md\_mod   & md\_other & Count    \\ 
       \hline
       0:\dots:0            &  0:\dots:0 & 0:0:1:0   & 5,010    \\ 
@@ -1492,11 +1512,14 @@ Cluster characteristics:
   \centering
   \begin{tiny}
     \begin{tabular}{@{ }l@{ }@{ }l@{ }|@{ }r@{ }}
-      \multicolumn{2}{@{ }l|@{ }}{Hexadecimal coding} &              \\ 
+			\rowcolor{tabhcolor}
+			\multicolumn{2}{@{ }l|@{ }}{\rowstyle{\bfseries}Hexadecimal coding} &              \\ 
+			\rowcolor{tabhcolor}\rowstyle{\bfseries}
       md\_file\_delete     &  md\_mod     & Type     \\ 
       \hline
       4:0:0:0:0:0          &  4:0:0:0:0:0 & centroid \\ 
       \multicolumn{3}{l}{} \\ 
+			\rowcolor{tabhcolor}\rowstyle{\bfseries}
       md\_file\_delete     &  md\_mod     & Count    \\ 
       \hline
       4                    &  4           & 2329     \\ 
@@ -1558,12 +1581,14 @@ Information related to the cluster is in \Cref{tab:use_case:bin_all:stats}, \Cre
   \centering
   \begin{tiny}
     \begin{tabular}{@{ }l@{ }|@{ }r@{ }}
+			\rowcolor{tabhcolor}\rowstyle{\bfseries}
       Binary coding                                                                                          &  Type     \\ 
       \hline
       192:192:192:192:192:192:196:192:192:192:192:192:192:192:192:192:192:192:192:192:192:192:64:64:64:64:64 &  job      \\ 
       192:192:192:192:192:192:192:192:192:192:192:454:230:192:192:192:192:192:192:192:192:192:192:192        &  centroid \\ 
       \multicolumn{2}{l}{}                                                                                   \\ 
-      coding                                                                                                 &  Count    \\ 
+			\rowcolor{tabhcolor}\rowstyle{\bfseries}
+      Binary coding                                                                                          &  Count    \\ 
       \hline
       192:192:192:192:192:454:198:192:192:192:192:192:192:192:192:192:192:192:192:192:192:192:192:192        &  5        \\ 
       192:192:192:192:192:192:192:192:192:192:192:454:230:192:192:192:192:192:192:192:192:192:192:192        &  3        \\ 
@@ -1608,12 +1633,14 @@ Information related to the cluster is in \Cref{tab:use_case:bin_aggzeros:stats},
   \centering
   \begin{tiny}
     \begin{tabular}{@{ }l@{ }|@{ }r@{ }}
+			\rowcolor{tabhcolor}\rowstyle{\bfseries}
       Binary coding                                                                                             &  Type     \\ 
       \hline
       192:192:192:192:192:192:196:192:192:192:192:192:192:192:192:192:192:192:192:192:192:192:64:64:64:64:64    &  job      \\ 
       511:238:192:510:192:224:228:192:192:192:192:192:192:192:192:192:192:192:192:192:192:64:64:64:64:64        &  centroid \\ 
       \multicolumn{2}{l}{}                                                                                      \\ 
-      coding                                                                                                    &  Count    \\ 
+			\rowcolor{tabhcolor}\rowstyle{\bfseries}
+      Binary coding                                                                                             &  Count    \\ 
       \hline
       0:224:192:192:192:192:228:192:192:192:192:192:192:192:192:192:192:192:192:192:192:64:64:64:64:64          &  1        \\ 
       192:192:192:192:192:192:196:192:192:192:192:192:192:192:192:192:192:192:192:192:192:192:64:64:64:64:64    &  1        \\ 
@@ -1657,12 +1684,15 @@ Information related to the cluster is in \Cref{tab:use_case:hex_lev:stats}, \Cre
 \begingroup
   \begin{tiny}
     \begin{tabular}{@{ }l@{ }@{ }l@{ }|@{ }r@{ }}
-      \multicolumn{2}{@{ }l|@{ }}{Hexadecimal coding} & \\
+			\rowcolor{tabhcolor}
+			\multicolumn{2}{@{ }l|@{ }}{\rowstyle{\bfseries}Hexadecimal coding} & \\
+			\rowcolor{tabhcolor}\rowstyle{\bfseries}
       md\_other                                           &  read\_calls                                           & Type     \\ 
       \hline
       0:\dots:0                                           &  3:3:8:8:8:5:6:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8 & job      \\ 
       0:\dots:0                                           &  8:8:8:8:8:2:6:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8 & centroid \\ 
       \multicolumn{3}{l}{}                                \\ 
+			\rowcolor{tabhcolor}\rowstyle{\bfseries}
       md\_other                                           &  read\_calls                                           & Count    \\ 
       \hline
       0:\dots:0                                           &  0:0:0:0:0:0:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8   & 4        \\ 
@@ -1708,12 +1738,15 @@ Information related to the cluster is in \Cref{tab:use_case:hex_native:stats}, \
   \centering
   \begin{tiny}
     \begin{tabular}{@{ }l@{ }|@{ }r@{ }}
+			\rowcolor{tabhcolor}\rowstyle{\bfseries}
       Hexadecimal coding & \\
+			\rowcolor{tabhcolor}\rowstyle{\bfseries}
       read\_calls                                           & Type     \\ 
       \hline	
       3:3:8:8:8:5:6:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8 & job      \\ 
       8:8:8:8:8:2:4:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8 & centroid \\ 
       \multicolumn{2}{l}{}\\ 
+			\rowcolor{tabhcolor}\rowstyle{\bfseries}
       read\_calls                                           & Count    \\ 
       \hline	
       8:8:8:8:8:3:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8 & 3        \\ 
@@ -1760,17 +1793,21 @@ Mean value allow us to build simple algorithms
 \endgroup
 %\end{table}
 
+
 %\begin{table}[h]
 \begingroup
   \centering
   \begin{tiny}
     \begin{tabular}{@{ }l@{ }|@{ }r@{ }}
+			\rowcolor{tabhcolor}\rowstyle{\bfseries}
       Hexadecimal coding & \\
-      read\_calls                                           & Type     \\ 
+			\rowcolor{tabhcolor}\rowstyle{\bfseries}
+			read\_calls                                           & Type     \\ 
       \hline
       3:3:8:8:8:5:6:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8 & job      \\ 
       8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8   & centroid \\ 
       \multicolumn{2}{l}{}\\
+			\rowcolor{tabhcolor}\rowstyle{\bfseries}
       read\_calls                                           & Count    \\ 
       \hline
       8:8:8:8:8:2:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8   & 4        \\ 
