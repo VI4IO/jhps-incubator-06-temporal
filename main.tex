@@ -597,7 +597,7 @@ They are described in the following:
     \hline
     Agglomerative &  Hierarchically cluster data into groups of elements that belong closer together. \\
     \hline
-    \textbf{ClusteringTree} &  Create a hierarchical clustering for subset of data to train a regression tree, then apply the regression tree on the full dataset. \\
+    \textbf{ClusteringTree} &  Create a hierarchical clustering for subset of data to train a decision tree, then apply the decision tree on the full dataset. \\
     \hline
     \textbf{SimplifiedDensity} &  Combines ideas from k-means with density clustering. The simplified clustering algorithms add a job to a cluster if similarity to the cluster centroid is equal or larger than the user defined value. \\
     \hline
@@ -609,10 +609,12 @@ They are described in the following:
 This algorithm involves three steps:
 
 \begin{enumerate}
- \item Agglomerative clustering of small dataset.
- \item Training of a decision tree model on the small dataset.
- \item Clustering of the large data set using the regression tree.
+ \item Agglomerative clustering of a small dataset, enumerate leaf-level clusters that are similar.
+ \item Training of a decision tree model on the small dataset, i.e., the tree should decide in which cluster a job is stored.
+ \item Clustering of the large data set using the decision tree.
 \end{enumerate}
+
+Since the number of clusters on leaf-level depends on their similarity, this strategy should determine a number of suitable clusters that mimics the job distribution in the training set.
 
 \paragraph{SimplifiedDensity algorithm}
 
