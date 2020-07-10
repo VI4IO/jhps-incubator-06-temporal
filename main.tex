@@ -244,10 +244,10 @@ Thus, instead of 13 metrics, this time our data contains only 9 metrics.
 Understanding of the following work requires an understanding of data format, that is formed by segmentation and categorization of raw monitoring data.
 Segmentation is a pre-processing step that splits data into equal-sized segments and computes a mean performance for each segment.
 This stage preserves the performance units (e.g., Op/s, MiB/s) for each metric.
-As further calculations that involve different metrics is difficult for different metrics,, we introduced a categorization\textbf{ pre-processing} step that takes into account the performance of the underlying HPC system and assigns an ordered category to each segment.
-It takes the mean performance, that was calculated in the previous step, and assigns one of the three categories (LowIO = 0, HighIO = 1 and CriticalIO = 4).
+As further calculations that involve different metrics is difficult for different metrics, we introduced a categorization\textbf{ pre-processing} step that takes into account the performance of the underlying HPC system and assigns an ordered category to each segment.
+It takes the mean performance that was calculated in the previous step, and assigns one of the three categories (LowIO=0, HighIO=1 and CriticalIO=4).
 The category split points are based on the histogram of the obtained values~\cite{iocats2020}.
-This node-level data can then used to compute job-statistics by aggregating across time or nodes.
+This node-level data can then be used to compute job-statistics by aggregating across time or nodes.
 
 In summary, this data representation has the following key advantages for data analysis.
 The ordered categories make the calculations between different metrics feasible, which is not possible with raw data.
@@ -267,7 +267,7 @@ In our previous work, we computed three high-level metrics per job that aid user
 \begin{figure}
 	\centering
 	\includegraphics[width=2.02in,height=2.52in]{./media/image4.png}
-	\caption{Metric Level View of an Example Job. Score is the sum of individual node scores.}
+	\caption{Example Job Metric Level View. Score is the sum of individual node scores.}
 	\label{fig:seg_example}
 \end{figure}
 
@@ -283,10 +283,10 @@ When comparing the time series of such metrics between two jobs, the key questio
 By applying dimensionality reduction techniques such as PCR, we can reduce the complexity and potentially obtain a similar representation for, e.g., two time series, but cannot make relevant distinctions between them.
 
 First, we need to discuss the similarity of IO patterns from the user perspective.
-In \Cref{fig:typ_io:1}, \Cref{fig:typ_io:2}, and \Cref{fig:typ_io:3} we illustrate the time series of two metrics for three different jobs.
-The figures show the typical behavior of parallel applications, computation is interrupted by regular I/O phases - by phase, we mean a consecutive segment of time in which  certain behavior is exhibited, i.e., the statistics are similarly.
+In \Cref{fig:typ_io:all}, we illustrate the time series of two metrics for three different jobs.
+The figures show the typical behavior of parallel applications, computation is interrupted by regular I/O phases -- by phase, we mean a consecutive segment of time in which  certain behavior is exhibited, i.e., the statistics are similarly.
 
-Actually,\ the shape of I/O phases depends on data view.
+Actually,\ the shape of I/O phases depends on our definition of I/O phase.
 By applying dimension reduction techniques, I/O phases from different dimensions can be joined together.
 Although several different aggregations are possible, in this work we focus on  I/O phases on metrics, i.e, we aggregate nodes and file system dimensions.
 Identification of I/O phases shows that a substantial number of jobs has several of them.
@@ -299,27 +299,30 @@ Unfortunately, the obtained measurements vary due to the nature of parallel appl
 In practice, different jobs show a different runtime, and even when re-running the same job, the obtained time series varies.
 
 \begin{figure}
-	\centering
-	 \includegraphics[width=4.61in,height=1.54in]{./media/image27.png}
-	 \caption{Figure 2. Monitoring data of a 13 node job. Score is the sum of individual node scores.}
-	 \label{fig:typ_io:1}
+        \centering
+\begin{subfigure}[t]{\textwidth}
+ \includegraphics[width=4.61in,height=1.54in]{./media/image27.png}
+         \caption{Job A runs on 13 nodes}
+         \label{fig:typ_io:1}
+ \end{subfigure}
+
+        \begin{subfigure}[t]{\textwidth}
+ \includegraphics[width=4.61in,height=1.54in]{./media/image28.png}
+         \caption{Job B runs on 225 nodes}
+         \label{fig:typ_io:2}
+  \end{subfigure}
+
+        \begin{subfigure}[t]{\textwidth}
+ \includegraphics[width=4.61in,height=1.54in]{./media/image25.png}
+         \caption{Job C runs on 40 nodes}
+         \label{fig:typ_io:3}
+  \end{subfigure}
+
+\caption{Monitoring data of three jobs. Score is the sum of individual node scores.}
+         \label{fig:typ_io:all}
 \end{figure}
 
-\begin{figure}
-	\centering
-	 \includegraphics[width=4.61in,height=1.54in]{./media/image28.png}
-	 \caption{Figure 3. Monitoring data of a 225 node job. Score is the sum of individual node scores.}
-	 \label{fig:typ_io:2}
-\end{figure}
-
-\begin{figure}
-	\centering
-	 \includegraphics[width=4.61in,height=1.54in]{./media/image25.png}
-	 \caption{Figure 4. Monitoring data of a 40 node job. Score is the sum of individual node scores.}
-	 \label{fig:typ_io:3}
-\end{figure}
-
-Typical sources of variability when observing a performance metrics are: The concurrent usage of the shared storage, a shift between observed I/O phases due to network congestion or CPU throttling for power/heat reasons.
+Typical sources of variability when observing performance metrics are: The concurrent usage of the shared storage, a shift between observed I/O phases due to network congestion or CPU throttling for power/heat reasons.
 The same application using a different input configuration may need more compute time, resulting in longer phases between typical I/O patterns; moreover, it may change the I/O pattern.
 A well-known pattern exhibited by a shorter running application may appear as well in a long-running application.
 The similarity measure between two jobs should consider those sources of variability and allow us to provide a robust clustering of jobs depending on the user question.
