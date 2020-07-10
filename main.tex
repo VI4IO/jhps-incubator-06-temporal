@@ -6,6 +6,8 @@
 \WarningFilter{todonotes}{The length}
 \WarningFilter{caption}{Unsupported}
 \WarningFilter{caption}{Forced redefinition}
+\WarningFilter{caption}{The option}
+\WarningFilter{caption}{Unknown document}
 
 \let\spvec\vec
 \let\vec\accentvec
@@ -16,9 +18,9 @@
 \usepackage{hyperref}
 \usepackage{array}
 
-%\usepackage{caption}
+\usepackage{caption}
 %\usepackage[position=t]{subcaption}
-%\captionsetup{compatibility=false}
+\captionsetup{compatibility=false}
 %\usepackage{subcaption}
 \usepackage[caption=false]{subfig}
 
@@ -681,7 +683,7 @@ This algorithm involves three steps:
  \item Clustering with the decision tree
 \end{enumerate}
 
-\eb{(Move generic stuff up here from below or write that details are described below).}
+%\eb{(Move generic stuff up here from below or write that details are described below).}
 
 \paragraph{SimplifiedDensity algorithm}
 Clusters are formed around centroids.
@@ -1204,7 +1206,8 @@ All jobs in each cluster have exactly the same codings.
 The reason that both algorithms create the same clusters, is that the zero aggregation has no effect on formation of these clusters, because the jobs are too short (the minimum job length required for effective zero aggregation is at least three segments) and that the dataset contains a vast amount of such jobs.
 The largest cluster is even representative in Top10 relevant jobs in ref\_top\_ten.
 
-\begin{table}[h]
+%\begin{table}[h]
+\begingroup
   \centering
   \begin{tabular}{ll}
     Coding sequence & Cluster size \\
@@ -1216,9 +1219,10 @@ The largest cluster is even representative in Top10 relevant jobs in ref\_top\_t
     $[128]$ & 10,228 \\ 
     $[8]$   & 9,446  \\ 
   \end{tabular}
-  \caption{Top 6 largest clusters created by BIN algorithms with SIM = 0.7.}
+	\captionof{table}{Top 6 largest clusters created by BIN algorithms with SIM = 0.7.}
   \label{tab:bin:largest_clusters}
-\end{table}
+\endgroup
+%\end{table}
 
 Most jobs in the cluster are shorter than 49 segments, because the main Mistral partitions can allocate jobs for at most 8 hours, and that is the majority of jobs.
 The other jobs must be special allocations.
@@ -1231,18 +1235,21 @@ The following observations are characteristic for this algorithm:
  \item Lengths of job types in a cluster are relatively close to the centroid.
 \end{enumerate}
 
-\begin{table}[h]
+%\begin{table}[h]
+\begingroup
   \centering
   \begin{tabular}{lr}
     SIM & 0.7 \\
     Number of jobs & 7615 \\
     Number of job types & 3306 \\
   \end{tabular}
-  \caption{Cluster statistics.}
+	\captionof{table}{Cluster statistics.}
   \label{tab:bin_all:stats}
-\end{table}
+\endgroup
+%\end{table}
 
-\begin{table}[h]
+%\begin{table}[h]
+\begingroup
   \centering
   \begin{tiny}
     \begin{tabular}{@{ }l@{ }|@{ }r@{ }}
@@ -1259,16 +1266,19 @@ The following observations are characteristic for this algorithm:
       0:0:0:0:0:6:6:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0  &  40       \\ 
     \end{tabular}
   \end{tiny}
-  \caption{Centroid and Top 5 job types.}
+	\captionof{table}{Centroid and Top 5 job types.}
   \label{tab:bin_all:top_jobs}
-\end{table}
+\endgroup
+%\end{table}
 
-\begin{figure}[h]
+%\begin{figure}[h]
+\begingroup
   \centering
   \includegraphics[width=4.61in,height=1.39in]{./media/image20.png}
-  \caption{Length distribution in the cluster.}
+	\captionof{table}{Length distribution in the cluster.}
   \label{fig:bin_all:length}
-\end{figure}
+\endgroup
+%\end{figure}
 
 
 \paragraph{BIN\_AGGZEROS}
@@ -1282,18 +1292,21 @@ The following is characteristic for this algorithm:
  \item I/O intensive clusters appear to be cleaner than BIN\_ALL.
 \end{enumerate}
 
-\begin{table}[h]
+%\begin{table}[h]
+\begingroup
   \begin{tabular}{ll}
     \centering
     SIM &  0.7 \\
     Number of jobs & 1295 \\
     Number of job types & 336 \\
   \end{tabular}
-  \caption{Cluster statistics.}
+	\captionof{table}{Cluster statistics.}
   \label{tab:bin_aggzeros:stats}
-\end{table}
+\endgroup
+%\end{table}
 
-\begin{table}[h]
+%\begin{table}[h]
+\begingroup
   \centering
   \begin{tiny}
     \begin{tabular}{@{ }l@{ }|@{ }r@{ }}
@@ -1310,16 +1323,19 @@ The following is characteristic for this algorithm:
       272:272:272:272:272:279:319:272:272:272:272:272:272:272:272:272:272:272:272:272:272    &  50       \\ 
     \end{tabular}
   \end{tiny}
-  \caption{Centroid and Top 5 job types}
+	\captionof{table}{Centroid and Top 5 job types}
   \label{tab:bin_aggzeros:top_jobs}
-\end{table}
+\endgroup
+%\end{table}
 
-\begin{figure}
+%\begin{figure}[h]
+\begingroup
   \centering
   \includegraphics[width=4.61in,height=1.38in]{./media/image13.png}
-  \caption{Job length distribution in the cluster.}
+	\captionof{figure}{Job length distribution in the cluster.}
   \label{fig:bin_aggzeros:length}
-\end{figure}
+\endgroup
+%\end{figure}
 
 
 \paragraph{HEX\_LEV}
@@ -1339,19 +1355,20 @@ Cluster characteristics:
 \end{enumerate}
 
 %%%%%%%%%%%%%%%%%%%%% Table No: 12 starts here %%%%%%%%%%%%%%%%%%%%
+%\begin{table}[h]
+\begingroup
+	\centering
+	\begin{tabular}{ll}
+		SIM & 0.9 \\
+		Number of jobs & 5769 \\
+		Number of job types & 2473 \\
+	\end{tabular}
+	\captionof{table}{Cluster statistics.}
+	\label{tab:hex_lev:stats}
+\endgroup
 
-\begin{table}[h]
-  \centering
-  \begin{tabular}{ll}
-    SIM & 0.9 \\
-    Number of jobs & 5769 \\
-    Number of job types & 2473 \\
-  \end{tabular}
-  \caption{Cluster statistics.}
-  \label{tab:hex_lev:stats}
-\end{table}
-
-\begin{table}[h]
+%\begin{table}[h]
+\begingroup
   \centering
   \begin{tiny}
     \begin{tabular}{@{ }l@{ }@{ }l@{ }@{ }l@{ }@{ }l@{ }|@{ }r@{ }}
@@ -1369,17 +1386,20 @@ Cluster characteristics:
       0:0:0:0:0:0:1:1:1 & 0:...:0           & 0:0:0:0:0:0:1:0:0 & 0:...:0           & 75       \\ 
     \end{tabular}
   \end{tiny}
-  \caption{Centroid and Top 5 job types}
+	\captionof{table}{Centroid and Top 5 job types}
   \label{tab:hex_lev:top_jobs}
-\end{table}
+\endgroup
+%\end{table}
 
 
-\begin{figure}[h]
+%\begin{figure}[h]
+\begingroup
   \centering
   \includegraphics[width=4.61in,height=1.39in]{./media/image5.png}
-  \caption{Length distribution in the cluster.}
+	\captionof{figure}{Length distribution in the cluster.}
   \label{fig:hex_lev:length}
-\end{figure}
+\endgroup
+%\end{figure}
 
 
 \paragraph{HEX\_NATIVE}
@@ -1398,19 +1418,22 @@ Cluster characteristics:
  \item Low number of outliers
 \end{enumerate}
 
-\begin{table}[h]
+%\begin{table}[h]
+\begingroup
   \centering
   \begin{tabular}{ll}
     SIM & 0.99 \\
     Number of jobs & 20908 \\
     Number of job types & 11997 \\
   \end{tabular}
-  \caption{Cluster statistics.}
+	\captionof{table}{Cluster statistics.}
   \label{tab:hex_native:stats}
-\end{table}
+\endgroup
+%\end{table}
 
 
-\begin{table}[h]
+%\begin{table}[h]
+\begingroup
   \centering
   \begin{tiny}
     \begin{tabular}{@{ }l@{ }@{ }l@{ }@{ }l@{ }|@{ }r@{ }}
@@ -1428,17 +1451,20 @@ Cluster characteristics:
       0:0:1:0              &  0:0:1:0   & 0:\dots:0 & 676      \\ 
     \end{tabular}
   \end{tiny}
-  \caption{Centroid and Top 5 job types.}
+	\captionof{table}{Centroid and Top 5 job types.}
   \label{tab:hex_native:top_jobs}
-\end{table}
+\endgroup
+%\end{table}
 
 
-\begin{figure}[h]
+%\begin{figure}[h]
+\begingroup
   \centering
   \includegraphics[width=4.61in,height=1.39in]{./media/image8.png}
-  \caption{Length distribution in the cluster.}
+	\captionof{figure}{Length distribution in the cluster.}
   \label{fig:hex_native:length}
-\end{figure}
+\endgroup
+%\end{figure}
 
 
 
@@ -1463,18 +1489,21 @@ Cluster characteristics:
  \item I/O pattern 
 \end{enumerate}
 
-\begin{table}[h]
+%\begin{table}[h]
+\begingroup
   \centering
   \begin{tabular}{ll}
     SIM & 0.7 \\
     Number of jobs & 5175 \\
     Number of job types & 154 \\
   \end{tabular}
-  \caption{Cluster statistics.}
+	\captionof{table}{Cluster statistics.}
   \label{fig:pm_quant:stats}
-\end{table}
+\endgroup
+%\end{table}
 
-\begin{table}[h]
+%\begin{table}[h]
+\begingroup
   \centering
   \begin{tiny}
     \begin{tabular}{@{ }l@{ }@{ }l@{ }|@{ }r@{ }}
@@ -1492,16 +1521,19 @@ Cluster characteristics:
       0:4                  &  0:4         & 57       \\ 
     \end{tabular}
   \end{tiny}
-  \caption{Centroid and Top 5 job types.}
+	\captionof{table}{Centroid and Top 5 job types.}
   \label{fig:pm_quant:top_jobs}
-\end{table}
+\endgroup
+%\end{table}
 
-\begin{figure}[h]
+%\begin{figure}[h]
+\begingroup
   \centering
   \includegraphics[width=4.61in,height=1.39in]{./media/image21.png}
-  \caption{Length distribution in the cluster.}
+	\captionof{figure}{Length distribution in the cluster.}
   \label{fig:pm_quant:length}
-\end{figure}
+\endgroup
+%\end{figure}
 
 \subsection{Use case: I/O intensive job}
 The demonstration in this section shows how this approach can be used to identify a cluster of I/O-intensive jobs similar to an existing job.
@@ -1523,18 +1555,21 @@ Now we investigate the cluster that contains this job for the different algorith
 \paragraph{BIN\_ALL}
 Information related to the cluster is in \Cref{tab:use_case:bin_all:stats}, \Cref{tab:use_case:bin_all:top_jobs}, and in \Cref{fig:use_case:bin_all:length}.
 
-\begin{table}[h]
+%\begin{table}[h]
+\begingroup
   \centering
   \begin{tabular}{ll}
     SIM & 0.7 \\
     Number of jobs & 27 \\
     Number of job types & 17 \\
   \end{tabular}
-  \caption{Cluster statistics.}
+	\captionof{table}{Cluster statistics.}
   \label{tab:use_case:bin_all:stats}
-\end{table}
+\endgroup
+%\end{table}
 
-\begin{table}[h]
+%\begin{table}[h]
+\begingroup
   \centering
   \begin{tiny}
     \begin{tabular}{@{ }l@{ }|@{ }r@{ }}
@@ -1552,33 +1587,39 @@ Information related to the cluster is in \Cref{tab:use_case:bin_all:stats}, \Cre
       228:192:192:192:192:192:192:192:192:192:192:192:192:192:192:192:192:192                                &  2        \\ 
     \end{tabular}
   \end{tiny}
-  \caption{Job, centroid and Top 5 job types.}
+	\captionof{table}{Job, centroid and Top 5 job types.}
   \label{tab:use_case:bin_all:top_jobs}
-\end{table}
+\endgroup
+%\end{table}
 
-\begin{figure}[h]
+%\begin{figure}[h]
+\begingroup
   \centering
   \includegraphics[width=4.61in,height=1.39in]{./media/image9.png}
-  \caption{Length distribution in the cluster.}
+	\captionof{figure}{Length distribution in the cluster.}
   \label{fig:use_case:bin_all:length}
-\end{figure}
+\endgroup
+%\end{figure}
 
 
 \paragraph{BIN\_AGGZEROS}
 Information related to the cluster is in \Cref{tab:use_case:bin_aggzeros:stats}, \Cref{tab:use_case:bin_aggzeros:top_jobs}, and in \Cref{fig:use_case:bin_aggzeros:length}.
 
-\begin{table}[h]
+%\begin{table}[h]
+\begingroup
   \centering
   \begin{tabular}{ll}
     SIM & 0.7 \\
     Number of jobs & 8 \\
     Number of job types & 8 \\
   \end{tabular}
-  \caption{Cluster statistics.}
+	\captionof{table}{Cluster statistics.}
   \label{tab:use_case:bin_aggzeros:stats}
-\end{table}
+\endgroup
+%\end{table}
 
-\begin{table}[h]
+%\begin{table}[h]
+\begingroup
   \centering
   \begin{tiny}
     \begin{tabular}{@{ }l@{ }|@{ }r@{ }}
@@ -1596,33 +1637,39 @@ Information related to the cluster is in \Cref{tab:use_case:bin_aggzeros:stats},
       207:463:225:495:246:224:198:192:192:192:192:192:192:192:192:192:192:192:192:192:192:192:64:64:64:64:64:64 &  1        \\ 
     \end{tabular}
   \end{tiny}
-  \caption{Job, centroid and Top 5 job types.}
+	\captionof{table}{Job, centroid and Top 5 job types.}
   \label{tab:use_case:bin_aggzeros:top_jobs}
-\end{table}
+\endgroup
+%\end{table}
 
-\begin{figure}[h]
+%\begin{figure}[h]
+\begingroup
   \centering
   \includegraphics[width=4.61in,height=1.39in]{./media/image6.png}
-  \caption{Length distribution in the cluster.}
+	\captionof{figure}{Length distribution in the cluster.}
   \label{fig:use_case:bin_aggzeros:length}
-\end{figure}
+\endgroup
+%\end{figure}
 
 
 \paragraph{HEX\_LEV}
 Information related to the cluster is in \Cref{tab:use_case:hex_lev:stats}, \Cref{tab:use_case:hex_lev:top_jobs}, and in \Cref{fig:use_case:hex_lev:length}.
 
-\begin{table}[h]
+%\begin{table}[h]
+\begingroup
   \centering
   \begin{tabular}{ll}
     SIM & 0.9 \\
     Number of jobs & 209 \\
     Number of job types & 189 \\
   \end{tabular}
-  \caption{Cluster statistics.}
+	\captionof{table}{Cluster statistics.}
   \label{tab:use_case:hex_lev:stats}
-\end{table}
+\endgroup
+%\end{table}
 
-\begin{table}[h]
+%\begin{table}[h]
+\begingroup
   \begin{tiny}
     \begin{tabular}{@{ }l@{ }@{ }l@{ }|@{ }r@{ }}
       \multicolumn{2}{@{ }l|@{ }}{Hexadecimal coding} & \\
@@ -1640,33 +1687,39 @@ Information related to the cluster is in \Cref{tab:use_case:hex_lev:stats}, \Cre
       0:\dots:0                                           &  0:0:0:0:0:0:2:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8   & 2        \\ 
     \end{tabular}
   \end{tiny}
-  \caption{Job, centroid and Top 5 job types.}
+	\captionof{table}{Job, centroid and Top 5 job types.}
   \label{tab:use_case:hex_lev:top_jobs}
-\end{table}
+\endgroup
+%\end{table}
 
-\begin{figure}
+%\begin{figure}[h]
+\begingroup
   \centering
   \includegraphics[width=4.61in,height=1.39in]{./media/image17.png}
-  \caption{Length distribution in the cluster.}
+	\captionof{figure}{Length distribution in the cluster.}
   \label{fig:use_case:hex_lev:length}
-\end{figure}
+\endgroup
+%\end{figure}
 
 
 \paragraph{HEX\_NATIVE}
 Information related to the cluster is in \Cref{tab:use_case:hex_native:stats}, \Cref{tab:use_case:hex_native:job_centroid}, and in \Cref{fig:use_case:hex_native:length}.
 
-\begin{table}[h]
+%\begin{table}[h]
+\begingroup
   \centering
   \begin{tabular}{ll}
     SIM & 0.99 \\
     Number of jobs & 20 \\
     Number of job types & 20 \\
   \end{tabular}
-  \caption{Cluster statistics.}
+	\captionof{table}{Cluster statistics.}
   \label{tab:use_case:hex_native:stats}
-\end{table}
+\endgroup
+%\end{table}
 
-\begin{table}[h]
+%\begin{table}[h]
+\begingroup
   \centering
   \begin{tiny}
     \begin{tabular}{@{ }l@{ }|@{ }r@{ }}
@@ -1685,16 +1738,19 @@ Information related to the cluster is in \Cref{tab:use_case:hex_native:stats}, \
       6:5:6:7:6:2:7:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8 & 1        \\ 
     \end{tabular}
   \end{tiny}
-  \caption{Job and centroid coding sequences.}
+	\captionof{table}{Job and centroid coding sequences.}
   \label{tab:use_case:hex_native:job_centroid}
-\end{table}
+\endgroup
+%\end{table}
 
-\begin{figure}[h]
+%\begin{figure}[h]
+\begingroup
   \centering
   \includegraphics[width=4.61in,height=1.39in]{./media/image2.png}
-  \caption{Figure 19. Length distribution in the cluster.}
+	\captionof{table}{Figure 19. Length distribution in the cluster.}
   \label{fig:use_case:hex_native:length}
-\end{figure}
+\endgroup
+%\end{figure}
 
 
 \paragraph{PM\_QUANT}
@@ -1706,18 +1762,21 @@ The reason is that we use different reduction functions.
 While in the illustration we aggregate segments by the sum() function, for the coding we use quantization of the performance mean value.
 Mean value allow us to build simple algorithms
 
-\begin{table}[h]
+%\begin{table}[h]
+\begingroup
   \centering
   \begin{tabular}{ll}
     SIM                 & 0.7 \\ 
     Number of jobs      & 68  \\ 
     Number of job types & 59  \\ 
   \end{tabular}
-  \caption{Cluster statistics.}
+	\captionof{table}{Cluster statistics.}
   \label{tab:use_case:pm_quant:stats}
-\end{table}
+\endgroup
+%\end{table}
 
-\begin{table}[h]
+%\begin{table}[h]
+\begingroup
   \centering
   \begin{tiny}
     \begin{tabular}{@{ }l@{ }|@{ }r@{ }}
@@ -1736,16 +1795,19 @@ Mean value allow us to build simple algorithms
       8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8   & 2        \\ 
     \end{tabular}
   \end{tiny}
-  \caption{Job, centroid and Top 5 job types.}
+	\captionof{table}{Job, centroid and Top 5 job types.}
   \label{tab:use_case:pm_quant:top_jobs}
-\end{table}
+\endgroup
+%\end{table}
 
-\begin{figure}[h]
+%\begin{figure}[h]
+\begingroup
   \centering
   \includegraphics[width=4.61in,height=1.39in]{./media/image7.png}
-  \caption{Length distribution in the cluster.}
+	\captionof{figure}{Length distribution in the cluster.}
   \label{fig:use_case:pm_quant:length}
-\end{figure}
+\endgroup
+%\end{figure}
 
 \subsubsection{Discussion}
 Indeed clustering of hexadecimal codings produces usable results.
@@ -1887,7 +1949,9 @@ Therefore we need at least three further functions, that filter irrelevant clust
 
 %\printbibliography
 %\newpage
-\clearpage
+%\clearpage
+%\pagebreak
+\null
 \bibliographystyle{splncs04}
 \bibliography{bibliography}{}
 \end{document}
