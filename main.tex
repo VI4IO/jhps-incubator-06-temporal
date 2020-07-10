@@ -646,10 +646,12 @@ This function works with binary coding.
 \begin{equation}
 similarity \left( job_{A}\text{, jo}b_{B} \right) =1- \frac{levenshtein \left( coding_{A}\text{, codin}g_{B} \right) }{max \left( length_{A}\text{, lengt}h_{B} \right) }
 \end{equation}
+
 \begin{lstlisting}
 'jobid': 'jobA', 'coding': [1:5:0:0:0:0:0:0:96:96:96:96:96:96:96], 'length': 15
 'jobid': 'jobB', 'coding': [0:0:0:0:0:0:0:0:0:96:96:96:96:96:98], 'length': 15
 \end{lstlisting}
+
 The similarity between these two jobs according to this equation is 73 percent.
 
 \subsubsection{BIN\_AGGZEROS}
@@ -658,12 +660,14 @@ As a variation we investigated also the case where the zero-sequences in are red
 similarity \left( job_{A}\text{, jo}b_{B} \right) =1- \frac{levenshtein \left( coding_{A}\text{, codin}g_{B} \right) }{max \left( length_{A}\text{, lengt}h_{B} \right) }
 \end{equation}
 
+
 \begin{lstlisting}
-'jobid': 'jobA','coding': [1:5:0:96:96:96:96:96:96:96], 'length': 15
+'jobid': 'jobA', 'coding': [1:5:0:96:96:96:96:96:96:96], 'length': 15
 'jobid': 'jobB', 'coding': [0:96:96:96:96:96:98], 'length': 15
 \end{lstlisting}
 
-The computation of similarity do not change.
+
+The computation of similarity does not change.
 For this coding it is 53 percent.
 \subsubsection{HEX\_LEV}
 This similarity function works on the same principle like the BIN functions, with the difference that it computes the similarity for all metrics, and then the mean value of the similarities.
@@ -688,6 +692,7 @@ The metric coding sequences $job_{B,m}$ and $job_{A,m}$ of different jobs can ha
 Therefore, to compute a maximum similarity between two metrics, we use a sliding window approach.
 That means, we take the shortest coding sequence (CA) and slice the longest coding sequence (CB) in slices of the same length, and compute the similarities between them, as shown in the pseudo code below.
 
+
 \begin{lstlisting}
 float maxCodingSimilarity(CA, CB) { 
   max = 0
@@ -702,6 +707,7 @@ float maxCodingSimilarity(CA, CB) {
   return max
 }
 \end{lstlisting}
+
 The sliceSimilarity() computes similarity between two codings of the same length.
 This function maps the difference between performance levels of the same segments (values between 0 and 16) to a relative value between 0 and 1.
 
@@ -718,7 +724,6 @@ Suppose there are hexadecimal codings of two jobs with different lengths.
 In the example below bold\ font emphasizes I/O intensive  metrics and red colored numbers emphasize I/O intensive metric segments.
 
 \begin{lstlisting}
-{ 
 'jobid': jobA,
 'coding': metric
 md_file_create [0:0:2:2:2:9:3:0:9:1:1:1:0]
@@ -732,7 +737,6 @@ write_bytes    [0:0:0:0:0:0:0:0:0:0:0:0:0]
 write_calls    [0:0:0:0:0:0:0:0:0:0:0:0:0]
 'length': 13} 
 
-{ 
 'jobid': jobB,
 'coding': metric
 md_file_create [1:0:0:0:0:0:0:0:0:0:0:0:0:0:0]
@@ -744,7 +748,7 @@ read_bytes     [2:2:2:2:8:2:2:0:0:1:0:0:8:1:1]
 read_calls     [0:0:0:0:0:0:0:0:0:0:0:0:0:0:0]
 write_bytes    [0:0:0:0:0:0:0:0:0:0:0:5:0:0:0]
 write_calls    [0:0:0:0:0:0:0:0:0:0:0:0:0:0:0]
-'length': 15} 
+'length': 15
 \end{lstlisting}
 \paragraph{Phase detection}
 According to our I/O phase definition, phases are separated by zeros.
@@ -856,7 +860,6 @@ Interestingly, it affects around 14$\%$  of jobs.
 \begin{table}
   \centering
   \begin{tabular}{ll}
-    \hline
     Algorithm & Number of I/O intensive jobs \\
     \hline
     BIN\_$\ast$, PM\_FLOAT, HEX\_NATIVE &  583.000 \\
