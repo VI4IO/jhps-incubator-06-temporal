@@ -350,7 +350,8 @@ We call one of such a combination a \textit{clustering stack}.
 The pre-processing converts the dynamic-sized monitoring data which depends on the number of captured metrics, allocated nodes, and application runtime into a suitable representation for the clustering algorithm.
 Then the clustering is applied. Finally, the clustering result needs to be assessed, i.e., how suitable is this strategy for our IO statistics and use cases?
 
-In the following, we have dedicated a section to each step discussing potential alternatives. The list does not intend to be complete but shows a variety of options.
+In the following, we have dedicated a section to each step listing and briefly discussing potential alternatives.
+The list does not intend to be complete but shows a variety of options.
 
 \subsubsection{Data pre-processing}
 The 4-dimensional data from our monitoring system is too fine-grained for mass analysis,
@@ -513,127 +514,154 @@ To catch such jobs, we aggregate multiple consecutive zero segments into one zer
 Note, that the job length does not change, only the sequence length.
 
 \paragraph*{Hexadecimal coding}
-Hexadecimal coding preserves monitoring data for each metric and each segment.
-As the name suggests, a segment is converted into a hexadecimal number.
+
+This coding preserves monitoring data for each metric and each segment.
+As the name suggests, the value of a segment is converted into a hexadecimal number to allow creation of a string representing the IO behavior
+.
 The numbers are obtained in two steps.
-Firstly, the dimension reduction aggregates the file system and the node dimensions and computes a mean value for each metric and segment, which lies in interval [0,4].
-Secondly, the mean values are quantized into 16 levels -- 0 represents the interval [0,0.125), 1 [0.125,0.375), $ \ldots $ , f [3.625, 4].
+Firstly, the dimension reduction aggregates the file system and the node dimensions and computes a mean value for each metric and segment, which lies in the interval [0,4].
+Secondly, the mean values are quantized into 16 levels -- 0 represents the interval [0,0.125), 1 [0.125,0.375), $ \ldots $ , [3.625,4].
 The example in \Cref{tab:hex_example} shows hexadecimal coding for a job containing 6 segments.
+
 \begin{table}
   \centering
   \begin{tabular}{ll}
-    md\_file\_create & [0:0:\textbf{2}:\textbf{2}:\textbf{2}:\textbf{9}] \\
-    md\_file\_delete & [0:0:0:0:0:0]                                     \\
-    md\_mod          & [0:0:0:0:0:0]                                     \\
-    md\_other        & [0:0:0:0:0:0]                                     \\
-    md\_read         & [0:0:0:\textbf{9}:3:0]                            \\
-    read\_bytes      & [\textbf{5}:0:0:0:0:0]                            \\
-    read\_calls      & [0:0:0:0:0:0]                                     \\
-    write\_bytes     & [0:0:0:0:\textbf{f}:\textbf{f}]                   \\
-    write\_calls     & [0:0:0:0:0:0]
+    md\_file\_create & [00\textbf{2}\textbf{2}\textbf{2}\textbf{9}] \\
+    md\_file\_delete & [000000]                                     \\
+    md\_mod          & [000000]                                     \\
+    md\_other        & [000000]                                     \\
+    md\_read         & [000\textbf{9}30]                            \\
+    read\_bytes      & [\textbf{5}00000]                            \\
+    read\_calls      & [000000]                                     \\
+    write\_bytes     & [0000\textbf{f}\textbf{f}]                   \\
+    write\_calls     & [000000]
   \end{tabular}
-  \caption{Example of a hexadecimal coding.}
+  \caption{Example of a hexadecimal coding for 6 segments.}
   \label{tab:hex_example}
 \end{table}
+
+
 \subsubsection{Similarity}
 Determining the resemblance between two jobs is the main task of this work.
-We developed a couple of strategies to do that task.
-They are listed in \Cref{tab:sim_funcs}.
-As we will see later, under some circumstances they can be used together in one clustering stack.
+Clustering algorithms need a distance metrics to allow organizing them together.
+There are various variants, a selection is listed in \Cref{tab:sim_funcs}.
+The Manhatten distance for two vectors is defines as $\sum_i |a_i - b_i|$ and can naturally only be applied to
+ vectors of the same length.
+The Levensthein distance is the number of modifications (inserts, deletes, changes) of individual characters that need to be made to transform one string to another.
+To create a flexible similarity function, we combine the Manhatten distance with a sliding window or phase detection to allow it to determine a distance between two vectors of different length.
 
 \begin{table}
   \centering
   \begin{tabularx}{\textwidth}{lX}
-    Operation & Description \\
+    Distance & Description \\
     \hline
-    Euclidean & \\
+    Manhatten & The manhatten distance between the vectors. \\
     \hline
-    Levenshtein &  - Number of operation (inserts, deletes, and changes) requires to convert one coding in another \\
+    Levenshtein &  Number of operation (inserts, deletes, and changes) requires to convert one coding in another \\
     \hline
-    Sliding window &  - Find maximum similarity between two codings \par - Slide shorter coding over a longer one an compute similarity of the corresponding parts \\
+    \hline
+    \multicolumn{2}{l}{Options for Manhatten} \\
+    \hline
+    Sliding window &  - Find maximum similarity between two codings \par
+            - Slide shorter coding over a longer one an compute similarity of the corresponding parts \\
     \hline
     Phase &  - Find best I/O phases combination of two jobs with a maximum similarity \par - Depends on phase extraction from data pre-processing and sliding window similarity \par - Preserve the order of the phases \\
     \hline
   \end{tabularx}
-  \caption{Similarity functions}
+  \caption{Similarity functions and strategies}
   \label{tab:sim_funcs}
 \end{table}
 
 \subsubsection{Clustering}
 In the last step, similar jobs need to be grouped in clusters.
-To handle millions of jobs, the algorithm must be performant.
-We developed two strategies that meet the requirement, one based on widely used general-purpose algorithms, and a custom algorithm.
-They are listed in \Cref{tab:clustering_algorithms}.
-For scalability reasons, we derived two algorithms that are able to handle the large number of jobs but aim to preserve the core ideas of existing algorithms.
+A subset of potential strategies is listed in \Cref{tab:clustering_algorithms}.
+Often, the k-means algorithm is applied which utilizes a random strategy to initialize clusters.
+However, as it requires us to define a fixed number of clusters, it is problematic as the number of actual clusters are unknown.
+The large class of density clustering algorithms such as DBSCAN groups elements that are "close" together into one class; what close means must be defined in $\epsilon$.
+Agglomerative strategies group similar elements together to form a hierarchy of some sort, e.g., a tree.
+Unfortunately, their complexity is quadratic at least.
+To handle millions of jobs, an algorithm must be performant.
+
+We developed two strategies that address the performance issue and the other limitations, the ClusteringTree algorithm and the SimplifiedDensity algorithm.
+These algorithms are able to handle the large number of jobs but aim to preserve the core ideas of k-means/density algorithms.
+They are described in the following:
 
 \begin{table}
   \centering
   \begin{tabularx}{\textwidth}{lX}
     Algorithm & Description \\
     \hline
-    Random & k-means picks random \\
+    k-means & Runs a random initialization, then refines the clusters until the clusters don't change any more. \\
     \hline
-    Density clustering &  DBSCAN $ \ldots $  is equal or larger than the user defined value. \\
+    Density clustering &  Group nearby elements recursively together as long as they are (epsilon) close together. \\
     \hline
-    Agglomerative &  Hierarchical clustering \\
+    Agglomerative &  Hierarchically cluster data into groups of elements that belong closer together. \\
     \hline
-    ClusteringTree &  Applies ideas from hierarchical clustering using a decision tree. \\
+    \textbf{ClusteringTree} &  Create a hierarchical clustering for subset of data to train a regression tree, then apply the regression tree on the full dataset. \\
     \hline
-    SimplifiedDensity &  Combines ideas from k-means with density clustering. The simplified clustering algorithms add a job to a cluster if similarity to the cluster centroid is equal or larger than the user defined value. \\
+    \textbf{SimplifiedDensity} &  Combines ideas from k-means with density clustering. The simplified clustering algorithms add a job to a cluster if similarity to the cluster centroid is equal or larger than the user defined value. \\
     \hline
   \end{tabularx}
-  \caption{Clustering algorithms}
+  \caption{Selection of clustering algorithms}
   \label{tab:clustering_algorithms}
 \end{table}
 \paragraph{ClusteringTree algorithm}
 This algorithm involves three steps:
 
 \begin{enumerate}
- \item Agglomerative clustering of small dataset
- \item Training of a decision tree model
- \item Clustering with the decision tree
+ \item Agglomerative clustering of small dataset.
+ \item Training of a decision tree model on the small dataset.
+ \item Clustering of the large data set using the regression tree.
 \end{enumerate}
 
-\paragraph{SimplifiedDensity algorithm}Clusters are formed around centroids.That are job codings that form clusters by attracting similar jobs.
-All jobs in a cluster fulfill only one condition, the similarity (SIM) to the centroid has to be larger than the user defined minimum.
-The jobs are put in the first cluster, where the condition is fulfilled.
-If there is no such a cluster, the job forms a new one.
+\paragraph{SimplifiedDensity algorithm}
 
-These low requirements allow a performant implementation, but they also allow a job to be in one cluster, even if a centroid of another cluster is much closer, as long as the condition is true.
-The result depends on the processing order of the jobs, though it is deterministic.
+The algorithm forms clusters around centroids.
+These are job codings that form clusters by attracting similar jobs.
+All jobs in a cluster fulfill only one condition, the similarity (SIM) to the centroid has to be bigger than the user defined minimum, in that sense it is similar to DBSCAN.
+It is approximative as the order of jobs matters for the creation of the clusters.
 
-The algorithm can be summarized as follows.
+The algorithm can be summarized as follows:
 \begin{enumerate}
  \item Pick one arbitrary job from the dataset, which will serve as a cluster centroid, and compute similarity to all other jobs.
  \item Create a cluster of jobs that have a minimum similarity and remove them from the dataset.
  \item Repeat step 1 and 2 until no jobs are left in the dataset.
 \end{enumerate}
 
+This approach allows a performant implementation, but they also allow a job to be in one cluster, even if a centroid of another cluster is much closer, as long as the condition is true.
+Hence, the result depends on the processing order of the jobs, though it is deterministic.
+
+
 \subsubsection{Clustering stacks}
-There are several combinations possible.
-In this work, we investigate six of them.
-The operation stack used in each is visualized \Cref{fig:clustering_stacks}.
+There are various combinations possible of the different strategies.
+
 \begin{figure}
   \centering
   \includegraphics[width=4.61in,height=2.38in]{./media/image3.png}
-  \caption{Algorithms and their actual clustering stacks.}
+  \caption{Algorithms and their actual operation stacks.}
   \label{fig:clustering_stacks}
 \end{figure}
+
+For simplicity, we refer to one clustering stack just as algorithm.
+During our research, we explored various combinations out of the possible combinations but we found that these do not perform well and are not interesting to discuss.
+
+The operation stack which we describe in this article is visualized in \Cref{fig:clustering_stacks}.
+In brief, the algorithms are as follows:
 \begin{itemize}
- \item Approach 1 (ML) uses a set of\textbf{ traditional machine learning} techniques.
- \item Approach 2 (BIN\_ALL): \textbf{Levenshtein} distance on \textbf{binary codings.}
- \item Approach 3 (BIN\_AGGZEROS) is like BIN\_ALL, but with \textbf{zero aggregation }of contiguous zero segments.
- \item Approach 4 (HEX\_LEV): Experiments with \textbf{hexadecimal coding }and \textbf{Levenshtein }distance.
- \item Approach 5 (HEX\_NATIVE): is like HEX\_LEV, but uses a \textbf{performance-aware }similarity function.
- \item Approach 6 (PM\_QUANT) is like HEX\_NATIVE, but uses a \textbf{phase-aware }similarity function.
+ \item (ML) uses a set of \textbf{traditional machine learning} techniques.
+ \item (BIN\_ALL) uses \textbf{Levenshtein} distance on \textbf{binary codings.}
+ \item (BIN\_AGGZEROS) is like BIN\_ALL, but with \textbf{zero aggregation} of contiguous zero segments.
+ \item (HEX\_LEV) uses \textbf{hexadecimal coding} and \textbf{Levenshtein} distance.
+ \item (HEX\_NATIVE) is like HEX\_LEV, but uses a \textbf{performance-aware} similarity function.
+ \item (PM\_QUANT) is like HEX\_NATIVE, but uses a \textbf{phase-aware} similarity function.
 \end{itemize}
 
-During our research, we explored various additional combinations: (kurze Liste), but we found that these do not perform well and are not interesting to discuss.
+\subsection{Algorithms}
+This section describes the evaluated algorithms in detail.
 
-\subsection{Algorithms }
 \subsubsection{ML general-purpose machine learning algorithms}
 In the preprocessing step, the MinMaxScaler scales the features to values between 0 and 1 using MinMax normalization.Therefore, the highest distance between two points can be at most EPS\_MAX =  \( d^{1/d} \) , where d is the dimension of the dataset.
-The agglomerative clustering algorithm uses euclidean distance as a similarity measure, i.e., if the distance between two points is shorter than a maximum distance (EPS), then these points belong to the same cluster.
+The agglomerative clustering algorithm uses manhatten distance as a similarity measure, i.e., if the distance between two points is shorter than a maximum distance (EPS), then these points belong to the same cluster.
 We explore several EPS between 0 and EPS\_MAX and use the best value for further evaluation.
 
 The application of general-purpose machine learning algorithms on fingerprints of data is simple.
@@ -862,7 +890,7 @@ By the way, PM ignores such jobs by design.
 Therefore, this step wouldn't be necessary.
 
 The\ number of zero-jobs is different for hexadecimal and absolute mode codings.
-The reason is the quantization to HEX coding, which firstly computes mean performance values for all segments, and then quantizes them to 16 levels.
+The reason is the quantization to HEX coding, which firstly computes mean performance values for all segments, and then quantizes them into 16 levels.
 Hereby some segments can be quantized to zeros, if the mean value becomes sufficiently low.
 Therefore, it may happen that some jobs fall into the zero-job category, if all segments are quantized to zeros.
 It can not happen in BIN coding, because it preserves all the active segments, so that no job may change the category.
