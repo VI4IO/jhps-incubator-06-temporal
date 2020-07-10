@@ -1036,12 +1036,16 @@ To give you an  impression of cluster qualities for different SIM values, we def
 The colors indicate the mean similarity of jobs to the cluster centroid.
 The number above the bar denotes the mean job length of the cluster.
 
-\begin{figure}
-  \centering
-  \includegraphics[width=2.5in,height=0.12in]{./media/image16.png}
-  \caption{Equation}
-  \label{fig:equation}
-\end{figure}
+\begin{equation}
+\text{Relevance} = \text{ClusterSize} \cdot \text{MeanJobLenght}
+\end{equation}
+
+%\begin{figure}
+%  \centering
+%  \includegraphics[width=2.5in,height=0.12in]{./media/image16.png}
+%  \caption{Equation}
+%  \label{fig:equation}
+%\end{figure}
 
 The idea behind the relevance definition is the following: the larger the cluster and the longer the jobs, the more potential load these jobs can produce.
 Therefore it is worth investigating these clusters first.
