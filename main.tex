@@ -647,13 +647,8 @@ This function works with binary coding.
 similarity \left( job_{A}\text{, jo}b_{B} \right) =1- \frac{levenshtein \left( coding_{A}\text{, codin}g_{B} \right) }{max \left( length_{A}\text{, lengt}h_{B} \right) }
 \end{equation}
 \begin{lstlisting}
-{'jobid': 'jobA',
-'coding': [1:5:0:0:0:0:0:0:96:96:96:96:96:96:96],
-'length': 15} 
-
-{'jobid': 'jobB',
-'coding': [0:0:0:0:0:0:0:0:0:96:96:96:96:96:98],
-'length': 15}
+'jobid': 'jobA', 'coding': [1:5:0:0:0:0:0:0:96:96:96:96:96:96:96], 'length': 15
+'jobid': 'jobB', 'coding': [0:0:0:0:0:0:0:0:0:96:96:96:96:96:98], 'length': 15
 \end{lstlisting}
 The similarity between these two jobs according to this equation is 73 percent.
 
@@ -664,13 +659,8 @@ similarity \left( job_{A}\text{, jo}b_{B} \right) =1- \frac{levenshtein \left( c
 \end{equation}
 
 \begin{lstlisting}
-{'jobid': 'jobA',
-'coding': [1:5:0:96:96:96:96:96:96:96],
-'length': 15}
-
-{'jobid': 'jobB',
-'coding': [0:96:96:96:96:96:98],
-'length': 15}
+'jobid': 'jobA','coding': [1:5:0:96:96:96:96:96:96:96], 'length': 15
+'jobid': 'jobB', 'coding': [0:96:96:96:96:96:98], 'length': 15
 \end{lstlisting}
 
 The computation of similarity do not change.
