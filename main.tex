@@ -770,9 +770,11 @@ job_2_md_file_create : [[1]]
 job_2_read_bytes : [[2,2,2,2,8,2,2], [1], [8,1,1]]
 job_2_write_bytes : [[5]]
 \end{lstlisting}
+
 \paragraph{Phase matching}
 Sliding the shorter coding over a longer one, and computing similarity to the corresponding part, we can find the best match.
 The example below illustrates that.We find the best match, when we shift shorter coding five positions to the right.
+
 \noindent\begin{minipage}{0.33\textwidth}
 \begin{lstlisting}
 [2:2:2:2:8:2:2]
@@ -825,6 +827,7 @@ After repeating this step for all possible combinations of I/O phases we chose t
 To compute the match we divide low hex value by high hex value for each segment and sum up the values.
 I/O phases without a pair are assigned virtually to empty phases, and their match is zero.
 The example below shows I/O phases pairs and their matches.
+
 \begin{lstlisting}
 job1_md_file_create : [[2:2:2:9:3], [9:1:1:1]]
 job2_md_file_create : [[-:-:-:-:-], [-:1:-:-]]
@@ -837,6 +840,7 @@ job1_write_bytes = [[-]]
 job2_write_bytes = [[5]]
 match_write_bytes = [(match:0; len:1)]
 \end{lstlisting}
+
 
 \paragraph{Similarity}
 Next, the similarity for coding with different lengths must be adjusted. Similarity between two jobs is the sum of matches divided by the sum of lengths of the longer phases. In this example, we get a similarity of 17$\%$ .
@@ -858,6 +862,7 @@ Therefore, it may happen that some jobs fall into the zero-job category, if all 
 It can not happen in BIN coding, because it preserves all the active segments, so that no job may change the category.
 Interestingly, it affects around 14$\%$  of jobs.
 \Cref{tab:n_intensive_jobs} shows the number of jobs that are used for clustering algorithms.
+
 \begin{table}
   \centering
   \begin{tabular}{ll}
@@ -871,10 +876,12 @@ Interestingly, it affects around 14$\%$  of jobs.
   \label{tab:n_intensive_jobs}
 \end{table}
 
+
 \subsubsection{Data exploration}
 I/O phases are, according to our definition, contiguous sequences of I/O intensive segments.
 The corresponding statistics are visualized in \Cref{fig:phases_stats}.
 We suppose this characteristic can be exploited in clustering algorithms to achieve better results.
+
 
 \begin{figure}
   \centering
@@ -891,6 +898,7 @@ Lastly, the quality of the obtained clusters must be assessed.Unfortunately, th
 \subsection{Evaluation of general-purpose clustering algorithms}
 This section contains data statistics, and the clustering results in \Cref{fig:datasets_clustering_results} of the Job-IO-Metric and Job-IO-Duration datasets with general-purpose machine learning algorithms.
 Due to lack of tools, we determine cluster quality on a small scale.
+
 \subsubsection{Test environment}
 All the experiments in this section are conducted with python 3.8.0.
 In particular we use the agglomerative clustering algorithm, decision trees, and the MinMaxScaler from the sklearn 0.22.1 library.
@@ -910,6 +918,7 @@ In particular we use the agglomerative clustering algorithm, decision trees, and
  \caption{The Top 20 largest clusters.}
  \label{fig:datasets_clustering_results}
 \end{figure}
+
 \subsubsection{Clustering of the Job-IO-Metric and Job-IO-Duration datasets}
 As already mentioned in the related work section, the Job-IO-Metric dataset has 3 features, Job-I/O-Balance, Job-I/O-Utilization, and Job-I/O-Problem-Time.
 After the data pre-processing, we obtain a set of 3-dimensional data points with a domain between 0 and 1.
@@ -926,9 +935,11 @@ A look inside clusters reveals chaotic clustering results.
 For both datasets and for all EPS values we could find many coding sequences in a cluster that don't belong in the same cluster.
 For example a cluster can contain the following sequences.
 
+
 \begin{lstlisting}
 [1], [0:0:14:0], [4:0], [0:0:4:0], [272:272:272] 
 \end{lstlisting}
+
 
 We look at least in the Top 10 largest clusters and find the same picture for all of the.
 Even with low EPS values the algorithms produce many polluted clusters, i.e, with samples from other clusters.
@@ -958,12 +969,14 @@ Firstly, we need to select a SIM value, just before the increase of the SIM valu
 PM and BIN algorithms work best for SIM values between 0.7 and 0.9, and for HEX the SIM value between 0.95 and 0.99.
 We can also observe flattening curves with increasing numbers of jobs, which indicates that more jobs are placed in clusters and less clusters are created.
 
+
 \begin{figure}
   \centering
    \includegraphics[width=4.61in,height=1.85in]{./media/image15.png}
    \caption{Clustering progress.}
    \label{fig:clustering_progress}
 \end{figure}
+
 
 Although an optimal SIM value is depending on use case and dataset, a parameter exploration may provide important hints to find a good value and achieve optimal cluster qualities.
 \Cref{fig:clustering_progress} visualizes the cluster creation for different SIM values.
@@ -987,12 +1000,14 @@ In one case the runtimes clustering of 10,000 jobs took up to 4.3 hours (the out
 We suppose this lies on the quadratic runtimes of the phase matching procedure.
 We didn't spend time to optimize the algorithm further.
 
+
 \begin{figure}
   \centering
   \includegraphics[width=4.61in,height=3.68in]{./media/image18.png}
   \caption{Runtime for executing the clustering.}
   \label{fig:alg_runtimes}
 \end{figure}
+
 
 \begin{figure}
   \centering
@@ -1001,12 +1016,14 @@ We didn't spend time to optimize the algorithm further.
   \label{fig:sim_eploration}
 \end{figure}
 
+
 \begin{figure}
   \centering
   \includegraphics[width=4.61in,height=1.85in]{./media/image22.png}
   \caption{Cumulative number of jobs with different sizes.}
   \label{fig:cum_num_job_sizes}
 \end{figure}
+
 Another quality indicator is the number of small clusters.
 \Cref{fig:cum_num_job_sizes} the final clustering result.
 Obviously, the ABS algorithms tend to create many small clusters.
@@ -1018,23 +1035,27 @@ To give you an  impression of cluster qualities for different SIM values, we def
 \Cref{fig:top10_relevant_jobs}.
 The colors indicate the mean similarity of jobs to the cluster centroid.
 The number above the bar denotes the mean job length of the cluster.
+
 \begin{figure}
   \centering
   \includegraphics[width=2.5in,height=0.12in]{./media/image16.png}
   \caption{Equation}
   \label{fig:equation}
 \end{figure}
+
 The idea behind the relevance definition is the following: the larger the cluster and the longer the jobs, the more potential load these jobs can produce.
 Therefore it is worth investigating these clusters first.
 In principle, the figure confirms that SIM values larger than optimum provide not much improvement, but nevertheless, it does not mean that the cluster quality is acceptable.
 After investigation of some clusters we noticed SIM value independent characteristics.
 To explain them, it is sufficient to look in one cluster of each algorithm, as we do in the next sections.
+
 \begin{figure}
   \centering
    \includegraphics[width=4.61in,height=6.44in]{./media/image11.png}
    \caption{Top 10 relevant jobs ordered by relevance.}
    \label{fig:top10_relevant_jobs}
 \end{figure}
+
 \subsubsection{Cluster presentation format}
 The next sections we have the following format, a description of any particular observations if necessary, followed by a table containing the most important statistics, and by the codings for job, centroid and and the Top 5 job types.
 At the end we include an illustration which describes the length distribution of the cluster.
@@ -1046,6 +1067,7 @@ They are listed in \Cref{tab:bin:largest_clusters}.
 All jobs in each cluster have exactly the same codings.
 The reason that both algorithms create the same clusters, is that the zero aggregation has no effect on formation of these clusters, because the jobs are too short (the minimum job length required for effective zero aggregation is at least three segments) and that the dataset contains a vast amount of such jobs.
 The largest cluster is even representative in Top10 relevant jobs in ref\_top\_ten.
+
 %\begin{table}[h]
 \begingroup
   \centering
@@ -1063,6 +1085,7 @@ The largest cluster is even representative in Top10 relevant jobs in ref\_top\_t
   \label{tab:bin:largest_clusters}
 \endgroup
 %\end{table}
+
 Most jobs in the cluster are shorter than 49 segments, because the main Mistral partitions can allocate jobs for at most 8 hours, and that is the majority of jobs.
 The other jobs must be special allocations.
 Since each segment is 10 min long, the runtime of jobs with 49 segments is about 8.16 hours.
@@ -1073,6 +1096,7 @@ The following observations are characteristic for this algorithm:
  \item Job types can significantly differ from centroid and from each other.
  \item Lengths of job types in a cluster are relatively close to the centroid.
 \end{enumerate}
+
 %\begin{table}[h]
 \begingroup
   \centering
@@ -1085,6 +1109,7 @@ The following observations are characteristic for this algorithm:
   \label{tab:bin_all:stats}
 \endgroup
 %\end{table}
+
 %\begin{table}[h]
 \begingroup
   \centering
@@ -1109,6 +1134,7 @@ The following observations are characteristic for this algorithm:
   \label{tab:bin_all:top_jobs}
 \endgroup
 %\end{table}
+
 %\begin{figure}[h]
 \begingroup
   \centering
@@ -1117,6 +1143,7 @@ The following observations are characteristic for this algorithm:
   \label{fig:bin_all:length}
 \endgroup
 %\end{figure}
+
 \paragraph{BIN\_AGGZEROS}
 Information related to the cluster is in \Cref{tab:bin_aggzeros:stats}, \Cref{tab:bin_aggzeros:top_jobs}, and in \Cref{fig:bin_aggzeros:length}.
 The following is characteristic for this algorithm:
@@ -1126,6 +1153,7 @@ The following is characteristic for this algorithm:
  \item Lengths of job types in a cluster are relatively far from the centroid and compared to BIN\_ALL.
  \item I/O intensive clusters appear to be cleaner than BIN\_ALL.
 \end{enumerate}
+
 
 %\begin{table}[h]
 \begingroup
@@ -1139,6 +1167,7 @@ The following is characteristic for this algorithm:
   \label{tab:bin_aggzeros:stats}
 \endgroup
 %\end{table}
+
 %\begin{table}[h]
 \begingroup
   \centering
@@ -1163,6 +1192,7 @@ The following is characteristic for this algorithm:
   \label{tab:bin_aggzeros:top_jobs}
 \endgroup
 %\end{table}
+
 %\begin{figure}[h]
 \begingroup
   \centering
@@ -1171,6 +1201,7 @@ The following is characteristic for this algorithm:
   \label{fig:bin_aggzeros:length}
 \endgroup
 %\end{figure}
+
 \paragraph{HEX\_LEV}
 Information related to the cluster is in \Cref{tab:hex_lev:stats}, \Cref{tab:hex_lev:top_jobs}, and in \Cref{fig:hex_lev:length}.
 HEX\_LEV reacts slowly to the increasing SIM value, due to the longer hexadecimal codings, compared to binary codings.
@@ -1179,6 +1210,7 @@ But even with a high SIM value, we can observe that some jobs have a different I
 The reason is that Levenshtein distance is not performance aware, i.e., the distance between value 1 and 2 is the same as for 1 and 8.
 There is no such a job in the example below, but we can observe this in other clusters.
 Cluster characteristics:
+
 \begin{enumerate}
  \item Similar job lengths
  \item Mostly clean clusters, but can contain outlier jobs
@@ -1195,6 +1227,7 @@ Cluster characteristics:
 	\label{tab:hex_lev:stats}
 \endgroup
 %\end{table}
+
 %\begin{table}[h]
 \begingroup
   \centering
@@ -1221,6 +1254,7 @@ Cluster characteristics:
   \label{tab:hex_lev:top_jobs}
 \endgroup
 %\end{table}
+
 %\begin{figure}[h]
 \begingroup
   \centering
@@ -1229,6 +1263,7 @@ Cluster characteristics:
   \label{fig:hex_lev:length}
 \endgroup
 %\end{figure}
+
 \paragraph{HEX\_NATIVE}
 Information related to the cluster is in \Cref{tab:hex_native:stats}, \Cref{tab:hex_native:top_jobs}, and in \Cref{fig:hex_native:length}.
 The SIM value exploration shows that this algorithm works best with high SIM values.
@@ -1239,6 +1274,7 @@ Clustering with SIM=0.99 results in clusters that have equal job lengths.
  \item Jobs are relatively close to the centroid
  \item Low number of outliers
 \end{enumerate}
+
 %\begin{table}[h]
 \begingroup
   \centering
@@ -1251,6 +1287,7 @@ Clustering with SIM=0.99 results in clusters that have equal job lengths.
   \label{tab:hex_native:stats}
 \endgroup
 %\end{table}
+
 %\begin{table}[h]
 \begingroup
   \centering
@@ -1276,6 +1313,7 @@ Clustering with SIM=0.99 results in clusters that have equal job lengths.
   \captionof{table}{Centroid and Top 5 job types.}
   \label{tab:hex_native:top_jobs}\endgroup
 %\end{table}
+
 %\begin{figure}[h]
 \begingroup
   \centering
@@ -1284,6 +1322,7 @@ Clustering with SIM=0.99 results in clusters that have equal job lengths.
   \label{fig:hex_native:length}
 \endgroup
 %\end{figure}
+
 \paragraph{PM\_QUANT}
 Information\ related to the cluster is in \Cref{fig:pm_quant:stats}, \Cref{fig:pm_quant:top_jobs}, and in \Cref{fig:pm_quant:length}.
 The first thing to mention are the high generalization capabilities of the algorithm, i.e., that many jobs are mapped to a relatively low number of types.
@@ -1295,11 +1334,13 @@ Remarkable is also the cleanliness of the clusters.
 The centroid and the jobs contain quite similar I/O patterns.
 Cluster characteristics:
 
+
 \begin{enumerate}
  \item Low number of job types
  \item Relatively large number of job lengths
  \item I/O pattern 
 \end{enumerate}
+
 %\begin{table}[h]
 \begingroup
   \centering
@@ -1312,6 +1353,7 @@ Cluster characteristics:
   \label{fig:pm_quant:stats}
 \endgroup
 %\end{table}
+
 %\begin{table}[h]
 \begingroup
   \centering
@@ -1338,6 +1380,7 @@ Cluster characteristics:
   \label{fig:pm_quant:top_jobs}
 \endgroup
 %\end{table}
+
 %\begin{figure}[h]
 \begingroup
   \centering
@@ -1346,14 +1389,17 @@ Cluster characteristics:
   \label{fig:pm_quant:length}
 \endgroup
 %\end{figure}
+
 \subsection{Use case: I/O intensive job}
 The demonstration in this section shows how this approach can be used to identify a cluster of I/O-intensive jobs similar to an existing job.
+
 \begin{figure}[h]
   \centering
   \includegraphics[width=2.84in,height=2.85in]{./media/image1.png}
   \caption{One high I/O intensity job running on 46 nodes. Score is the sum of all nodes stacked by the node. A color represents one of the nodes.}
   \label{fig:use_case}
 \end{figure}
+
 Firstly, we find an I/O intensive job that we use to identify similar jobs.
 The selected job is visualized in \Cref{fig:use_case}.
 We can see that this job reads data over the whole runtime.
@@ -1384,6 +1430,7 @@ Information related to the cluster is in \Cref{tab:use_case:bin_all:stats}, \Cre
   \label{tab:use_case:bin_all:stats}
 \endgroup
 %\end{table}
+
 %\begin{table}[h]
 \begingroup
   \centering
@@ -1418,6 +1465,7 @@ Information related to the cluster is in \Cref{tab:use_case:bin_all:stats}, \Cre
   \label{fig:use_case:bin_all:length}
 \endgroup
 %\end{figure}
+
 \paragraph{BIN\_AGGZEROS}
 Information related to the cluster is in \Cref{tab:use_case:bin_aggzeros:stats}, \Cref{tab:use_case:bin_aggzeros:top_jobs}, and in \Cref{fig:use_case:bin_aggzeros:length}.
 
