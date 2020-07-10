@@ -333,58 +333,17 @@ For these reasons, we decided to explore a variety of alternative options for di
 
 
 \section{Related work}
-There are many tracing and profiling tools that are able to record I/O information~\cite{TFAPIKBBCF19}; we will discuss a selection of them in more detail in the following.
-Most of them focus on individual jobs, and only a few of them apply machine learning for mass analysis.
+There are many tracing and profiling tools that are able to record I/O information~\cite{TFAPIKBBCF19}; we will discuss a selection of them in more detail in the following.Most of them focus on individual jobs, and only a few of them apply machine learning for data analysis, in particular across jobs. As the purpose of applications is computation and, thus, I/O is just a byproduct, applications often spend less than 10\% time with I/O.The issue of performance profiles is that they remove the temporal dimension and make it difficult to identify relevant I/O phases.The Ellexus tools\footnote{\url{https://www.ellexus.com/products/}} include Breeze, a user-friendly offline I/O profiling software, an automatic I/O report generator Healthcheck, and command line tool Mistral which purpose is to report on and resolve I/O performance issues when running complex Linux applications on high performance compute clusters.Mistral is a small program that allows you to monitor application I/O patterns in real time, and log undesirable behaviour using rules defined in a configuration file called a contract.Ellexus tools support POSIX and MPI (MPICH, MVAPICH, OpenMPI) I/O interfaces.
 
-The issue of performance profiles is that they remove the temporal dimension and make it difficult to identify relevant I/O phases.
-As the purpose of interesting applications is the computation and I/O is just a byproduct, applications often spend less than 10\% time with I/O.
-Tracing tools, however, produce too much information that must be reduced further.
+Darshan~\cite{carns2011understanding-toc,hpcdarshan} is an open source I/O characterization tool for post-mortem analysis of HPC applications' I/O behavior.Its primary objective is to capture concise but useful information with minimal overhead.Darshan accomplishes this by eschewing end-to-end tracing in favor of compact statistics such as elapsed time, access sizes, access patterns, and file names for each file opened by an application.These statistics are captured in a bounded amount of memory per process as the application executes.When the application shuts down, it is reduced, compressed, and stored in a unified log file.Utilities included with Darshan can then be used to analyze, visualize, and summarize the Darshan log information.Because of Darshan's low overhead, it is suitable for system-wide deployment on large-scale systems.In this deployment model, Darshan can be used not just to investigate the I/O behavior of individual applications but also to capture a broad view of system workloads for use by facility operators and I/O researchers.
+TOKIO~\cite{lockwood2018tokio} integrates logs from various sources to allow an analysis of data. 
+It allows to find certain inefficient access patterns in the data.
+%Darshan supports several types of instrumentation via software modules.%Each module provides its own statistical counters and function wrappers while sharing a common infrastructure for reduction, compression, and storage.%The most full-featured modules provide instrumentation for POSIX, MPI-I/O and standard I/O library function calls, while additional modules provide limited PNetCDF and HDF5 instrumentation.%Other modules collect system information, such as Blue Gene runtime system parameters or Lustre file system striping parameters.%The Darshan eXtended Tracing (DXT) module can be enabled at runtime to increase fidelity by recording a complete trace of all MPI-I/O and POSIX I/O operations.%Darshan uses LD\_PRELOAD to intercept I/O calls at runtime in dynamically linked executables and link-time wrappers to intercept I/O calls at compile time in statically linked executables.%For example, to override POSIX I/O calls, the GNU C Library is overloaded so that Darshan can intercept all the read, write and metadata operations.%In order to measure MPI I/O, the MPI libraries must be similarly overridden.%This technique allows an application to be traced without modification and with reasonably low overhead.
 
-The Ellexus tools\footnote{\url{https://www.ellexus.com/products/}} include Breeze, a user-friendly offline I/O profiling software, an automatic I/O report generator Healthcheck, and command line tool Mistral which purpose is to report on and resolve I/O performance issues when running complex Linux applications on high performance compute clusters.
-Mistral is a small program that allows you to monitor application I/O patterns in real time, and log undesirable behaviour using rules defined in a configuration file called a contract.
-Ellexus tools support POSIX and MPI (MPICH, MVAPICH, OpenMPI) I/O interfaces.
+The LASSi tool~\cite{DBLP:journals/corr/abs-1906-03884} was developed for detecting, the so called, victim and aggressor applications.An aggressor can steal I/O resources from the victim and negatively affect its runtime.To identify such applications, LASSi calculates metrics from Lustre job-stats and information from the job scheduler.One metric category shows file system load and another category describes applications I/O behavior.The correlation of these metrics can help to identify applications that cause the file system to slow down.In the LASSi workflow this is a manual step, where a support team is involved in the identification of applications during file system slow down.Manual steps are disadvantageous when processing large amounts of data and must be avoided in unsupervised I/O behavior identification.LASSi's indicates that the main target group are system maintainers.Understanding LASSi reports may be challenging for ordinary HPC users, who do not have knowledge about the underlying storage system.
 
-Darshan~\cite{carns2011understanding-toc,hpcdarshan} is an open source I/O characterization tool for post-mortem analysis of HPC applications' I/O behavior.
-Its primary objective is to capture concise but useful information with minimal overhead.
-Darshan accomplishes this by eschewing end-to-end tracing in favor of compact statistics such as elapsed time, access sizes, access patterns, and file names for each file opened by an application.
-These statistics are captured in a bounded amount of memory per process as the application executes.
-When the application shuts down, it is reduced, compressed, and stored in a unified log file.
-Utilities included with Darshan can then be used to analyze, visualize, and summarize the Darshan log information.
-Because of Darshan's low overhead, it is suitable for system-wide deployment on large-scale systems.
-In this deployment model, Darshan can be used not just to investigate the I/O behavior of individual applications but also to capture a broad view of system workloads for use by facility operators and I/O researchers.
-
-Darshan supports several types of instrumentation via software modules.
-Each module provides its own statistical counters and function wrappers while sharing a common infrastructure for reduction, compression, and storage.
-The most full-featured modules provide instrumentation for POSIX, MPI-I/O and standard I/O library function calls, while additional modules provide limited PNetCDF and HDF5 instrumentation.
-Other modules collect system information, such as Blue Gene runtime system parameters or Lustre file system striping parameters.
-The Darshan eXtended Tracing (DXT) module can be enabled at runtime to increase fidelity by recording a complete trace of all MPI-I/O and POSIX I/O operations.
-
-Darshan uses LD\_PRELOAD to intercept I/O calls at runtime in dynamically linked executables and link-time wrappers to intercept I/O calls at compile time in statically linked executables.
-For example, to override POSIX I/O calls, the GNU C Library is overloaded so that Darshan can intercept all the read, write and metadata operations.
-In order to measure MPI I/O, the MPI libraries must be similarly overridden.
-This technique allows an application to be traced without modification and with reasonably low overhead.
-
-LASSi tool~\cite{DBLP:journals/corr/abs-1906-03884} was developed for detecting, the so called, victim and aggressor applications.
-An aggressor can steal I/O resources from the victim and negatively affect its runtime.
-To identify such applications, LASSi calculates metrics from Lustre job-stats and information from the job scheduler.
-One metric category shows file system load and another category describes applications I/O behavior.
-The correlation of these metrics can help to identify applications that cause the file system to slow down.
-In the LASSi workflow this is a manual step, where a support team is involved in the identification of applications during file system slow down.
-Manual steps are disadvantageous when processing large amounts of data and must be avoided in unsupervised I/O behavior identification.
-LASSi's indicates that the main target group are system maintainers.
-Understanding LASSi reports may be challenging for ordinary HPC users, who do not have knowledge about the underlying storage system.
-
-The Nextgenio monitoring system~\cite{nextgenio2016}, has four main collectors.
-The first two, the PBS and ALPS tools, collect job scheduling information.
-The proprietary Cray I/O monitoring tool exploits Lustre I/O counters to capture file system usage on OSTs of all OSSs and allocated compute nodes.
-The MAP component provides information about cpu, memory and network usage.
-Then all the collected data is clustered for the analysis of system usage and performance evaluation.
-
-In~\cite{TUISVPKB19}, the authors utilized probes to detect file system slow-down.
-A probing tool measures file system response times by periodically sending metadata and read/write requests.
-An increase of response times correlates to the overloading of the file system.
-This approach allows the calculation of a slow-down factor identification of the slow-down time period.
-This approach is able to detect a file system slow-down, but cannot detect the jobs that cause the slow-down.
+In~\cite{TUISVPKB19}, the authors utilized probes to detect file system slow-down.A probing tool measures file system response times by periodically sending metadata and read/write requests.An increase of response times correlates to the overloading of the file system.This approach allows the calculation of a slow-down factor identification of the slow-down time period.This approach is able to detect a file system slow-down, but cannot detect the jobs that cause the slow-down.
+The Nextgenio monitoring system~\cite{nextgenio2016}, has four main collectors.The first two, the PBS and ALPS tools, collect job scheduling information.The proprietary Cray I/O monitoring tool exploits Lustre I/O counters to capture file system usage on OSTs of all OSSs and allocated compute nodes.The MAP component provides information about cpu, memory and network usage.Then all the collected data is clustered for the analysis of system usage and performance evaluation.In contrast to existing approaches, our approach focuses on the analysis of job data and investigates clustering strategy to group similar jobs.
 
 \section{Methodology}
 Generally, machine learning algorithms expect a fixed number of features.
