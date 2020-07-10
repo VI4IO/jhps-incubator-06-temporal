@@ -1,5 +1,3 @@
-
-
 \let\accentvec\vec
 \documentclass[]{llncs}
 \usepackage{colortbl}
@@ -246,8 +244,8 @@ Segmentation is a pre-processing step that splits data into equal-sized segments
 This stage preserves the performance units (e.g., Op/s, MiB/s) for each metric.
 As further calculations that involve different metrics is difficult for different metrics, we introduced a categorization\textbf{ pre-processing} step that takes into account the performance of the underlying HPC system and assigns an ordered category to each segment.
 It takes the mean performance that was calculated in the previous step, and assigns one of the three categories (LowIO=0, HighIO=1 and CriticalIO=4).
-The category split points are based on the histogram of the obtained values~\cite{iocats2020}.
-This node-level data can then be used to compute job-statistics by aggregating across time or nodes.
+The category split points are based on the histogram of the obtained values, for any metrics, a segment with a value up to the 99\%-Quantile it is considered to be LowIO, the 99.9\%-Quantile indicates HighIO~(see \cite{iocats2020}).
+This node-level data can then be used to compute job-statistics by aggregating across time, file systems, and nodes.
 
 In summary, this data representation has the following key advantages for data analysis.
 The ordered categories make the calculations between different metrics feasible, which is not possible with raw data.
@@ -256,7 +254,7 @@ Besides, the resulting data representation is much smaller compared to the raw d
 This allows us to apply compute-intensive algorithms to large datasets.
 Finally, irrelevant data is hidden by the LowIO category and doesn't distract from significant parts of jobs.
 
-In our previous work, we computed three high-level metrics per job that aid users to understand job profiles: 
+In our previous work, we computed three high-level metrics per job that aid users to understand job profiles:
 
 \begin{itemize}
 	\item \textbf{Job-I/O-Balance:} indicates how I/O load is distributed between nodes during job runtime.
@@ -275,7 +273,7 @@ In \Cref{fig:seg_example}, we can see the temporal behavior for this particular 
 We call \textbf{an I/O phase a contiguous sequence of non-zero segments} (where the score of the segment is larger than zero).
 For example, in the figure, we can see one phase for md\_file\_create, and two phases for md\_mod (one short and non-intrusive at the beginning, and one critical around 60 minutes).
 
-When looking at categorization at the metric level, i.e., after reduction of the nodes and file system dimensions, we can observe that many jobs exhibit I/O phases. 
+When looking at categorization at the metric level, i.e., after reduction of the nodes and file system dimensions, we can observe that many jobs exhibit I/O phases.
 
 \section{Similarity Between Jobs}
 The raw monitoring data of a job in our environment at DKRZ, we obtain a time series of 9 metrics per node, each metrics sampled at five seconds intervals.
@@ -333,11 +331,11 @@ For these reasons, we decided to explore a variety of alternative options for di
 
 
 \section{Related work}
-There are many tracing and profiling tools that are able to record I/O information~\cite{TFAPIKBBCF19}; we will discuss a selection of them in more detail in the following.Most of them focus on individual jobs, and only a few of them apply machine learning for data analysis, in particular across jobs. As the purpose of applications is computation and, thus, I/O is just a byproduct, applications often spend less than 10\% time with I/O.The issue of performance profiles is that they remove the temporal dimension and make it difficult to identify relevant I/O phases.The Ellexus tools\footnote{\url{https://www.ellexus.com/products/}} include Breeze, a user-friendly offline I/O profiling software, an automatic I/O report generator Healthcheck, and command line tool Mistral which purpose is to report on and resolve I/O performance issues when running complex Linux applications on high performance compute clusters.Mistral is a small program that allows you to monitor application I/O patterns in real time, and log undesirable behaviour using rules defined in a configuration file called a contract.
+There are many tracing and profiling tools that are able to record I/O information~\cite{TFAPIKBBCF19}; we will discuss a selection of them in more detail in the following.Most of them focus on individual jobs, and only a few of them apply machine learning for data analysis, in particular across jobs.As the purpose of applications is computation and, thus, I/O is just a byproduct, applications often spend less than 10\% time with I/O.The issue of performance profiles is that they remove the temporal dimension and make it difficult to identify relevant I/O phases.The Ellexus tools\footnote{\url{https://www.ellexus.com/products/}} include Breeze, a user-friendly offline I/O profiling software, an automatic I/O report generator Healthcheck, and command line tool Mistral which purpose is to report on and resolve I/O performance issues when running complex Linux applications on high performance compute clusters.Mistral is a small program that allows you to monitor application I/O patterns in real time, and log undesirable behaviour using rules defined in a configuration file called a contract.
 Darshan~\cite{carns2011understanding-toc,hpcdarshan} is an open source I/O characterization tool for post-mortem analysis of HPC applications' I/O behavior.Its primary objective is to capture concise but useful information with minimal overhead.Darshan accomplishes this by eschewing end-to-end tracing in favor of compact statistics such as elapsed time, access sizes, access patterns, and file names for each file opened by an application.These statistics are captured in a bounded amount of memory per process as the application executes.When the application shuts down, it is reduced, compressed, and stored in a unified log file.%Utilities included with Darshan can then be used to analyze, visualize, and summarize the Darshan log information.Because of Darshan's low overhead, it is suitable for system-wide deployment on large-scale systems.In this deployment model, Darshan can be used not just to investigate the I/O behavior of individual applications but also to capture a broad view of system workloads for use by facility operators and I/O researchers.
 
 There are approaches that monitor record storage behavior and aim to identify inefficient applications in a cluster.
-TOKIO~\cite{lockwood2018tokio} integrates logs from various sources to allow an analysis of data. 
+TOKIO~\cite{lockwood2018tokio} integrates logs from various sources to allow an analysis of data.
 It allows to find certain inefficient access patterns in the data.
 The LASSi tool~\cite{DBLP:journals/corr/abs-1906-03884} was developed for detecting, the so called, victim and aggressor applications.An aggressor can steal I/O resources from the victim and negatively affect its runtime.To identify such applications, LASSi calculates metrics from Lustre job-stats and information from the job scheduler.One metric category shows file system load and another category describes applications I/O behavior.The correlation of these metrics can help to identify applications that cause the file system to slow down.In the LASSi workflow this is a manual step, where a support team is involved in the identification of applications during file system slow down.Manual steps are disadvantageous when processing large amounts of data and must be avoided in unsupervised I/O behavior identification.LASSi's indicates that the main target group are system maintainers.Understanding LASSi reports may be challenging for ordinary HPC users, who do not have knowledge about the underlying storage system.
 
@@ -347,60 +345,71 @@ The Nextgenio monitoring system~\cite{nextgenio2016}, has four main collectors.
 \section{Methodology}
 
 The goal of this article is to research the impact of clustering strategies on a large number of jobs. Generally, machine learning algorithms expect a fixed number of features, therefore, the time series of statistics that is retrieved on the node-level needs to be pre-processed.
-The application of a “specific algorithm” can be understood as a number of successive processing steps on data. Roughly speaking, there are three basic steps: data pre-processing including coding, similarity computation, and clustering. 
+The application of a “specific algorithm” can be understood as a number of successive processing steps on data. Roughly speaking, there are three basic steps: data pre-processing including coding, similarity computation, and clustering.
 We call one of such a combination a \textit{clustering stack}.
 The pre-processing converts the dynamic-sized monitoring data which depends on the number of captured metrics, allocated nodes, and application runtime into a suitable representation for the clustering algorithm.
 Then the clustering is applied. Finally, the clustering result needs to be assessed, i.e., how suitable is this strategy for our IO statistics and use cases?
 
 In the following, we have dedicated a section to each step discussing potential alternatives. The list does not intend to be complete but shows a variety of options.
+
 \subsubsection{Data pre-processing}
-The 4-dimensional data from our monitoring system is to fine-grain mass analys. To be able to analyse millions of jobs, we apply some data reduction techniques that are listed in \Cref{tab:reduction_techniques}.
+The 4-dimensional data from our monitoring system is too fine-grained for mass analysis,
+to be able to analyze millions of jobs, we must apply some data reduction technique.
 The result of the data-preprocessing is a coding of the initial time series data into one or multiple vectors.
 
-On the high-level, the following strategies could be considered:
-\begin{itemize}
-	\item \textbf{Segment statistics} compute for each segment a fixed statistics, such as the mean value across all nodes.
-		This basically preserves the time series and depends on the job-length.
-	\item \textbf{Phase statistics} computes high-level statistics by analyzing the temporal behavior of IO phases further, e.g., compute the average length of IO segments with CriticalIO.
-		This approach is independent of the job length but requires identifying phases and determining meaningful job metrics.
-	\item \textbf{Job profiles} compute statistics across the whole job by eliminating the temporal component by applying reduction operations such as the arithmetic mean.
-		A drawback of this simplification is that any temporal pattern is lost.
-\end{itemize}
-
-We decided to distinguish the different dimensions of a job (Node, File System, Metric, and Time), which defines how a dimension is aggregated (if at all).
-Regardless of this decision, we first convert the time series into segments of 10 minutes which we found previously is a good trade-off to represent the temporal behavior of the application while it reduces the size of the time series.
+We first convert the time series into segments of 10 minutes which we found previously is a good trade-off to represent the temporal behavior of the application while it reduces the size of the time series.
 Hence, for a job and for each of our 9 client-side recorded metrics, we obtain a coarse-grained time series.
 To simplify the interpretation of results and the choice distance metrics, it is beneficial to have the same unit for all features which is why we use our category classification which creates a unitless order.
 For example, when reduced by node, file system, and across metrics, a point may represent the mean value across all time series for the job for the 10 minute interval.
 
+On the high-level, the following strategies for data reduction could be considered:
+\begin{itemize}
+	\item \textbf{Job profiles} compute statistics across the whole job by eliminating the temporal component by applying reduction operations such as the arithmetic mean.
+		A drawback of this simplification is that any temporal pattern is lost.
+	\item \textbf{Segment statistics} compute for each segment a fixed statistics, such as the mean value across all nodes.
+		This basically preserves the time series and depends on the job-length.
+	\item \textbf{Phase statistics} computes high-level statistics by analyzing the temporal behavior of IO phases further, e.g., compute the average length of IO segments with CriticalIO.
+		This approach is independent of the job length but requires identifying phases and determining meaningful job metrics.
+\end{itemize}
+
+We decided to distinguish the different dimensions of a job (Node, File System, Metric, and Time) defining how the aggregation is performed.
+Not reducing data in the dimension would mean that the result would depend on e.g., the number of nodes of a job, which makes the analysis difficult.
+For one dimension, you could compute various statistics, we decided to use mean or sum.
+Any data reduction is performed in this order: fist Node, File System, and last by Metric, thus, a time series of encoded segments remain.
+The time series of segments can be reduced differently in each dimension; alternatives that we apply in this paper are listed in \Cref{tab:reduction_techniques}.
+By reducing along all dimension, you obtain basically a job profile (as discussed above).
 
 \begin{table}
 	\centering
 	\begin{tabularx}{\textwidth}{llX}
-		Dimension       & Operation                                    &  Description                                                       \\ 
+		Dimension       & Operation                                    &  Description                                                       \\
 		\hline
-		Time            &                                              &  Convert to various coding formats \par (see section 5.1.2 Coding) \\ 
+		Node            & Reduce by mean()                             &  Aggregate all nodes by mean() function                            \\
+		                & Reduce by sum()                              &  Aggregate all nodes by sum() function                             \\
 		\hline
-		Node            & Reduce by mean()                             &  Aggregate all nodes by mean() function                            \\ 
-		                & Reduce by sum()                              &  Aggregate all nodes by sum() function                             \\ 
+		File System     & Reduce by mean()                             &  Aggregate all file systems by mean() function                     \\
+		                &
+		Reduce by sum() & Aggregate all file systems by sum() function \\
 		\hline
-		File System     & Reduce by mean()                             &  Aggregate all file systems by mean() function                     \\ 
-		                & 
-		Reduce by sum() & Aggregate all file systems by sum() function \\ 
+		Metric          & Reduce by sum()                              &  Aggregate all nine metrics by sum()                               \\
 		\hline
-		Metric          & Reduce by sum()                              &  Aggregate all nine metrics by sum()                               \\ 
+		Time            &                                              &  Convert segments to coding formats \\
 		\hline
-		All             & Job profile                                  &  Reduces time series to a fixed set of values                      \\ 
+    All     & Reduce by mean()    &  Reduces time series to a fixed set of values                      \\
 		\hline
 	\end{tabularx}
-	\caption{Data reduction techniques.}
+	\caption{Dimension reduction strategies for the original 4D-data.}
 	\label{tab:reduction_techniques}
 \end{table}
+
+
 \subsubsection{Coding}
-Segmented data can still contain too much information as necessary for the analysis.
-To deal with that we introduce two further condensed data representations called binary and hexadecimal coding.
-Additionally, we introduce two operations on codings.
-One extracts I/O phases and the other one aggregates continuous zero segments to one zero segment.
+
+Segmented data contains a numeric floating point value for each data, which can be too much information for the analysis.
+Therefore, we introduce two condensed data representations called binary and hexadecimal coding.
+Additionally, we introduce two operations on the coding:
+the first extracts I/O phases -- a phase is a consecutive non-zero series of segments;
+the second merges all consecutive zero segments into one segment, i.e., removes compute phases in the statistics.
 The operations are summarized in \Cref{tab:coding_ops}.
 
 \begin{table}
@@ -410,7 +419,7 @@ The operations are summarized in \Cref{tab:coding_ops}.
 	 \hline	 Binarization & Segments are mapped to 9-bit numbers (v), where each position (i) represents a metric. The bits are set by the following function:
 	 \vbox{
 		\begin{equation}
-			v_i = 
+			v_i =
 			\begin{cases}
 				\text{false if segment}_i = 0\\\text{true otherwise.}
 			\end{cases}, i \in [\text{enumerated metrics}]
@@ -419,18 +428,18 @@ The operations are summarized in \Cref{tab:coding_ops}.
 	 \hline
 	 Hex-Quantization & Quantize segments to 16 levels. \\
 	 \hline
-	 Zeros aggregation & Aggregates continuous occurrences of zero segments to one zero segment. \\
+	 Zeros aggregation & Merge all consecutive zero segments. \\
 	 \hline
-	 Phase extraction &  Extract continuous sequences of non-zero segments. \par - Splits time series at zero segments in sub time series (I/O phases) and removes zero segments. \par - Preserves order of I/O phases. \\
+	 Phase extraction &  Extract continuous sequences of non-zero segments. \par - Split time series at zero segments in sub time series (I/O phases) and remove zero segments. \par - Preserve order of I/O phases. \\
 	 \hline
  \end{tabularx}
  \caption{Coding operations.}
  \label{tab:coding_ops}
 \end{table}
 \paragraph{Binary coding}
-Binary coding represents monitoring data as a sequence of numbers, where each number stands for a kind of file system usage.
-The number depends on activities found in the segment.
-In this coding approach each conceivable combination of activities has an unique number.
+Binary coding represents monitoring data as a sequence of numbers, where each number represents the overall file system usage.
+The number is computed based on the 9 metrics found in the segment, e.g., if a phase is read and write intensive it is encoded as one type of behavior.
+In this approach, each conceivable combination of activities has an unique number.
 
 The approach maps the three categories to the following two states: The LowIO category is mapped to the non-active (0) state, and HighIO and CriticalIO categories are mapped to the active (1) state.
 On one side, by doing this, we lose information about performance intensity, but on other side, this simplification allows a more comprehensible comparison of job activities.
@@ -446,41 +455,41 @@ Coding is reversible, e.g., when having value 48, the computation of active metr
 %\begin{tabular}{p{0.8in}p{0.8in}}
 %\hline
 %%row no:1
-%\multicolumn{1}{p{0.8in}}{\cellcolor[HTML]{C9DAF8} \tabto{0.25in}  \tabto{0.39in} \tab Metric} & 
+%\multicolumn{1}{p{0.8in}}{\cellcolor[HTML]{C9DAF8} \tabto{0.25in}  \tabto{0.39in} \tab Metric} &
 %\multicolumn{1}{p{0.8in}}{\cellcolor[HTML]{C9DAF8} \tabto{0.25in}  \tabto{0.39in} \tab Code} \\
 %\hhline{--}
 %%row no:2
-%\multicolumn{1}{p{0.8in}}{md\_file\_create} & 
+%\multicolumn{1}{p{0.8in}}{md\_file\_create} &
 %\multicolumn{1}{p{0.8in}}{ \tabto{0.25in}  \tabto{0.39in} \tab 1} \\
 %\hhline{~~}
 %%row no:3
-%\multicolumn{1}{p{0.8in}}{md\_file\_delete} & 
+%\multicolumn{1}{p{0.8in}}{md\_file\_delete} &
 %\multicolumn{1}{p{0.8in}}{ \tabto{0.25in}  \tabto{0.39in} \tab 2} \\
 %\hhline{~~}
 %%row no:4
-%\multicolumn{1}{p{0.8in}}{md\_mod} & 
+%\multicolumn{1}{p{0.8in}}{md\_mod} &
 %\multicolumn{1}{p{0.8in}}{ \tabto{0.25in}  \tabto{0.39in} \tab 4} \\
 %\hhline{~~}
 %%row no:5
-%\multicolumn{1}{p{0.8in}}{md\_other} & 
+%\multicolumn{1}{p{0.8in}}{md\_other} &
 %\multicolumn{1}{p{0.8in}}{ \tabto{0.25in}  \tabto{0.39in} \tab 8} \\
 %\hhline{~~}
 %%row no:6
-%\multicolumn{1}{p{0.8in}}{md\_read} & 
+%\multicolumn{1}{p{0.8in}}{md\_read} &
 %\multicolumn{1}{p{0.8in}}{ \tabto{0.25in}  \tabto{0.39in} \tab 16} \\
 %\hhline{~~}
 %%row no:7
-%\multicolumn{1}{p{0.8in}}{read\_bytes} & 
+%\multicolumn{1}{p{0.8in}}{read\_bytes} &
 %\multicolumn{1}{p{0.8in}}{ \tabto{0.25in}  \tabto{0.39in} \tab 32} \\
 %\hhline{~~}
 %%row no:8
-%\multicolumn{1}{p{0.8in}}{read\_calls} & 
+%\multicolumn{1}{p{0.8in}}{read\_calls} &
 %\multicolumn{1}{p{0.8in}}{ \tabto{0.25in}  \tabto{0.39in} \tab 64} \\
 %\hhline{~~}
-%%row no:9%\multicolumn{1}{p{0.8in}}{write\_bytes} & %\multicolumn{1}{p{0.8in}}{ \tabto{0.25in}  \tabto{0.39in} \tab 128} \\
+%%row no:9%\multicolumn{1}{p{0.8in}}{write\_bytes} &%\multicolumn{1}{p{0.8in}}{ \tabto{0.25in}  \tabto{0.39in} \tab 128} \\
 %\hhline{~~}
 %%row no:10
-%\multicolumn{1}{p{0.8in}}{write\_calls} & 
+%\multicolumn{1}{p{0.8in}}{write\_calls} &
 %\multicolumn{1}{p{0.8in}}{ \tabto{0.25in}  \tabto{0.39in} \tab 256} \\
 %\hhline{~~}
 %\end{tabular}
@@ -495,13 +504,14 @@ After coding each segment, the jobs can be represented as a sequence of numbers,
 The monitoring dataset doesn't provide information about what happens during the zero segments.
 It can be anything, like a job is waiting for resources, or computing something.
 It can also be that the job script cannot start immediately or run on a slow network.
-To catch such jobs, we aggregate multiple consecutive zero segments into one zero segment, thus the coding of the previous job would be:
+To catch such jobs, we aggregate multiple consecutive zero segments into one zero segment, thus the coding of the previous job would replace all 0:...:0 sequences just with 0.
 
 \begin{lstlisting}
 'jobid': 'jobA', 'coding': [1:5:0:96:96:96:96:96:96:96], 'length': 15
 \end{lstlisting}
 
 Note, that the job length does not change, only the sequence length.
+
 \paragraph*{Hexadecimal coding}
 Hexadecimal coding preserves monitoring data for each metric and each segment.
 As the name suggests, a segment is converted into a hexadecimal number.
@@ -512,14 +522,14 @@ The example in \Cref{tab:hex_example} shows hexadecimal coding for a job contain
 \begin{table}
   \centering
   \begin{tabular}{ll}
-    md\_file\_create & [0:0:\textbf{2}:\textbf{2}:\textbf{2}:\textbf{9}] \\ 
-    md\_file\_delete & [0:0:0:0:0:0]                                     \\ 
-    md\_mod          & [0:0:0:0:0:0]                                     \\ 
-    md\_other        & [0:0:0:0:0:0]                                     \\ 
-    md\_read         & [0:0:0:\textbf{9}:3:0]                            \\ 
-    read\_bytes      & [\textbf{5}:0:0:0:0:0]                            \\ 
-    read\_calls      & [0:0:0:0:0:0]                                     \\ 
-    write\_bytes     & [0:0:0:0:\textbf{f}:\textbf{f}]                   \\ 
+    md\_file\_create & [0:0:\textbf{2}:\textbf{2}:\textbf{2}:\textbf{9}] \\
+    md\_file\_delete & [0:0:0:0:0:0]                                     \\
+    md\_mod          & [0:0:0:0:0:0]                                     \\
+    md\_other        & [0:0:0:0:0:0]                                     \\
+    md\_read         & [0:0:0:\textbf{9}:3:0]                            \\
+    read\_bytes      & [\textbf{5}:0:0:0:0:0]                            \\
+    read\_calls      & [0:0:0:0:0:0]                                     \\
+    write\_bytes     & [0:0:0:0:\textbf{f}:\textbf{f}]                   \\
     write\_calls     & [0:0:0:0:0:0]
   \end{tabular}
   \caption{Example of a hexadecimal coding.}
@@ -610,7 +620,7 @@ The operation stack used in each is visualized \Cref{fig:clustering_stacks}.
   \label{fig:clustering_stacks}
 \end{figure}
 \begin{itemize}
- \item Approach 1 (ML) uses a set of\textbf{ traditional machine learning} techniques. 
+ \item Approach 1 (ML) uses a set of\textbf{ traditional machine learning} techniques.
  \item Approach 2 (BIN\_ALL): \textbf{Levenshtein} distance on \textbf{binary codings.}
  \item Approach 3 (BIN\_AGGZEROS) is like BIN\_ALL, but with \textbf{zero aggregation }of contiguous zero segments.
  \item Approach 4 (HEX\_LEV): Experiments with \textbf{hexadecimal coding }and \textbf{Levenshtein }distance.
@@ -694,7 +704,7 @@ That means, we take the shortest coding sequence (CA) and slice the longest codi
 
 
 \begin{lstlisting}
-float maxCodingSimilarity(CA, CB) { 
+float maxCodingSimilarity(CA, CB) {
   max = 0
   LA = length(CA)
   LB = length(CB)
@@ -735,7 +745,7 @@ read_bytes     [0:0:0:0:0:0:0:0:0:0:0:0:0]
 read_calls     [0:0:0:0:0:0:0:0:0:0:0:0:0]
 write_bytes    [0:0:0:0:0:0:0:0:0:0:0:0:0]
 write_calls    [0:0:0:0:0:0:0:0:0:0:0:0:0]
-'length': 13} 
+'length': 13}
 
 'jobid': jobB,
 'coding': metric
@@ -773,14 +783,14 @@ The example below illustrates that.We find the best match, when we shift shorte
 \begin{lstlisting}
 [2:2:2:2:8:2:2]
 [9:3:-:-:-:-:-]
-similarity 
-= (2/9+2/3)/7 
+similarity
+= (2/9+2/3)/7
 = 13%
 
 [2:2:2:2:8:2:2]
 [-:9:3:-:-:-:-]
-similarity 
-= (2/9+2/3)/7 
+similarity
+= (2/9+2/3)/7
 = 13%
 \end{lstlisting}
 \end{minipage}
@@ -789,13 +799,13 @@ similarity
 \begin{lstlisting}
 [2:2:2:2:8:2:2]
 [-:-:9:3:-:-:-]
-similarity 
-= (2/9+2/3)/7 
+similarity
+= (2/9+2/3)/7
 = 13%
 
 [2:2:2:2:8:2:2]
 [-:-:-:9:3:-:-]
-similarity 
+similarity
 = (2/9+3/8)/7
 = 8%
 \end{lstlisting}
@@ -811,8 +821,8 @@ similarity
 
 [2:2:2:2:8:2:2]
 [-:-:-:-:-:9:3]
-similarity 
-= (2/9+2/3)/7 
+similarity
+= (2/9+2/3)/7
 = 13%
 \end{lstlisting}
 \end{minipage}
@@ -826,7 +836,7 @@ The example below shows I/O phases pairs and their matches.
 job1_md_file_create : [[2:2:2:9:3], [9:1:1:1]]
 job2_md_file_create : [[-:-:-:-:-], [-:1:-:-]]
 match_md_file_create = [(match:0; len:5), (match:1; len:4)]
- 
+
 job1_read_bytes : [[-:-:-:-:9:3:-], [1], [-:-:-]]
 job2_read_bytes : [[2:2:2:2:8:2:2], [1], [8:1:1]]
 match_read_bytes = [match:(8/9 + 2/3); len:7), (match:1; len:1), (match:0; len:3)]
@@ -932,7 +942,7 @@ For example a cluster can contain the following sequences.
 
 
 \begin{lstlisting}
-[1], [0:0:14:0], [4:0], [0:0:4:0], [272:272:272] 
+[1], [0:0:14:0], [4:0], [0:0:4:0], [272:272:272]
 \end{lstlisting}
 
 
@@ -1073,12 +1083,12 @@ The largest cluster is even representative in Top10 relevant jobs in ref\_top\_t
   \begin{tabular}{ll}
     Coding sequence & Cluster size \\
     \hline
-    $[511]$ & 37,272 \\ 
-    $[32]$  & 14,536 \\ 
-    $[272]$ & 11,338 \\ 
-    $[160]$ & 11,014 \\ 
-    $[128]$ & 10,228 \\ 
-    $[8]$   & 9,446  \\ 
+    $[511]$ & 37,272 \\
+    $[32]$  & 14,536 \\
+    $[272]$ & 11,338 \\
+    $[160]$ & 11,014 \\
+    $[128]$ & 10,228 \\
+    $[8]$   & 9,446  \\
   \end{tabular}
   \captionof{table}{Top 6 largest clusters created by BIN algorithms with SIM = 0.7.}
   \label{tab:bin:largest_clusters}
@@ -1115,18 +1125,18 @@ The following observations are characteristic for this algorithm:
   \begin{tiny}
     \begin{tabular}{@{ }l@{ }|@{ }r@{ }}
       \rowcolor{tabhcolor}
-      Binary coding                                                                                    &  Type     \\ 
+      Binary coding                                                                                    &  Type     \\
       \hline
-      0:0:0:0:0:0:294:0:0:0:0:32:0:0:0:0:0:0:0:0:0:0:0:32:0:0:0:0:0:0:0:0:0:0:0:32:0:0:0:0:0:0:0:0:0:0 &  centroid \\ 
-      \multicolumn{2}{l}{}                                                                             \\ 
+      0:0:0:0:0:0:294:0:0:0:0:32:0:0:0:0:0:0:0:0:0:0:0:32:0:0:0:0:0:0:0:0:0:0:0:32:0:0:0:0:0:0:0:0:0:0 &  centroid \\
+      \multicolumn{2}{l}{}                                                                             \\
       \rowcolor{tabhcolor}
-      Binary coding                                                                                    &  Count    \\ 
+      Binary coding                                                                                    &  Count    \\
       \hline
-      0:0:0:0:0:0:359:96:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0   &  95       \\ 
-      0:0:0:0:0:0:295:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0    &  62       \\ 
-      0:0:0:0:0:0:0:0:0:0:0:0:4:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0  &  47       \\ 
-      0:0:0:0:0:0:359:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0    &  44       \\ 
-      0:0:0:0:0:6:6:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0  &  40       \\ 
+      0:0:0:0:0:0:359:96:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0   &  95       \\
+      0:0:0:0:0:0:295:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0    &  62       \\
+      0:0:0:0:0:0:0:0:0:0:0:0:4:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0  &  47       \\
+      0:0:0:0:0:0:359:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0    &  44       \\
+      0:0:0:0:0:6:6:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0  &  40       \\
     \end{tabular}
   \end{tiny}
   \captionof{table}{Centroid and Top 5 job types.}
@@ -1173,18 +1183,18 @@ The following is characteristic for this algorithm:
   \begin{tiny}
     \begin{tabular}{@{ }l@{ }|@{ }r@{ }}
       \rowcolor{tabhcolor}
-      Binary coding                                                                          &  Type     \\ 
+      Binary coding                                                                          &  Type     \\
       \hline
-      272:272:272:272:272:278:286:272:272:272:272:272:272:272:272:272:272:272:272            &  centroid \\ 
-      \multicolumn{2}{l}{}                                                                   \\ 
+      272:272:272:272:272:278:286:272:272:272:272:272:272:272:272:272:272:272:272            &  centroid \\
+      \multicolumn{2}{l}{}                                                                   \\
       \hline
       \rowcolor{tabhcolor}
-      Binary coding                                                                          &  Count    \\ 
-      272:272:272:272:272:278:286:272:272:272:272:272:272:272:272:272:272:272:272            &  528      \\ 
-      272:272:272:272:272:406:286:272:272:272:272:272:272:272:272:272                        &  96       \\ 
-      272:272:272:272:272:279:31:272:272:272:272:272:272:272:272:272:272:272:272:272:272:272 &  53       \\ 
-      272:272:272:272:272:272:272:272:272:272:272:279:319:272:272:272:272:272:272:272:272    &  52       \\ 
-      272:272:272:272:272:279:319:272:272:272:272:272:272:272:272:272:272:272:272:272:272    &  50       \\ 
+      Binary coding                                                                          &  Count    \\
+      272:272:272:272:272:278:286:272:272:272:272:272:272:272:272:272:272:272:272            &  528      \\
+      272:272:272:272:272:406:286:272:272:272:272:272:272:272:272:272                        &  96       \\
+      272:272:272:272:272:279:31:272:272:272:272:272:272:272:272:272:272:272:272:272:272:272 &  53       \\
+      272:272:272:272:272:272:272:272:272:272:272:279:319:272:272:272:272:272:272:272:272    &  52       \\
+      272:272:272:272:272:279:319:272:272:272:272:272:272:272:272:272:272:272:272:272:272    &  50       \\
     \end{tabular}
   \end{tiny}
   \captionof{table}{Centroid and Top 5 job types}
@@ -1235,18 +1245,18 @@ Cluster characteristics:
       \rowcolor{tabhcolor}
       \multicolumn{4}{@{ }l|@{ }}{Hexadecimal coding} & \\
       \rowcolor{tabhcolor}
-      md\_file\_create  & md\_file\_delete  & md\_mod           & read\_calls       & Type     \\ 
+      md\_file\_create  & md\_file\_delete  & md\_mod           & read\_calls       & Type     \\
       \hline
-      0:...:0           & 0:0:0:1:0:0:0:0:0 & 0:...:0           & 0:...:0           & centroid \\ 
+      0:...:0           & 0:0:0:1:0:0:0:0:0 & 0:...:0           & 0:...:0           & centroid \\
       \multicolumn{5}{l}{}\\
       \rowcolor{tabhcolor}
-      md\_file\_create  & md\_file\_delete  & md\_mod           & read\_calls       & Count    \\ 
+      md\_file\_create  & md\_file\_delete  & md\_mod           & read\_calls       & Count    \\
       \hline
-      0:...:0           & 0:0:0:0:0:0:1:0:0 & 0:...:0           & 0:...:0           & 606      \\ 
-      0:...:0           & 0:0:0:0:0:0:0:0:1 & 0:...:0           & 0:...:0           & 562      \\ 
-      0:...:0           & 0:...:0           & 0:...:0           & 0:0:0:0:0:0:1:0:0 & 429      \\ 
-      0:...:0           & 0:0:0:1:0:0:0:0:0 & 0:...:0           & 0:...:0           & 185      \\ 
-      0:0:0:0:0:0:1:1:1 & 0:...:0           & 0:0:0:0:0:0:1:0:0 & 0:...:0           & 75       \\ 
+      0:...:0           & 0:0:0:0:0:0:1:0:0 & 0:...:0           & 0:...:0           & 606      \\
+      0:...:0           & 0:0:0:0:0:0:0:0:1 & 0:...:0           & 0:...:0           & 562      \\
+      0:...:0           & 0:...:0           & 0:...:0           & 0:0:0:0:0:0:1:0:0 & 429      \\
+      0:...:0           & 0:0:0:1:0:0:0:0:0 & 0:...:0           & 0:...:0           & 185      \\
+      0:0:0:0:0:0:1:1:1 & 0:...:0           & 0:0:0:0:0:0:1:0:0 & 0:...:0           & 75       \\
     \end{tabular}
   \end{tiny}
   \captionof{table}{Centroid and Top 5 job types}
@@ -1267,7 +1277,7 @@ Cluster characteristics:
 Information related to the cluster is in \Cref{tab:hex_native:stats}, \Cref{tab:hex_native:top_jobs}, and in \Cref{fig:hex_native:length}.
 The SIM value exploration shows that this algorithm works best with high SIM values.
 Clustering with SIM=0.99 results in clusters that have equal job lengths.
-(For SIM=0.99 the centroid must be longer than 100 segments to attract jobs with other lengths.) Cluster characteristics:
+(For SIM=0.99 the centroid must be longer than 100 segments to attract jobs with other lengths.)Cluster characteristics:
 \begin{enumerate}
  \item Similar job lengths
  \item Jobs are relatively close to the centroid
@@ -1293,20 +1303,20 @@ Clustering with SIM=0.99 results in clusters that have equal job lengths.
   \begin{tiny}
     \begin{tabular}{@{ }l@{ }@{ }l@{ }@{ }l@{ }|@{ }r@{ }}
       \rowcolor{tabhcolor}
-      \multicolumn{3}{@{ }l|@{ }}{Hexadecimal coding} &            \\ 
+      \multicolumn{3}{@{ }l|@{ }}{Hexadecimal coding} &            \\
       \rowcolor{tabhcolor}
-      md\_file\_delete     &  md\_mod   & md\_other & Type     \\ 
+      md\_file\_delete     &  md\_mod   & md\_other & Type     \\
       \hline
-      0:\dots:0            &  0:0:1:0   & 0:0:1:0   & centroid \\ 
-      \multicolumn{4}{l}{} \\ 
+      0:\dots:0            &  0:0:1:0   & 0:0:1:0   & centroid \\
+      \multicolumn{4}{l}{} \\
       \rowcolor{tabhcolor}
-      md\_file\_delete     &  md\_mod   & md\_other & Count    \\ 
+      md\_file\_delete     &  md\_mod   & md\_other & Count    \\
       \hline
-      0:\dots:0            &  0:\dots:0 & 0:0:1:0   & 5,010    \\ 
-      0:\dots:0            &  0:\dots:0 & 0:0:2:0   & 1,963    \\ 
-      0:0:1:0              &  0:\dots:0 & 0:\dots:0 & 1,099    \\ 
-      0:\dots:0            &  0:\dots:0 & 0:1:0:0   & 911      \\ 
-      0:0:1:0              &  0:0:1:0   & 0:\dots:0 & 676      \\ 
+      0:\dots:0            &  0:\dots:0 & 0:0:1:0   & 5,010    \\
+      0:\dots:0            &  0:\dots:0 & 0:0:2:0   & 1,963    \\
+      0:0:1:0              &  0:\dots:0 & 0:\dots:0 & 1,099    \\
+      0:\dots:0            &  0:\dots:0 & 0:1:0:0   & 911      \\
+      0:0:1:0              &  0:0:1:0   & 0:\dots:0 & 676      \\
     \end{tabular}
   \end{tiny}
   \captionof{table}{Centroid and Top 5 job types.}
@@ -1337,7 +1347,7 @@ Cluster characteristics:
 \begin{enumerate}
  \item Low number of job types
  \item Relatively large number of job lengths
- \item I/O pattern 
+ \item I/O pattern
 \end{enumerate}
 
 %\begin{table}[h]
@@ -1359,20 +1369,20 @@ Cluster characteristics:
   \begin{tiny}
     \begin{tabular}{@{ }l@{ }@{ }l@{ }|@{ }r@{ }}
       \rowcolor{tabhcolor}
-      \multicolumn{2}{@{ }l|@{ }}{Hexadecimal coding} &              \\ 
+      \multicolumn{2}{@{ }l|@{ }}{Hexadecimal coding} &              \\
       \rowcolor{tabhcolor}
-      md\_file\_delete     &  md\_mod     & Type     \\ 
+      md\_file\_delete     &  md\_mod     & Type     \\
       \hline
-      4:0:0:0:0:0          &  4:0:0:0:0:0 & centroid \\ 
-      \multicolumn{3}{l}{} \\ 
+      4:0:0:0:0:0          &  4:0:0:0:0:0 & centroid \\
+      \multicolumn{3}{l}{} \\
 			\rowcolor{tabhcolor}
-      md\_file\_delete     &  md\_mod     & Count    \\ 
+      md\_file\_delete     &  md\_mod     & Count    \\
       \hline
-      4                    &  4           & 2329     \\ 
-      4:0:0:0:0:0          &  4:0:0:0:0:0 & 1773     \\ 
-      4:0                  &  4:0         & 224      \\ 
-      2                    &  4           & 65       \\ 
-      0:4                  &  0:4         & 57       \\ 
+      4                    &  4           & 2329     \\
+      4:0:0:0:0:0          &  4:0:0:0:0:0 & 1773     \\
+      4:0                  &  4:0         & 224      \\
+      2                    &  4           & 65       \\
+      0:4                  &  0:4         & 57       \\
     \end{tabular}
   \end{tiny}
   \captionof{table}{Centroid and Top 5 job types.}
@@ -1405,14 +1415,14 @@ We can see that this job reads data over the whole runtime.
 At beginning, only a subset of the nodes is reading most of the data, later more nodes participate in the reading The amount of transmitted data is not large, but the amount of read calls is exceptionally high and may potentially degrade the file system performance.
 Now we investigate the cluster that contains this job for the different algorithms.
 
-In the following, an attentive reader may notice that there is a discrepancy between the job visualization in  \Cref{fig:use_case} and the hexadecimal job codings. 
-While in the figure we can see a less intensive phase in the beginning and a high intensive phase afterwards, the hexadecimal coding contains a more or less single high intensive I/O phase. 
-The reason is that we use different reduction functions. While in the illustration we aggregate segments by the sum() function, for the coding we use mean() function for the same set of values. 
+In the following, an attentive reader may notice that there is a discrepancy between the job visualization in  \Cref{fig:use_case} and the hexadecimal job codings.
+While in the figure we can see a less intensive phase in the beginning and a high intensive phase afterwards, the hexadecimal coding contains a more or less single high intensive I/O phase.
+The reason is that we use different reduction functions. While in the illustration we aggregate segments by the sum() function, for the coding we use mean() function for the same set of values.
 While sum() is better for visualization, the mean value allows us to build simple algorithms.
 
-By accident, we have good conditions for all algorithms, and all the algorithms work well in this use case. 
-We have a relatively long job with one heavily used metric, and we can identify a cluster with similar jobs. 
-We omit comments. 
+By accident, we have good conditions for all algorithms, and all the algorithms work well in this use case.
+We have a relatively long job with one heavily used metric, and we can identify a cluster with similar jobs.
+We omit comments.
 The reader can make up his own mind.
 \paragraph{BIN\_ALL}
 Information related to the cluster is in \Cref{tab:use_case:bin_all:stats}, \Cref{tab:use_case:bin_all:top_jobs}, and in \Cref{fig:use_case:bin_all:length}.
@@ -1436,19 +1446,19 @@ Information related to the cluster is in \Cref{tab:use_case:bin_all:stats}, \Cre
   \begin{tiny}
     \begin{tabular}{@{ }l@{ }|@{ }r@{ }}
       \rowcolor{tabhcolor}
-      Binary coding                                                                                          &  Type     \\ 
+      Binary coding                                                                                          &  Type     \\
       \hline
-      192:192:192:192:192:192:196:192:192:192:192:192:192:192:192:192:192:192:192:192:192:192:64:64:64:64:64 &  job      \\ 
-      192:192:192:192:192:192:192:192:192:192:192:454:230:192:192:192:192:192:192:192:192:192:192:192        &  centroid \\ 
-      \multicolumn{2}{l}{}                                                                                   \\ 
+      192:192:192:192:192:192:196:192:192:192:192:192:192:192:192:192:192:192:192:192:192:192:64:64:64:64:64 &  job      \\
+      192:192:192:192:192:192:192:192:192:192:192:454:230:192:192:192:192:192:192:192:192:192:192:192        &  centroid \\
+      \multicolumn{2}{l}{}                                                                                   \\
       \rowcolor{tabhcolor}
-      Binary coding                                                                                          &  Count    \\ 
+      Binary coding                                                                                          &  Count    \\
       \hline
-      192:192:192:192:192:454:198:192:192:192:192:192:192:192:192:192:192:192:192:192:192:192:192:192        &  5        \\ 
-      192:192:192:192:192:192:192:192:192:192:192:454:230:192:192:192:192:192:192:192:192:192:192:192        &  3        \\ 
-      192:192:192:192:192:454:230:192:192:192:192:192:192:192:192:192:192:192:192:192:192:192:192:192        &  3        \\ 
-      192:192:192:192:192:192:192:192:192:192:192:454:230:192:192:192:192:192:192:192:192:192:192            &  2        \\ 
-      228:192:192:192:192:192:192:192:192:192:192:192:192:192:192:192:192:192                                &  2        \\ 
+      192:192:192:192:192:454:198:192:192:192:192:192:192:192:192:192:192:192:192:192:192:192:192:192        &  5        \\
+      192:192:192:192:192:192:192:192:192:192:192:454:230:192:192:192:192:192:192:192:192:192:192:192        &  3        \\
+      192:192:192:192:192:454:230:192:192:192:192:192:192:192:192:192:192:192:192:192:192:192:192:192        &  3        \\
+      192:192:192:192:192:192:192:192:192:192:192:454:230:192:192:192:192:192:192:192:192:192:192            &  2        \\
+      228:192:192:192:192:192:192:192:192:192:192:192:192:192:192:192:192:192                                &  2        \\
     \end{tabular}
   \end{tiny}
   \captionof{table}{Job, centroid and Top 5 job types.}
@@ -1487,19 +1497,19 @@ Information related to the cluster is in \Cref{tab:use_case:bin_aggzeros:stats},
   \begin{tiny}
     \begin{tabular}{@{ }l@{ }|@{ }r@{ }}
       \rowcolor{tabhcolor}
-      Binary coding                                                                                             &  Type     \\ 
+      Binary coding                                                                                             &  Type     \\
       \hline
-      192:192:192:192:192:192:196:192:192:192:192:192:192:192:192:192:192:192:192:192:192:192:64:64:64:64:64    &  job      \\ 
-      511:238:192:510:192:224:228:192:192:192:192:192:192:192:192:192:192:192:192:192:192:64:64:64:64:64        &  centroid \\ 
-      \multicolumn{2}{l}{}                                                                                      \\ 
+      192:192:192:192:192:192:196:192:192:192:192:192:192:192:192:192:192:192:192:192:192:192:64:64:64:64:64    &  job      \\
+      511:238:192:510:192:224:228:192:192:192:192:192:192:192:192:192:192:192:192:192:192:64:64:64:64:64        &  centroid \\
+      \multicolumn{2}{l}{}                                                                                      \\
       \rowcolor{tabhcolor}
-      Binary coding                                                                                             &  Count    \\ 
+      Binary coding                                                                                             &  Count    \\
       \hline
-      0:224:192:192:192:192:228:192:192:192:192:192:192:192:192:192:192:192:192:192:192:64:64:64:64:64          &  1        \\ 
-      192:192:192:192:192:192:196:192:192:192:192:192:192:192:192:192:192:192:192:192:192:192:64:64:64:64:64    &  1        \\ 
-      192:192:193:196:192:192:192:192:192:192:192:192:192:192:192:192:192:192:192:192:64:64:64:64               &  1        \\ 
-      192:193:193:198:192:192:192:192:192:192:192:192:192:192:192:192:192:192:192:192:192:64:64:64:64:64:64     &  1        \\ 
-      207:463:225:495:246:224:198:192:192:192:192:192:192:192:192:192:192:192:192:192:192:192:64:64:64:64:64:64 &  1        \\ 
+      0:224:192:192:192:192:228:192:192:192:192:192:192:192:192:192:192:192:192:192:192:64:64:64:64:64          &  1        \\
+      192:192:192:192:192:192:196:192:192:192:192:192:192:192:192:192:192:192:192:192:192:192:64:64:64:64:64    &  1        \\
+      192:192:193:196:192:192:192:192:192:192:192:192:192:192:192:192:192:192:192:192:64:64:64:64               &  1        \\
+      192:193:193:198:192:192:192:192:192:192:192:192:192:192:192:192:192:192:192:192:192:64:64:64:64:64:64     &  1        \\
+      207:463:225:495:246:224:198:192:192:192:192:192:192:192:192:192:192:192:192:192:192:192:64:64:64:64:64:64 &  1        \\
     \end{tabular}
   \end{tiny}
   \captionof{table}{Job, centroid and Top 5 job types.}
@@ -1539,18 +1549,18 @@ Information related to the cluster is in \Cref{tab:use_case:hex_lev:stats}, \Cre
       \rowcolor{tabhcolor}
       \multicolumn{2}{@{ }l|@{ }}{Hexadecimal coding} & \\
       \rowcolor{tabhcolor}
-      md\_other                                           &  read\_calls                                           & Type     \\ 
+      md\_other                                           &  read\_calls                                           & Type     \\
       \hline
-      0:\dots:0                                           &  3:3:8:8:8:5:6:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8 & job      \\ 
-      0:\dots:0                                           &  8:8:8:8:8:2:6:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8 & centroid \\ 
-      \multicolumn{3}{l}{}                                \\ 
-      \rowcolor{tabhcolor}      md\_other                                           &  read\_calls                                           & Count    \\ 
+      0:\dots:0                                           &  3:3:8:8:8:5:6:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8 & job      \\
+      0:\dots:0                                           &  8:8:8:8:8:2:6:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8 & centroid \\
+      \multicolumn{3}{l}{}                                \\
+      \rowcolor{tabhcolor}      md\_other                                           &  read\_calls                                           & Count    \\
       \hline
-      0:\dots:0                                           &  0:0:0:0:0:0:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8   & 4        \\ 
-      0:\dots:0                                           &  8:8:8:8:8:2:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8   & 4        \\ 
-      0:0:0:4:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0 &  0:0:0:0:0:0:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8   & 4        \\ 
-      0:\dots:0                                           &  8:8:8:8:8:3:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8 & 3        \\ 
-      0:\dots:0                                           &  0:0:0:0:0:0:2:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8   & 2        \\ 
+      0:\dots:0                                           &  0:0:0:0:0:0:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8   & 4        \\
+      0:\dots:0                                           &  8:8:8:8:8:2:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8   & 4        \\
+      0:0:0:4:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0 &  0:0:0:0:0:0:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8   & 4        \\
+      0:\dots:0                                           &  8:8:8:8:8:3:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8 & 3        \\
+      0:\dots:0                                           &  0:0:0:0:0:0:2:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8   & 2        \\
     \end{tabular}
   \end{tiny}
   \captionof{table}{Job, centroid and Top 5 job types.}
@@ -1591,19 +1601,19 @@ Information related to the cluster is in \Cref{tab:use_case:hex_native:stats}, \
       \rowcolor{tabhcolor}
       Hexadecimal coding & \\
       \rowcolor{tabhcolor}
-      read\_calls                                           & Type     \\ 
-      \hline	
-      3:3:8:8:8:5:6:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8 & job      \\ 
-      8:8:8:8:8:2:4:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8 & centroid \\ 
-      \multicolumn{2}{l}{}\\ 
+      read\_calls                                           & Type     \\
+      \hline
+      3:3:8:8:8:5:6:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8 & job      \\
+      8:8:8:8:8:2:4:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8 & centroid \\
+      \multicolumn{2}{l}{}\\
 			\rowcolor{tabhcolor}
-      read\_calls                                           & Count    \\ 
-      \hline	
-      8:8:8:8:8:3:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8 & 3        \\ 
-      8:8:8:8:8:5:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8 & 2        \\ 
-      3:3:8:8:8:5:6:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8 & 1        \\ 
-      3:6:6:7:7:7:7:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8 & 1        \\ 
-      6:5:6:7:6:2:7:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8 & 1        \\ 
+      read\_calls                                           & Count    \\
+      \hline
+      8:8:8:8:8:3:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8 & 3        \\
+      8:8:8:8:8:5:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8 & 2        \\
+      3:3:8:8:8:5:6:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8 & 1        \\
+      3:6:6:7:7:7:7:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8 & 1        \\
+      6:5:6:7:6:2:7:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8 & 1        \\
     \end{tabular}
   \end{tiny}
   \captionof{table}{Job and centroid coding sequences.}
@@ -1625,9 +1635,9 @@ Information\ related to the cluster is \Cref{tab:use_case:pm_quant:stats}, \Cref
 \begingroup
   \centering
   \begin{tabular}{ll}
-    SIM                 & 0.7 \\ 
-    Number of jobs      & 68  \\ 
-    Number of job types & 59  \\ 
+    SIM                 & 0.7 \\
+    Number of jobs      & 68  \\
+    Number of job types & 59  \\
   \end{tabular}
   \captionof{table}{Cluster statistics.}
   \label{tab:use_case:pm_quant:stats}
@@ -1642,19 +1652,19 @@ Information\ related to the cluster is \Cref{tab:use_case:pm_quant:stats}, \Cref
       \rowcolor{tabhcolor}
       Hexadecimal coding & \\
       \rowcolor{tabhcolor}
-      read\_calls                                           & Type     \\ 
+      read\_calls                                           & Type     \\
       \hline
-      3:3:8:8:8:5:6:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8 & job      \\ 
-      8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8   & centroid \\ 
+      3:3:8:8:8:5:6:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8 & job      \\
+      8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8   & centroid \\
       \multicolumn{2}{l}{}\\
       \rowcolor{tabhcolor}
-      read\_calls                                           & Count    \\ 
+      read\_calls                                           & Count    \\
       \hline
-      8:8:8:8:8:2:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8   & 4        \\ 
-      8:8:8:8:8:3:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8 & 3        \\ 
-      7:7:7:7:7:2:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8   & 2        \\ 
-      8:8:8:8:8:5:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8   & 2        \\ 
-      8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8   & 2        \\ 
+      8:8:8:8:8:2:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8   & 4        \\
+      8:8:8:8:8:3:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8 & 3        \\
+      7:7:7:7:7:2:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8   & 2        \\
+      8:8:8:8:8:5:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8   & 2        \\
+      8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8   & 2        \\
     \end{tabular}
   \end{tiny}
   \captionof{table}{Job, centroid and Top 5 job types.}
@@ -1733,10 +1743,10 @@ Both are one segment long and only one I/O node that writes data to storage with
 Without quantization we would represent these jobs by the following sequences:  [..., [0.0625], $ \ldots $ ] and [..., [0.03125], ...], where only active metrics have values larger than zero.
 Using the similarity function without quantization, i.e. with mean performance, would result in a similarity of 50$\%$ , and for SIM>0.5 they would be placed in separate clusters.
 The hexadecimal coding filters these jobs automatically. Segments with mean performance less than 0.125 are quantized to zero and zero sequences are removed from the dataset. This problem doesn’t occur.
-The main question remains what characterizes I/O and which characteristics should be involved in job comparison. 
+The main question remains what characterizes I/O and which characteristics should be involved in job comparison.
 
 \begin{itemize}
-	\item Are two jobs similar if they have similar I/O phases? 
+	\item Are two jobs similar if they have similar I/O phases?
 	\item Are two jobs similar if one job has an I/O phase at the beginning and the other at the same I/O phase at the end?
 	\item Are two jobs similar if they have different lengths, but similar I/O phases?
 \end{itemize}
@@ -1779,4 +1789,3 @@ Therefore we need at least three further functions, that filter irrelevant clust
 \bibliographystyle{splncs04}
 \bibliography{bibliography}{}
 \end{document}
-
