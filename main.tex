@@ -516,8 +516,7 @@ Note, that the job length does not change, only the sequence length.
 \paragraph*{Hexadecimal coding}
 
 This coding preserves monitoring data for each metric and each segment.
-As the name suggests, the value of a segment is converted into a hexadecimal number to allow creation of a string representing the IO behavior
-.
+As the name suggests, the value of a segment is converted into a hexadecimal number to allow creation of a string representing the IO behavior.
 The numbers are obtained in two steps.
 Firstly, the dimension reduction aggregates the file system and the node dimensions and computes a mean value for each metric and segment, which lies in the interval [0,4].
 Secondly, the mean values are quantized into 16 levels -- 0 represents the interval [0,0.125), 1 [0.125,0.375), $ \ldots $ , [3.625,4].
@@ -555,7 +554,7 @@ To create a flexible similarity function, we combine the Manhatten distance with
   \begin{tabularx}{\textwidth}{lX}
     Distance & Description \\
     \hline
-    Manhatten & The manhatten distance between the vectors. \\
+    Manhatten & The Manhatten distance between the vectors. \\
     \hline
     Levenshtein &  Number of operation (inserts, deletes, and changes) requires to convert one coding in another \\
     \hline
@@ -593,7 +592,7 @@ They are described in the following:
     \hline
     k-means & Runs a random initialization, then refines the clusters until the clusters don't change any more. \\
     \hline
-    Density clustering &  Group nearby elements recursively together as long as they are (epsilon) close together. \\
+    Density clustering &  Group nearby elements recursively together as long as they are ($\epsilon$) close together. \\
     \hline
     Agglomerative &  Hierarchically cluster data into groups of elements that belong closer together. \\
     \hline
@@ -662,79 +661,80 @@ In brief, the algorithms are as follows:
 This section describes the evaluated algorithms in detail.
 
 \subsubsection{ML general-purpose machine learning algorithms}
-In the preprocessing step, the MinMaxScaler scales the features to values between 0 and 1 using MinMax normalization.Therefore, the highest distance between two points can be at most EPS\_MAX =  \( d^{1/d} \) , where d is the dimension of the dataset.
-The agglomerative clustering algorithm uses manhatten distance as a similarity measure, i.e., if the distance between two points is shorter than a maximum distance (EPS), then these points belong to the same cluster.
-We explore several EPS between 0 and EPS\_MAX and use the best value for further evaluation.
+In the preprocessing step, the MinMaxScaler scales the features to values between 0 and 1 using MinMax normalization.
+Therefore, the highest distance between two points can be at most $\epsilon_{max}$ =  \( d^{1/d} \) , where d is the dimension of the dataset.
+The agglomerative clustering algorithm uses Manhatten distance as a similarity measure, i.e., if the component wise distance between two job vectors is shorter than the defined distance ($\epsilon$), then these jobs belong to the same cluster.
+We explore several $\epsilon$ up to $\epsilon_{max}$.% and use the best value for further evaluation.
 
-The application of general-purpose machine learning algorithms on fingerprints of data is simple.
-With little effort, the fixed-size fingerprints can be transformed into the fixed size input format accepted by the algorithm, but we find quickly that the size of our datasets is the first obstacle to the suitable clustering algorithms.
-For example, the scaling behaviour of the agglomerative clustering algorithm that is used in this work can handle around 10,000 jobs in a reasonable amount of time as the complexity is  \( N^{2} \) .
-Nevertheless, with a workaround, which involves additional classification steps, we are able cluster 1,000,000 samples.
-This workaround involves three steps.
+The application of general-purpose machine learning algorithms is simple.
+The 4d time series can be transformed into the fixed size input format accepted by the algorithm, but we find quickly that the size of our datasets is the first obstacle to the suitable clustering algorithms.
+For example, the scaling behavior of the agglomerative clustering algorithm that is used in this work can handle around 10,000 jobs in a reasonable amount of time as the complexity is \(N^{2}\).
+%\footnote{This algorithm is Python3 implementation based on Pandas was used throughout this work, but we replaced it with a Rust implementation that performed much better.}.
+Nevertheless, by utilizing a decision tree, we are able to cluster 1,000,000 samples.
+This workaround involves three steps:
 
 \begin{enumerate}
- \item Clustering and labeling 10,000 jobs with agglomerative clustering algorithm
- \item Training of a decision tree model with data from the previous step
+ \item Cluster and label 10,000 jobs with the agglomerative clustering algorithm
+ \item Train a decision tree model with data from the previous step
  \item Predict labels of 1,000,000 jobs with the trained decision tree model
 \end{enumerate}
 
 \subsubsection{BIN\_ALL}
-The Levenshtein based similarity between two jobs can be determined by the following formula.
-It is the number of Levenshtein operations (changes/deletes/inserts) divided by the length of the longest sequence, and subtracted from the value one.
-This function works with binary coding.
+This algorithm converts the time series data via binary coding to a string and then determine the relative similarity using the Levenshtein distance.
 
+The Levenshtein based similarity between two jobs is determined using \Cref{eq:lev}.
 \begin{equation}
-similarity \left( job_{A}\text{, jo}b_{B} \right) =1- \frac{levenshtein \left( coding_{A}\text{, codin}g_{B} \right) }{max \left( length_{A}\text{, lengt}h_{B} \right) }
+similarity \left( job_{A}\text{, jo}b_{B} \right) =1- \frac{levenshtein \left( coding_{A}\text{, codin}g_{B} \right) }{max \left( length_{A}\text{, lengt}h_{B} \right) } \label{eq:lev}
 \end{equation}
+It is the number of Levenshtein operations (changes/deletes/inserts) divided by the length of the longest sequence, and subtracted from the value one.
 
 \begin{lstlisting}
 'jobid': 'jobA', 'coding': [1:5:0:0:0:0:0:0:96:96:96:96:96:96:96], 'length': 15
 'jobid': 'jobB', 'coding': [0:0:0:0:0:0:0:0:0:96:96:96:96:96:98], 'length': 15
 \end{lstlisting}
 
-The similarity between these two jobs according to this equation is 73 percent.
+The similarity between these two jobs is 73 percent.
 
 \subsubsection{BIN\_AGGZEROS}
-As a variation we investigated also the case where the zero-sequences in are reduced to a single zero segment. This allows us to focus on I/O intensive parts of the job. The example below shows reduced codings from the previous example. Note, that the job did not change.
+This is a variant of BIN\_ALL where subsequent zero-sequences are reduced to a single zero segment before \Cref{eq:lev} is applied.
+This allows us to focus on I/O intensive parts of the job.
+The example below shows the reduced codings from the previous example.
 \begin{equation}
 similarity \left( job_{A}\text{, jo}b_{B} \right) =1- \frac{levenshtein \left( coding_{A}\text{, codin}g_{B} \right) }{max \left( length_{A}\text{, lengt}h_{B} \right) }
 \end{equation}
 
-
+The two previous jobs are now encoded slightly different leading to a similarity of 53 percent:
 \begin{lstlisting}
 'jobid': 'jobA', 'coding': [1:5:0:96:96:96:96:96:96:96], 'length': 15
 'jobid': 'jobB', 'coding': [0:96:96:96:96:96:98], 'length': 15
 \end{lstlisting}
 
-
-The computation of similarity does not change.
-For this coding it is 53 percent.
 \subsubsection{HEX\_LEV}
-This similarity function works on the same principle like the BIN functions, with the difference that it computes the similarity for all metrics, and then the mean value of the similarities.
-This adaption allows to apply Levenshtein-based similarity on hexadecimal coding.
+This algorithm works on the same principle like the BIN algorithms, with the difference that it applies a hexadecimal coding and then computes the mean similarity across all metrics using Levenshtein.
+This adaption allows a comparison of time series where one metrics differs as only one metric string would differ while with binary coding the overall string would be different.
 
-\begin{align}
-  similarity \left( job_{A}\text{, jo}b_{B} \right) &= 1 -\frac{ \sum_{m \in Metric}^{} levenshtein \left( coding_{A,m}\text{, coding}_{B,m} \right) }{N \cdot L_{B}} \\
-	&\text{, with }L_{B} \geq L_{A}
-\end{align}
+\begin{multline}
+  similarity \left( job_{A}\text{, jo}b_{B} \right) = 1 -\frac{ \sum_{m \in Metrics}^{} levenshtein \left( coding_{A,m}\text{, coding}_{B,m} \right) }{|Metrics| \cdot L_{B}} \\
+	\text{with } L_{B} \geq L_{A}
+\end{multline}
 
 \subsubsection{HEX\_NATIVE}
-The similarity function below computes a performance aware similarity between two jobs.
-It works with hexadecimal codings at metric level, i.e., it computes maximum similarity between metrics and computes a mean value of them.
-Assume jobB is larger or equal than jobA, the job similarity between two jobs can be computed by the following equation.
+This algorithm computes a performance-aware similarity between two jobs.
+It works with hexadecimal codings at metric level and basically computes the relative similarity using the Manhatten distance.
+Assume jobB is larger or equal than jobA, the job similarity between two jobs can be computed using \Cref{eq:hexn}.
 
-\begin{align}
-similarity \left( job_{A}\text{, jo}b_{B} \right) &= 1-\frac{ \sum _{m \in Metric}^{}maxCodingSimilarity \left( job_{A,m}\text{, jo}b_{B,m} \right) }{L_{B}}\\
-&\text{, with }L_{B} \geq L_{A}
-\end{align}
+\begin{multline}
+similarity \left( job_{A}\text{, jo}b_{B} \right) = 1-\frac{ \sum _{m \in Metric}^{}maxSimilarity \left( job_{A,m}\text{, jo}b_{B,m} \right) }{L_{B}}\\
+\text{with }L_{B} \geq L_{A} \label{eq:hexn}
+\end{multline}
 
 The metric coding sequences $job_{B,m}$ and $job_{A,m}$ of different jobs can have different lengths.
 Therefore, to compute a maximum similarity between two metrics, we use a sliding window approach.
-That means, we take the shortest coding sequence (CA) and slice the longest coding sequence (CB) in slices of the same length, and compute the similarities between them, as shown in the pseudo code below.
+That means, we take the shortest coding sequence (CA) and check how it fits best on the longer coding sequence (CB).
 
 
 \begin{lstlisting}
-float maxCodingSimilarity(CA, CB) {
+float maxSimilarity(CA, CB) {
   max = 0
   LA = length(CA)
   LB = length(CB)
@@ -748,37 +748,37 @@ float maxCodingSimilarity(CA, CB) {
 }
 \end{lstlisting}
 
-The sliceSimilarity() computes similarity between two codings of the same length.
+The \texttt{sliceSimilarity()} in \Cref{eq:slicesim} function computes similarity between two codings of the same length.
 This function maps the difference between performance levels of the same segments (values between 0 and 16) to a relative value between 0 and 1.
 
 \begin{equation}
-sliceSimilarity \left( S_{A},S_{B} \right) =\frac{ \sum _{i=1}^{L_{}}16 - \vert S_{A,i}-S_{B,i} \vert }{\text{16 L}_{}}\text{, with }L=L_{B}=L_{A}
+sliceSimilarity \left( S_{A},S_{B} \right) =\frac{ \sum _{i=1}^{L_{}}16 - \vert S_{A,i}-S_{B,i} \vert }{\text{16 L}_{}}\text{, with }L=L_{B}=L_{A} \label{eq:slicesim}
 \end{equation}
 
 \subsubsection{PM\_QUANT}
-There is a lack of clustering algorithms that can cluster variable length arrays or words.
-We developed a clustering strategy tailored to the IO phases.
+The phase-matching quantization algorithm allows us to cluster variable length words.
+First, using a hexadecimal coding, phases of consecutive I/O segments are detected and extracted.
+Then, the best match between the (disjoint) phases is determined, finally the similarity is computed.
 
-\paragraph{Hexadecimal coding}
-Suppose there are hexadecimal codings of two jobs with different lengths.
-In the example below bold\ font emphasizes I/O intensive  metrics and red colored numbers emphasize I/O intensive metric segments.
+We will discuss the details of each step on the following example; a blue font emphasizes I/O intensive  metrics.
 
-\begin{lstlisting}
-'jobid': jobA,
-'coding': metric
+\begin{lstlisting}[language=C,morekeywords={md_file_create,read_bytes}]
+jobA (length: 13)
 md_file_create [0:0:2:2:2:9:3:0:9:1:1:1:0]
 md_file_delete [0:0:0:0:0:0:0:0:0:0:0:0:0]
 md_mod         [0:0:0:0:0:0:0:0:0:0:0:0:0]
 md_other       [0:0:0:0:0:0:0:0:0:0:0:0:0]
-md_read        [0:0:0:9:3:0:0:0:0:0:1:0:0]
-read_bytes     [0:0:0:0:0:0:0:0:0:0:0:0:0]
+md_read        [0:0:0:0:0:0:0:0:0:0:0:0:0]
+read_bytes     [0:0:0:9:3:0:0:0:0:0:1:0:0]
 read_calls     [0:0:0:0:0:0:0:0:0:0:0:0:0]
 write_bytes    [0:0:0:0:0:0:0:0:0:0:0:0:0]
 write_calls    [0:0:0:0:0:0:0:0:0:0:0:0:0]
-'length': 13}
+\end{lstlisting}
 
-'jobid': jobB,
-'coding': metric
+\vspace*{-0.5em}
+
+\begin{lstlisting}[language=C,morekeywords={md_file_create,read_bytes,write_bytes}]
+jobB (length: 15)
 md_file_create [1:0:0:0:0:0:0:0:0:0:0:0:0:0:0]
 md_file_delete [0:0:0:0:0:0:0:0:0:0:0:0:0:0:0]
 md_mod         [0:0:0:0:0:0:0:0:0:0:0:0:0:0:0]
@@ -788,26 +788,26 @@ read_bytes     [2:2:2:2:8:2:2:0:0:1:0:0:8:1:1]
 read_calls     [0:0:0:0:0:0:0:0:0:0:0:0:0:0:0]
 write_bytes    [0:0:0:0:0:0:0:0:0:0:0:5:0:0:0]
 write_calls    [0:0:0:0:0:0:0:0:0:0:0:0:0:0:0]
-'length': 15
 \end{lstlisting}
+
 \paragraph{Phase detection}
 According to our I/O phase definition, phases are separated by zeros.
 This definition makes the detection of individual phases to a trivial task.
 Relevant for similarity computation are only metrics that contain at least one non-zero segment.
-In this example, that is md\_file\_create, read\_bytes and write\_bytes metrics.
-The according phases are illustrated below.
+In this example, that is md\_file\_create, read\_bytes and write\_bytes metrics:
 \begin{lstlisting}
-job_1_md_file_create : [[2,2,2,9,3], [9,1,1,1]]
-job_1_read_bytes : [[9,3], [1]]
-job_1_write_bytes : []
-job_2_md_file_create : [[1]]
-job_2_read_bytes : [[2,2,2,2,8,2,2], [1], [8,1,1]]
-job_2_write_bytes : [[5]]
+job_A_md_file_create : [[2,2,2,9,3], [9,1,1,1]]
+job_A_read_bytes : [[9,3], [1]]
+job_A_write_bytes : []
+
+job_B_md_file_create : [[1]]
+job_B_read_bytes : [[2,2,2,2,8,2,2], [1], [8,1,1]]
+job_B_write_bytes : [[5]]
 \end{lstlisting}
 
 \paragraph{Phase matching}
-Sliding the shorter coding over a longer one, and computing similarity to the corresponding part, we can find the best match.
-The example below illustrates that.We find the best match, when we shift shorter coding five positions to the right.
+Now we slide the shorter phase over the longer and compute similarity to the corresponding part such that we can find the best match.
+In the example, the best match is found on position five.
 
 \noindent\begin{minipage}{0.33\textwidth}
 \begin{lstlisting}
@@ -857,10 +857,10 @@ similarity
 \end{lstlisting}
 \end{minipage}
 
-After repeating this step for all possible combinations of I/O phases we chose those with the pairs with the highest similarity, and computed the match between them.
-To compute the match we divide low hex value by high hex value for each segment and sum up the values.
+After repeating this step for all possible combinations of I/O phases, we chose those with the pairs with the highest similarity, and computed the match between them.
 I/O phases without a pair are assigned virtually to empty phases, and their match is zero.
-The example below shows I/O phases pairs and their matches.
+To compute the match we divide the lowest value for each segment and sum up the values.
+The example below shows the pairs of I/O phases and their matches.
 
 \begin{lstlisting}
 job1_md_file_create : [[2:2:2:9:3], [9:1:1:1]]
@@ -875,29 +875,45 @@ job2_write_bytes = [[5]]
 match_write_bytes = [(match:0; len:1)]
 \end{lstlisting}
 
+\jk{Wollten wir nicht noch durch max = 16 teilen}
 
 \paragraph{Similarity}
-Next, the similarity for coding with different lengths must be adjusted. Similarity between two jobs is the sum of matches divided by the sum of lengths of the longer phases. In this example, we get a similarity of 17$\%$ .
+Next, the similarity for coding with different lengths must be adjusted. Similarity between two jobs is the sum of matches divided by the sum of lengths of the longer phases. In this example, we get a similarity of 17$\%$:
 
 \begin{equation}
 similarity = (0 + 1 + 8/9 + 2/3 + 1 + 0 + 1) / (5 + 4 + 1 + 7 + 3 + 1) = 0.17
 \end{equation}
 
-\subsection{Data}
-From the perspective of this work, analysis of non-I/O-intensive jobs (zero-jobs) has no advantage.
-On the contrary, they could hide some interesting aspects for the BIN and HEX algorithms.
-For example, these algorithms would distribute them across different clusters, instead of placing them in one cluster.
-For that reason, we detect zero-jobs early and remove them from datasets.
-By the way, PM ignores such jobs by design.
-Therefore, this step wouldn't be necessary.
 
-The\ number of zero-jobs is different for hexadecimal and absolute mode codings.
-The reason is the quantization to HEX coding, which firstly computes mean performance values for all segments, and then quantizes them into 16 levels.
-Hereby some segments can be quantized to zeros, if the mean value becomes sufficiently low.
+\subsubsection{Assessment}
+Lastly, the quality of the obtained clusters must be assessed.
+Overall, we will assess their suitability using quantitative metrics such as the number of generated clusters and their sizes and qualitatively by manually exploring clusters of relevant jobs.
+We want to emphasize that our goal is to find similar jobs.
+Depending on data, the clustering algorithms may create thousands of clusters.
+Unfortunately, it is not feasible to analyse all of them qualitatively with reasonable effort and there are no tools that can assess the cluster quality automatically.
+
+Therefore, for the assessment, we look inside clusters and inspect segment sequences of the corresponding jobs.
+For the quantitative analysis, we attempted to find clusters that show the characteristic weakness of the algorithm and discuss them.
+For the qualitative analysis, we start by looking into a job that is given to user support, then similar jobs need to be found.
+In the same cluster, we expect the sequences to be similar.
+If not, the clustering algorithm is not effective.
+
+\subsection{Description of our data set}
+
+This section describes the job data extracted from Mistral, originally we gathered 1\,million jobs from a period of \jk{12 months?}.
+Mostly jobs are allowed to run up to 8-hours, leading to time series with up to 48 segments.
+From the perspective of this work, analysis of non-I/O-intensive jobs (jobs with zero in all segments) is irrelevant, these jobs can be grouped into one class easily.
+For that reason, we detect zero-jobs early and remove them from the dataset; these are about 40\% of jobs.
+%Note that PM ignores such jobs by design.
+%Therefore, this step wouldn't be necessary.
+
+The number of zero-jobs is different for hexadecimal and absolute mode codings.
+The reason is the quantization to HEX coding which computes mean performance values for all segments and then quantizes them into 16 levels.
+Hereby, some segments can be quantized to zeros, if the mean value is lower than 0.25.
 Therefore, it may happen that some jobs fall into the zero-job category, if all segments are quantized to zeros.
-It can not happen in BIN coding, because it preserves all the active segments, so that no job may change the category.
-Interestingly, it affects around 14$\%$  of jobs.
-\Cref{tab:n_intensive_jobs} shows the number of jobs that are used for clustering algorithms.
+It can not happen in BIN coding, because it preserves all active segments.
+Interestingly, it affects around 14$\%$ of jobs.
+\Cref{tab:n_intensive_jobs} shows the number of jobs that are analyzed further.
 
 \begin{table}
   \centering
@@ -913,9 +929,13 @@ Interestingly, it affects around 14$\%$  of jobs.
 
 
 \subsubsection{Data exploration}
-I/O phases are, according to our definition, contiguous sequences of I/O intensive segments.
-The corresponding statistics are visualized in \Cref{fig:phases_stats}.
-We suppose this characteristic can be exploited in clustering algorithms to achieve better results.
+I/O phases are, according to our definition, contiguous sequences of I/O-intensive segments.
+The statistics of the number phases for each different metric are visualized in \Cref{fig:phases_stats}.
+These histograms show for one metric how many I/O phases a job has.
+Most jobs exhibit up to 5-phases in one metrics.
+The metrics (md\_bytes, md\_mod, and md\_file\_delete) have the longest tail; some job use up to 22-phases, meaning that almost every other segment the value is zero or $\geq 1$.
+
+%We suppose these  can be exploited in clustering algorithms to achieve better results.
 
 
 \begin{figure}
@@ -924,10 +944,6 @@ We suppose this characteristic can be exploited in clustering algorithms to achi
   \caption{I/O phases statistics.}
   \label{fig:phases_stats}
 \end{figure}
-
-
-\subsubsection{Assessment}
-Lastly, the quality of the obtained clusters must be assessed.Unfortunately, there are no tools that can do the cluster quality assessment automatically.Therefore, we will inspect the clusters manually by using quantitative metrics such as the number of generated clusters and their sizes and qualitatively by exploring clusters of relevant jobs.At this point we want to emphasize that our goal is to find similar jobs and not similar fingerprints.Therefore, for the clustering quality assessment we look inside clusters and inspect segment sequences of the corresponding jobs.In the same cluster we expect the sequences to be similar.If not, clustering is not effective.Depending on data, the clustering algorithms create thousands of clusters.Unfortunately, it is not feasible to analyse all of them qualitatively with reasonable effort.Therefore our analysis strategy is to find clusters with the characteristic weaknesses and discuss them.
 
 
 \subsection{Evaluation of general-purpose clustering algorithms}
@@ -957,17 +973,17 @@ In particular we use the agglomerative clustering algorithm, decision trees, and
 \subsubsection{Clustering of the Job-IO-Metric and Job-IO-Duration datasets}
 As already mentioned in the related work section, the Job-IO-Metric dataset has 3 features, Job-I/O-Balance, Job-I/O-Utilization, and Job-I/O-Problem-Time.
 After the data pre-processing, we obtain a set of 3-dimensional data points with a domain between 0 and 1.
-According to the formula, the EPS\_MAX is 1.44.
-We conducted several experiments with different EPS values between 0 and EPS\_MAX and visualized the results in \Cref{fig:datasets_clustering_results:io_metric} on the right side.
+According to the formula, the $\epsilon_{max}$ is 1.44.
+We conducted several experiments with different EPS values between 0 and $\epsilon_{max}$ and visualized the results in \Cref{fig:datasets_clustering_results:io_metric} on the right side.
 It shows the cluster sizes of Top 20 largest clusters and the total number of clusters.
 The\ Job-IO-Duration dataset contains the fraction of runtime jobs spent doing I/O.
 The 27 columns are named according to the following scheme: metric\_category, e.g, bytes\_read\_0 or md\_file\_delete\_4.
 The first part is the one of the nine metric names and the second part is the category number (LowIO=0, HighIO=1 and CriticalIO=4).
 These columns are used for machine learning as input features.
-There is a constraint for each metric (metric\_0 + metric\_1 + metric\_4 = 1), that makes 9 features redundant, because they can be computed from the other features, so that we have to deal with 18 features only, and EPS\_MAX is 1.17.
+There is a constraint for each metric (metric\_0 + metric\_1 + metric\_4 = 1), that makes 9 features redundant, because they can be computed from the other features, so that we have to deal with 18 features only, and $\epsilon_{max}$ is 1.17.
 We visualized the results in \Cref{fig:datasets_clustering_results:io_duration} on the left side.
 A look inside clusters reveals chaotic clustering results.
-For both datasets and for all EPS values we could find many coding sequences in a cluster that don't belong in the same cluster.
+For both datasets and for all $\epsilon$ values we could find many coding sequences in a cluster that don't belong in the same cluster.
 For example a cluster can contain the following sequences.
 
 
@@ -977,7 +993,7 @@ For example a cluster can contain the following sequences.
 
 
 We look at least in the Top 10 largest clusters and find the same picture for all of the.
-Even with low EPS values the algorithms produce many polluted clusters, i.e, with samples from other clusters.
+Even with low $\epsilon_{max}$ values the algorithms produce many polluted clusters, i.e, with samples from other clusters.
 Like in the example above, we could find any logic behind the results.
 Probably, these particular datasets do not represent the specifics of parallel jobs not well enough for proper clustering, but even with a good feature set that works on our test system, there is no guarantee that the approach will be portable to other systems.
 
