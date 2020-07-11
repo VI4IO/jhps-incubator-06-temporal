@@ -948,17 +948,18 @@ The metrics (md\_bytes, md\_mod, and md\_file\_delete) have the longest tail; so
 This section contains data statistics, and the clustering results in \Cref{fig:datasets_clustering_results} of the Job-IO-Metric and Job-IO-Duration datasets with general-purpose machine learning algorithms.
 Due to lack of tools, we determine cluster quality on a small scale.
 
-\subsubsection{Test environment}
-The experiments with general-purpose machine learning in this section are conducted with Python 3.8.0.
+\subsubsection{Implementation}
+The experiments with general-purpose machine learning in this section are conducted with Python3.8.0.
 In particular we use the agglomerative clustering algorithm, decision trees, and the MinMaxScaler from the scikit-learn 0.22.1 library.
 
 
 \subsubsection{Clustering of the Job-IO-Metric and Job-IO-Duration datasets}
-As already mentioned in the related work section, the Job-IO-Metric dataset has three features, Job-I/O-Balance, Job-I/O-Utilization, and Job-I/O-Problem-Time.
+The Job-IO-Metric dataset has three features, Job-I/O-Balance, Job-I/O-Utilization, and Job-I/O-Problem-Time.
 After the data pre-processing, we obtain a set of 3-dimensional data points with a domain between 0 and 1.
 According to the formula, the $\epsilon_{max}$ is 1.44.
-We conducted several experiments with different EPS values between 0 and $\epsilon_{max}$ and visualized the results in \Cref{fig:datasets_clustering_results:io_metric} on the right side.
-It shows the cluster sizes of Top 20 largest clusters and the total number of clusters.
+We conducted several experiments with different EPS values between 0 and $\epsilon_{max}$, the top 20 largest clusters and total number is visualized in \Cref{fig:datasets_clustering_results:io_metric}.
+
+\jk{Integregate something into algorithms.}
 
 \begin{figure}
 	\begin{subfigure}[t]{0.45\textwidth}
@@ -1000,7 +1001,7 @@ Probably, these particular datasets do not represent the specifics of parallel j
 
 \subsection{Evaluation of custom clustering algorithms}
 This section contains data statistics, clustering progress, and clustering results of codings with the five customized algorithms (BIN\_ALL, BIN\_AGGZEROS, HEX\_LEV, HEX\_NATIVE, PM\_QUANT).
-Due to lack of tools, we determine cluster quality on a small scale.
+%Due to lack of tools, we determine cluster quality on a small scale.
 
 \subsubsection{Test setup}
 For the performance tests we allocate a compute node on Mistral supercomputer.
