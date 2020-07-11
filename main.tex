@@ -974,20 +974,29 @@ We conducted several experiments with different SIM values between 0 and $SIM_{m
 The top 20 largest clusters and total number of clusters is visualized in \Cref{fig:datasets_clustering_results:io_metric} and \Cref{fig:datasets_clustering_results:io_duration} for IO-metric and IO-duration job-profiles, respectively.
 
 \begin{figure}
-	\begin{subfigure}[t]{0.45\textwidth}
-	\includegraphics[width=\textwidth]{./media/image10.png}
-	\caption{IO-duration}
-	\label{fig:datasets_clustering_results:io_duration}
- \end{subfigure}
- \hfill
  \begin{subfigure}[t]{0.45\textwidth}
 	\includegraphics[width=\textwidth]{./media/image12.png}
 	\caption{IO-metric}
 	\label{fig:datasets_clustering_results:io_metric}
  \end{subfigure}
+ \hfill
+	\begin{subfigure}[t]{0.45\textwidth}
+	\includegraphics[width=\textwidth]{./media/image10.png}
+	\caption{IO-duration}
+	\label{fig:datasets_clustering_results:io_duration}
+ \end{subfigure}
+
  \caption{The Top 20 largest clusters for two different job-profiles.}
  \label{fig:datasets_clustering_results}
 \end{figure}
+
+\jk{Können wir EPS im Bild durch SIM ersetzen, dann ist das einheitlich.}
+
+We can see that IO-duration generated two very large clusters regardless of SIM.
+From Cluster\,3 of IO-duration, the number of jobs inside looks then similar as for IO-metric.
+In IO-metric, we can see that with increasing SIM, the number of jobs per cluster increase (as expected).
+
+\jk{Kann es sein, dass EPS=0.3 bei beiden eben nicht das gleiche Verhältnis ist, ich meine SIMmax ist ja unterschiedlich wenn ich 3 Metriken oder 18 habe?}
 
 A look inside clusters reveals chaotic clustering results.
 For both datasets and for all SIM values we could find many coding sequences in a cluster that we wouldn't locate together.
