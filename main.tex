@@ -1023,25 +1023,57 @@ It is equipped with 2x Intel(R) Xeon(R) CPU E5-2680 v3 @ 2.50GHz, 64GB DDR4 RAM.
 The clustering algorithms are implemented in Rust and run on a single core.
 They are applied on pre-computed codings datasets, so that the clustering runtimes do not include the creation of the codings.
 
-\subsubsection{Impact of the user-defined similarity value}
+\subsubsection{Quantitative impact of the user-defined similarity}
 In the introduced algorithms, the user-defined similarity (SIM) that the jobs in a cluster must fullfill to the cluster centroid controls the cluster formation.
 It is expected that low SIM values produce a smaller amount of noisy clusters and a high SIM value produces a large amount of clean clusters.
 We suppose the optimal value is application dependent.
 Although an optimal SIM value is depending on use case and dataset, a parameter exploration may provide important hints to find a good value and achieve optimal cluster qualities.
 
-First of all, we observe the clustering progress by recording the number of created clusters after each 10.000 jobs.
-The clustering progress for different SIM values is visualized in \Cref{fig:clustering_progress}.
+\Cref{fig:clustering_progress} shows the number of clusters created when clustering an increasing total number of jobs for different SIM values; each point represents the number for an analyzed number of jobs in increments of 10,000 jobs.
+For all algorithms, we can see that with an increase in SIM value, the number of clusters created increases, and the number of total clusters created slows down the more jobs have been processed as jobs are allocated to existing clusters.
+BIN creates most clusters while HEX\_NATIVE creates the least and PM is in between.
+For SIM of 99\%, BIN and HEX\_LEV can barely group jobs together.
+
+
+\Cref{fig:alg_runtimes} shows the clustering runtimes for the same experiment.
+The clustering time depends heavily on the number of created clusters.
+The reason is that the algorithm tries to put each job in existing clusters first.
+It iterates over them, and only if it is not able to find a suitable cluster, it creates a new one.
+The more clusters exist, the longer is the processing time.
+Since, for low SIM values there is a low number of clusters, the clustering is much faster.
+PM\_QUANT has exceptionally high runtimes due to quadratic runtimes of phase matching.
+In one case, the runtimes clustering of 10,000 jobs took up to 4.3 hours (the few outliers are not shown in the picture).
+We suppose this lies on the quadratic runtimes of the phase matching procedure.
+% We didn't spend time to optimize the algorithm further.
+
+From this initial considerations, it appears that HEX\_NATIVE is well suited, it generates the least number of clusters and is efficient.
+However, looking at the overall number of created clusters isn't enough to assess the quantity of the aggregation.
+Additional quantitative metrics need to be used, such as the number of small clusters.
+
+\medskip
+
+To understand the aggregation behavior better, alternative visualizations are investigated.
+In \Cref{fig:sim_exploration}, the number of clusters created for a given similarity value is plotted.
 The red line approximates the overall number of clusters, the green line shows how many contain at least two jobs and the blue line shows how many of them contain at least 10 jobs.
-The maximum number of clusters is equivalent to the number of jobs; it is visualized by the grey line.
+The maximum number of clusters is equivalent to the number of jobs; it is visualized by the gray line.
 Coding with 100$\%$  similarity are of the same job type, i.e, they have exactly the same length and I/O behavior.
 
 The gradient of the curve shows the generalization capabilities of each algorithm for different SIM values.
+Apparently, for all algorithms (except HEX) there is a SIM value, where the number of clusters with more than ten and two jobs is decreasing, i.e., the clustering algorithms start to split clusters into individual job clusters.
+That is something we usually want to prevent, because the algorithms stop finding similar jobs, but focus on refining clusters.
 
-When looking for the optimal SIM, we created the following criteria.
+\smallskip
+
+In \Cref{fig:cum_num_job_sizes}, the distribution of the relative cluster size for all jobs.
+The ABS algorithms tend to create many small clusters.
+PM creates a variety of different cluster sizes and HEX\_NATIVE the biggest clusters.
+Interestingly after scaling both axes with log10, we can observe a linear behavior for all algorithms.
+
+When looking for an optimal SIM, we consider the following criteria:
 Firstly, we need to select a SIM value, just before the increase of the SIM value doesn't make significant improvements.
 PM and BIN algorithms work best for SIM values between 0.7 and 0.9, and for HEX the SIM value between 0.95 and 0.99.
 We can also observe flattening curves with increasing numbers of jobs, which indicates that more jobs are placed in clusters and less clusters are created.
-
+One strategy for the analysis could also be to start with a low SIM value and then increase it further to "hierarchically" cluster jobs and filter jobs that appear irrelevant for the current analysis.
 
 \begin{figure}
   \centering
@@ -1049,24 +1081,6 @@ We can also observe flattening curves with increasing numbers of jobs, which ind
    \caption{Clustering progress.}
    \label{fig:clustering_progress}
 \end{figure}
-
-
-
-Apparently, for each algorithm (except HEX) there is some SIM value, when the clustering algorithms start working contra-productive, i.e., the number of clusters with more than two jobs is decreasing.
-This happens, because more clusters are splitted in individual jobs than created.
-That is something we usually want to prevent, because the algorithms stop finding similar jobs, but focus on refining clusters.
-
-\Cref{fig:alg_runtimes} shows the clustering runtimes of clustering a total number of jobs with increments of 10,000 jobs, i.e., each point represents the runtime for a given number of total jobs.
-The clustering time depends heavily on the number of created clusters (see \Cref{fig:clustering_progress}).
-The reason is that the algorithm tries to put each job in existing clusters first.
-It iterates over them, and only if it is not able to find a suitable cluster, it creates a new one.
-The more clusters exist, the longer is the processing time.
-Since, for low SIM values there is a low number of clusters, the clustering is much faster.
-PM\_QUANT has exceptionally high runtimes due to quadratic runtimes of phase matching.
-In one case the runtimes clustering of 10,000 jobs took up to 4.3 hours (the outliers are not shown in the picture).
-We suppose this lies on the quadratic runtimes of the phase matching procedure.
-We didn't spend time to optimize the algorithm further.
-
 
 \begin{figure}
   \centering
@@ -1080,9 +1094,8 @@ We didn't spend time to optimize the algorithm further.
   \centering
   \includegraphics[width=4.61in,height=2.76in]{./media/image19.png}
   \caption{Similarity value exploration.}
-  \label{fig:sim_eploration}
+  \label{fig:sim_exploration}
 \end{figure}
-
 
 \begin{figure}
   \centering
@@ -1091,21 +1104,24 @@ We didn't spend time to optimize the algorithm further.
   \label{fig:cum_num_job_sizes}
 \end{figure}
 
-Another quality indicator is the number of small clusters.
-\Cref{fig:cum_num_job_sizes} the final clustering result.
-Obviously, the ABS algorithms tend to create many small clusters.
-In these terms, PM behaves much better and HEX best.
-A quite interesting observation is that after scaling both axes with log10 function, we can observe a kind linearity for all algorithms.
+\medskip
 
-The\ previous investigations have no meaning, if cluster quality is bad.
-To give you an  impression of cluster qualities for different SIM values, we define the relevance by the equation below and we visualize the Top 10 relevant clusters in
-\Cref{fig:top10_relevant_jobs}.
-The colors indicate the mean similarity of jobs to the cluster centroid.
-The number above the bar denotes the mean job length of the cluster.
+To assess the quality of the quantitative clustering better, we define a relevance of clusters as listed in \Cref{eq:rel}.
+The idea behind the relevance definition is the following: the larger the cluster and the longer the jobs, the more potential load these jobs can produce.
+Therefore, it is worth investigating these clusters first.
 
 \begin{equation}
 \text{Relevance} = \text{ClusterSize} \cdot \text{MeanJobLenght}
+\label{eq:rel}
 \end{equation}
+
+To give you an impression of cluster qualities for different SIM values, we visualize the Top 10 relevant clusters in \Cref{fig:top10_relevant_jobs}.
+The colors indicate the mean similarity of jobs to the cluster centroid.
+The number above the bar denotes the mean job length of the cluster.
+
+In principle, the figure confirms that SIM values larger than optimum provide not much improvement, but nevertheless, it does not mean that the cluster quality is acceptable.
+After manual exploration of selected clusters, we noticed some show a SIM-value independent characteristics.
+To explain them, it is sufficient to investigate one cluster in detail for each algorithm, as we do in the next sections.
 
 %\begin{figure}
 %  \centering
@@ -1114,18 +1130,14 @@ The number above the bar denotes the mean job length of the cluster.
 %  \label{fig:equation}
 %\end{figure}
 
-The idea behind the relevance definition is the following: the larger the cluster and the longer the jobs, the more potential load these jobs can produce.
-Therefore it is worth investigating these clusters first.
-In principle, the figure confirms that SIM values larger than optimum provide not much improvement, but nevertheless, it does not mean that the cluster quality is acceptable.
-After investigation of some clusters we noticed SIM value independent characteristics.
-To explain them, it is sufficient to look in one cluster of each algorithm, as we do in the next sections.
-
 \begin{figure}
   \centering
    \includegraphics[width=4.61in,height=6.44in]{./media/image11.png}
    \caption{Top 10 relevant jobs ordered by relevance.}
    \label{fig:top10_relevant_jobs}
 \end{figure}
+
+\jk{END of review}
 
 \subsubsection{Cluster presentation format}
 The next sections we have the following format, a description of any particular observations if necessary, followed by a table containing the most important statistics, and by the codings for job, centroid and and the Top 5 job types.
