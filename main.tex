@@ -908,6 +908,8 @@ Unfortunately, it is not feasible to analyze all of them qualitatively with reas
 
 Therefore, for the assessment, we look inside clusters and inspect segment sequences of the corresponding jobs.
 For the quantitative analysis, we attempted to find clusters that show the characteristic weakness of the algorithm and discuss them.
+We also define \textit{cluster relevance} as a metrics that assists in determining which cluster bears the best optimization potential and, hence, could be investigated first by the support staff.
+
 For the qualitative analysis, we start by looking into a job that is given to user support, then similar jobs need to be found.
 In the same cluster, we expect the sequences to be similar.
 If not, the clustering algorithm is not effective.
@@ -1104,11 +1106,13 @@ One strategy for the analysis could also be to start with a low SIM value and th
   \label{fig:cum_num_job_sizes}
 \end{figure}
 
-\medskip
+\subsection{Cluster relevance}
 
-To assess the quality of the quantitative clustering better, we define a relevance of clusters as listed in \Cref{eq:rel}.
-The idea behind the relevance definition is the following: the larger the cluster and the longer the jobs, the more potential load these jobs can produce.
+To assess the quality of the quantitative clustering better and to aid support staff to identify relevant clusters, we define a relevance of clusters as listed in \Cref{eq:rel}.
+The idea behind the relevance definition is the following: the larger the cluster (in terms of jobs) and the longer the jobs, the more potential load these jobs can produce.
 Therefore, it is worth investigating these clusters first.
+Note that the relevance could include the number of occupied nodes as well to effectively indicate the usage of all jobs on the supercomputer.
+In this analysis, we just looked at our definition of weighted relevance.
 
 \begin{equation}
 \text{Relevance} = \text{ClusterSize} \cdot \text{MeanJobLenght}
