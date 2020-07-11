@@ -298,24 +298,23 @@ In practice, different jobs show a different runtime, and even when re-running t
 
 \begin{figure}
         \centering
-\begin{subfigure}[t]{\textwidth}
- \includegraphics[width=4.61in,height=1.54in]{./media/image27.png}
-         \caption{Job A runs on 13 nodes}
-         \label{fig:typ_io:1}
- \end{subfigure}
+         \begin{subfigure}[t]{\textwidth}
+           \includegraphics[width=4.61in,height=1.54in]{./media/image27.png}
+           \caption{Job A runs on 13 nodes}
+           \label{fig:typ_io:1}
+         \end{subfigure}
 
         \begin{subfigure}[t]{\textwidth}
- \includegraphics[width=4.61in,height=1.54in]{./media/image28.png}
-         \caption{Job B runs on 225 nodes}
-         \label{fig:typ_io:2}
-  \end{subfigure}
+           \includegraphics[width=4.61in,height=1.54in]{./media/image28.png}
+           \caption{Job B runs on 225 nodes}
+           \label{fig:typ_io:2}
+         \end{subfigure}
 
         \begin{subfigure}[t]{\textwidth}
- \includegraphics[width=4.61in,height=1.54in]{./media/image25.png}
-         \caption{Job C runs on 40 nodes}
-         \label{fig:typ_io:3}
-  \end{subfigure}
-
+          \includegraphics[width=4.61in,height=1.54in]{./media/image25.png}
+          \caption{Job C runs on 40 nodes}
+          \label{fig:typ_io:3}
+        \end{subfigure}
 \caption{Monitoring data of three jobs. Score is the sum of individual node scores.}
          \label{fig:typ_io:all}
 \end{figure}
@@ -336,7 +335,7 @@ Darshan~\cite{carns2011understanding-toc,hpcdarshan} is an open source I/O chara
 
 There are approaches that monitor record storage behavior and aim to identify inefficient applications in a cluster.
 TOKIO~\cite{lockwood2018tokio} integrates logs from various sources to allow an analysis of data.
-It allows to find certain inefficient access patterns in the data.
+It allows finding certain inefficient access patterns in the data.
 The LASSi tool~\cite{DBLP:journals/corr/abs-1906-03884} was developed for detecting, the so called, victim and aggressor applications.An aggressor can steal I/O resources from the victim and negatively affect its runtime.To identify such applications, LASSi calculates metrics from Lustre job-stats and information from the job scheduler.One metric category shows file system load and another category describes applications I/O behavior.The correlation of these metrics can help to identify applications that cause the file system to slow down.In the LASSi workflow this is a manual step, where a support team is involved in the identification of applications during file system slow down.Manual steps are disadvantageous when processing large amounts of data and must be avoided in unsupervised I/O behavior identification.LASSi's indicates that the main target group are system maintainers.Understanding LASSi reports may be challenging for ordinary HPC users, who do not have knowledge about the underlying storage system.
 
 In~\cite{TUISVPKB19}, the authors utilized probes to detect file system slow-down.A probing tool measures file system response times by periodically sending metadata and read/write requests.An increase of response times correlates to the overloading of the file system.This approach allows the calculation of a slow-down factor identification of the slow-down time period.This approach is able to detect a file system slow-down, but cannot detect the jobs that cause the slow-down.
@@ -402,7 +401,6 @@ By reducing along all dimension, you obtain basically a job profile (as discusse
 	\caption{Dimension reduction strategies for the original 4D-data.}
 	\label{tab:reduction_techniques}
 \end{table}
-
 
 \subsubsection{Coding}
 
@@ -951,8 +949,16 @@ This section contains data statistics, and the clustering results in \Cref{fig:d
 Due to lack of tools, we determine cluster quality on a small scale.
 
 \subsubsection{Test environment}
-All the experiments in this section are conducted with python 3.8.0.
-In particular we use the agglomerative clustering algorithm, decision trees, and the MinMaxScaler from the sklearn 0.22.1 library.
+The experiments with general-purpose machine learning in this section are conducted with Python 3.8.0.
+In particular we use the agglomerative clustering algorithm, decision trees, and the MinMaxScaler from the scikit-learn 0.22.1 library.
+
+
+\subsubsection{Clustering of the Job-IO-Metric and Job-IO-Duration datasets}
+As already mentioned in the related work section, the Job-IO-Metric dataset has three features, Job-I/O-Balance, Job-I/O-Utilization, and Job-I/O-Problem-Time.
+After the data pre-processing, we obtain a set of 3-dimensional data points with a domain between 0 and 1.
+According to the formula, the $\epsilon_{max}$ is 1.44.
+We conducted several experiments with different EPS values between 0 and $\epsilon_{max}$ and visualized the results in \Cref{fig:datasets_clustering_results:io_metric} on the right side.
+It shows the cluster sizes of Top 20 largest clusters and the total number of clusters.
 
 \begin{figure}
 	\begin{subfigure}[t]{0.45\textwidth}
@@ -970,12 +976,7 @@ In particular we use the agglomerative clustering algorithm, decision trees, and
  \label{fig:datasets_clustering_results}
 \end{figure}
 
-\subsubsection{Clustering of the Job-IO-Metric and Job-IO-Duration datasets}
-As already mentioned in the related work section, the Job-IO-Metric dataset has 3 features, Job-I/O-Balance, Job-I/O-Utilization, and Job-I/O-Problem-Time.
-After the data pre-processing, we obtain a set of 3-dimensional data points with a domain between 0 and 1.
-According to the formula, the $\epsilon_{max}$ is 1.44.
-We conducted several experiments with different EPS values between 0 and $\epsilon_{max}$ and visualized the results in \Cref{fig:datasets_clustering_results:io_metric} on the right side.
-It shows the cluster sizes of Top 20 largest clusters and the total number of clusters.
+
 The\ Job-IO-Duration dataset contains the fraction of runtime jobs spent doing I/O.
 The 27 columns are named according to the following scheme: metric\_category, e.g, bytes\_read\_0 or md\_file\_delete\_4.
 The first part is the one of the nine metric names and the second part is the category number (LowIO=0, HighIO=1 and CriticalIO=4).
@@ -1005,13 +1006,14 @@ Due to lack of tools, we determine cluster quality on a small scale.
 For the performance tests we allocate a compute node on Mistral supercomputer.
 It is equipped with 2x Intel(R) Xeon(R) CPU E5-2680 v3 @ 2.50GHz, 64GB DDR4 RAM.
 The clustering algorithms are implemented in Rust and run on a single core.
+They are applied on pre-computed codings datasets, so that the clustering runtimes do not include the creation of the codings.
 
 \subsubsection{SIM value exploration}
 In the introduced algorithms, the SIM value controls the cluster formation.
 In the course of evaluation, we will show that low SIM values produce a small amount, but polluted clusters, and a high SIM value produces a large amount, but clean clusters.
 We suppose the optimal value is somewhere in between.
 
-First\ of all, we observe the clustering progress by recording  the number of created clusters after each 10.000 jobs.
+First of all, we observe the clustering progress by recording the number of created clusters after each 10.000 jobs.
 The clustering progress is visualized in \Cref{fig:clustering_progress}.
 The gradient of the curve shows the generalization capabilities of each algorithm for different SIM values.
 
