@@ -230,7 +230,7 @@ Additionally, the monitoring system obtains various job meta-information from th
 
 Our motivation for automatic analysis of parallel jobs is the monitoring situation at DKRZ.
 Mistral runs around 10.000 jobs a day, which is too much for manual analysis.
-In the previous work~\cite{iocats2020}, we found a way to identify I/O intensive jobs and jobs with inefficient usage by deriving statistics from the node-level statistics.
+In our previous work~\cite{iocats2020}, we found a way to identify I/O intensive jobs and jobs with inefficient usage by deriving statistics from the node-level statistics.
 This information can aid the procurement of new HPC systems or support the extension of an existing one.
 While this approach helps to find individual jobs, it doesn't provide a global overview, which might be more important for making decisions at the data center perspective.
 For example, a discovery of a large group of I/O-intensive and bursty applications would suggest attaching a burst buffer to the storage, to improve application runtimes.
@@ -541,7 +541,7 @@ The example in \Cref{tab:hex_example} shows hexadecimal coding for a job contain
 Determining the resemblance between two jobs is the main task of this work.
 Clustering algorithms need a distance metrics to allow organizing them together.
 There are various variants, a selection is listed in \Cref{tab:sim_funcs}.
-The Euclidean distance for two vectors is defines as $\sum_i |a_i - b_i|$ and can naturally only be applied to vectors of the same length.
+The Manhatten distance for two vectors is defines as $\sum_i |a_i - b_i|$ and can naturally only be applied to vectors of the same length.
 The Levensthein distance is the number of modifications (inserts, deletes, changes) of individual characters that need to be made to transform one string to another.
 To create a flexible similarity function, we combine the Manhatten distance with a sliding window or phase detection to allow it to determine a distance between two vectors of different length.
 
@@ -572,7 +572,7 @@ In the last step, similar jobs need to be grouped in clusters.
 A subset of potential strategies is listed in \Cref{tab:clustering_algorithms}.
 Often, the k-means algorithm is applied which utilizes a random strategy to initialize clusters.
 However, as it requires us to define a fixed number of clusters, it is problematic as the number of actual clusters are unknown.
-The large class of density clustering algorithms such as DBSCAN groups elements that are "close" together into one class; what close means must be defined in $\epsilon$.
+The large class of density clustering algorithms such as DBSCAN groups objects that are "close" together into one class; a user defines the maximum distance of objects that belong to the same class by setting an $\epsilon$ which represents the similarity value.
 Agglomerative strategies group similar elements together to form a hierarchy of some sort, e.g., a tree.
 Unfortunately, their complexity is quadratic at least.
 To handle millions of jobs, an algorithm must be performant.
@@ -645,7 +645,7 @@ During our research, we explored various combinations out of the possible combin
 The operation stack which we describe in this article is visualized in \Cref{fig:clustering_stacks}.
 In brief, the algorithms are as follows:
 \begin{itemize}
- \item (ML) uses a set of \textbf{traditional machine learning} techniques.
+ \item (ML) uses a set of \textbf{traditional machine learning} techniques on job profiles.
  \item (BIN\_ALL) uses \textbf{Levenshtein} distance on \textbf{binary codings.}
  \item (BIN\_AGGZEROS) is like BIN\_ALL, but with \textbf{zero aggregation} of contiguous zero segments.
  \item (HEX\_LEV) uses \textbf{hexadecimal coding} and \textbf{Levenshtein} distance.
@@ -656,17 +656,33 @@ In brief, the algorithms are as follows:
 \subsection{Algorithms}
 This section describes the evaluated algorithms in detail.
 
-\subsubsection{ML general-purpose machine learning algorithms}
-In the preprocessing step, the MinMaxScaler scales the features to values between 0 and 1 using MinMax normalization.
-Therefore, the highest distance between two points can be at most $\epsilon_{max}$ =  \( d^{1/d} \) , where d is the dimension of the dataset.
-The agglomerative clustering algorithm uses Manhatten distance as a similarity measure, i.e., if the component wise distance between two job vectors is shorter than the defined distance ($\epsilon$), then these jobs belong to the same cluster.
-We explore several $\epsilon$ up to $\epsilon_{max}$.% and use the best value for further evaluation.
+\subsubsection{ML}
 
-The application of general-purpose machine learning algorithms is simple.
-The 4d time series can be transformed into the fixed size input format accepted by the algorithm, but we find quickly that the size of our datasets is the first obstacle to the suitable clustering algorithms.
+To apply existing clustering algorithms, first, a job-profile is created in the pre-processing.
+The 4d time series can be transformed into the required fixed size input format accepted by the general-purpose ML clustering algorithms.
+We explored two job profiles: IO-metric and I/O-duration.
+The \textbf{IO-metric job profile} utilizes three features, Job-I/O-Balance, Job-I/O-Utilization, and Job-I/O-Problem-Time (as defined in \cite{iocats2020}).
+After the data pre-processing, we obtain a set of 3-dimensional data points with a domain between 0 and 1.
+The maximum distance between any two jobs ($SIM_{max}$) is 1.44.
+
+The \textbf{IO-duration job profile} contains the fraction of runtime, a job spent doing the individual I/O categories leading to 27 columns.
+The columns are named according to the following scheme: metric\_category, e.g, bytes\_read\_0 or md\_file\_delete\_4.
+The first part is the one of the nine metric names and the second part is the category number (LowIO=0, HighIO=1 and CriticalIO=4).
+These columns are used for machine learning as input features.
+There is a constraint for each metric (metric\_0 + metric\_1 + metric\_4 = 1), that makes 9 features redundant, because they can be computed from the other features.
+So we have to deal with 18 features; $SIM_{max}$ is 1.17.
+
+\jk{Warum ist das hier 1.17, checke ich nicht}
+
+\paragraph{Clustering algorithm}
+We intended to apply agglomerative clustering.
+\jk{Könnte noch bissl unklar sein}
+The algorithm uses Euclidean distance as a similarity measure, i.e., if the component wise distance between two job vectors is shorter than the defined distance (SIM), then these jobs belong to the same cluster.
+
+We found that the size of our datasets is the first obstacle to the suitable clustering algorithms.
 For example, the scaling behavior of the agglomerative clustering algorithm that is used in this work can handle around 10,000 jobs in a reasonable amount of time as the complexity is \(N^{2}\).
-%\footnote{This algorithm is Python3 implementation based on Pandas was used throughout this work, but we replaced it with a Rust implementation that performed much better.}.
-Nevertheless, by utilizing a decision tree, we are able to cluster 1,000,000 samples.
+
+Therefore, to be able to cluster 1,000,000 samples, we created a variant of the algorithm by utilizing a decision tree.
 This workaround involves three steps:
 
 \begin{enumerate}
@@ -888,7 +904,7 @@ Lastly, the quality of the obtained clusters must be assessed.
 Overall, we will assess their suitability using quantitative metrics such as the number of generated clusters and their sizes and qualitatively by manually exploring clusters of relevant jobs.
 We want to emphasize that our goal is to find similar jobs.
 Depending on data, the clustering algorithms may create thousands of clusters.
-Unfortunately, it is not feasible to analyse all of them qualitatively with reasonable effort and there are no tools that can assess the cluster quality automatically.
+Unfortunately, it is not feasible to analyze all of them qualitatively with reasonable effort and there are no tools that can assess the cluster quality automatically.
 
 Therefore, for the assessment, we look inside clusters and inspect segment sequences of the corresponding jobs.
 For the quantitative analysis, we attempted to find clusters that show the characteristic weakness of the algorithm and discuss them.
@@ -944,63 +960,52 @@ The metrics (md\_bytes, md\_mod, and md\_file\_delete) have the longest tail; so
 \end{figure}
 
 
-\subsection{Evaluation of general-purpose clustering algorithms}
-This section contains data statistics, and the clustering results in \Cref{fig:datasets_clustering_results} of the Job-IO-Metric and Job-IO-Duration datasets with general-purpose machine learning algorithms.
+\subsection{Evaluation of ML}
+This section contains data statistics, and the clustering results in \Cref{fig:datasets_clustering_results} for applying the ML algorithm (hierarchical clustering + decision tree) but using the two different job profiles (IO-Metric and IO-Duration).
 Due to lack of tools, we determine cluster quality on a small scale.
 
 \subsubsection{Implementation}
-The experiments with general-purpose machine learning in this section are conducted with Python3.8.0.
+The data is analyzed using Python3.8.0.
 In particular we use the agglomerative clustering algorithm, decision trees, and the MinMaxScaler from the scikit-learn 0.22.1 library.
 
 
-\subsubsection{Clustering of the Job-IO-Metric and Job-IO-Duration datasets}
-The Job-IO-Metric dataset has three features, Job-I/O-Balance, Job-I/O-Utilization, and Job-I/O-Problem-Time.
-After the data pre-processing, we obtain a set of 3-dimensional data points with a domain between 0 and 1.
-According to the formula, the $\epsilon_{max}$ is 1.44.
-We conducted several experiments with different EPS values between 0 and $\epsilon_{max}$, the top 20 largest clusters and total number is visualized in \Cref{fig:datasets_clustering_results:io_metric}.
-
-\jk{Integregate something into algorithms.}
+\subsubsection{Results}
+We conducted several experiments with different SIM values between 0 and $SIM_{max}$.
+The top 20 largest clusters and total number of clusters is visualized in \Cref{fig:datasets_clustering_results:io_metric} and \Cref{fig:datasets_clustering_results:io_duration} for IO-metric and IO-duration job-profiles, respectively.
 
 \begin{figure}
 	\begin{subfigure}[t]{0.45\textwidth}
 	\includegraphics[width=\textwidth]{./media/image10.png}
-	\caption{Job-IO-Duration}
+	\caption{IO-duration}
 	\label{fig:datasets_clustering_results:io_duration}
  \end{subfigure}
  \hfill
  \begin{subfigure}[t]{0.45\textwidth}
 	\includegraphics[width=\textwidth]{./media/image12.png}
-	\caption{Job-IO-Metric}
+	\caption{IO-metric}
 	\label{fig:datasets_clustering_results:io_metric}
  \end{subfigure}
- \caption{The Top 20 largest clusters.}
+ \caption{The Top 20 largest clusters for two different job-profiles.}
  \label{fig:datasets_clustering_results}
 \end{figure}
 
-
-The\ Job-IO-Duration dataset contains the fraction of runtime jobs spent doing I/O.
-The 27 columns are named according to the following scheme: metric\_category, e.g, bytes\_read\_0 or md\_file\_delete\_4.
-The first part is the one of the nine metric names and the second part is the category number (LowIO=0, HighIO=1 and CriticalIO=4).
-These columns are used for machine learning as input features.
-There is a constraint for each metric (metric\_0 + metric\_1 + metric\_4 = 1), that makes 9 features redundant, because they can be computed from the other features, so that we have to deal with 18 features only, and $\epsilon_{max}$ is 1.17.
-We visualized the results in \Cref{fig:datasets_clustering_results:io_duration} on the left side.
 A look inside clusters reveals chaotic clustering results.
-For both datasets and for all $\epsilon$ values we could find many coding sequences in a cluster that don't belong in the same cluster.
-For example a cluster can contain the following sequences.
-
-
+For both datasets and for all SIM values we could find many coding sequences in a cluster that we wouldn't locate together.
+For example, one observed cluster contains the following sequences (binary encoding):
 \begin{lstlisting}
 [1], [0:0:14:0], [4:0], [0:0:4:0], [272:272:272]
 \end{lstlisting}
 
+We looked in the Top 10 largest clusters and a random selection of clusters to find the same picture:
+Even with low $SIM_{max}$ values the algorithms appears to produce polluted clusters, i.e, with samples from other clusters.
+\jk{Warum sim max hier}
+Like in the example above, we couldn't understand the logic behind the results.
+Probably, the particular random datasets used for training does not represent the specifics of parallel jobs  well enough for proper clustering.
+However, even with a good feature set that works on our test system, it is unlikely that the strategy and trained model will be portable to other systems.
+Therefore, we conclude that this adapted version of hierarchical clustering based on job profiles isn't suitable to analyze the workload.
 
-We look at least in the Top 10 largest clusters and find the same picture for all of the.
-Even with low $\epsilon_{max}$ values the algorithms produce many polluted clusters, i.e, with samples from other clusters.
-Like in the example above, we could find any logic behind the results.
-Probably, these particular datasets do not represent the specifics of parallel jobs not well enough for proper clustering, but even with a good feature set that works on our test system, there is no guarantee that the approach will be portable to other systems.
-
-\subsection{Evaluation of custom clustering algorithms}
-This section contains data statistics, clustering progress, and clustering results of codings with the five customized algorithms (BIN\_ALL, BIN\_AGGZEROS, HEX\_LEV, HEX\_NATIVE, PM\_QUANT).
+\subsection{Evaluation of non-standard clustering algorithms}
+This section contains data statistics, clustering progress, and clustering results when applying the five customized algorithms (BIN\_ALL, BIN\_AGGZEROS, HEX\_LEV, HEX\_NATIVE, PM\_QUANT).
 %Due to lack of tools, we determine cluster quality on a small scale.
 
 \subsubsection{Test setup}
@@ -1009,13 +1014,18 @@ It is equipped with 2x Intel(R) Xeon(R) CPU E5-2680 v3 @ 2.50GHz, 64GB DDR4 RAM.
 The clustering algorithms are implemented in Rust and run on a single core.
 They are applied on pre-computed codings datasets, so that the clustering runtimes do not include the creation of the codings.
 
-\subsubsection{SIM value exploration}
-In the introduced algorithms, the SIM value controls the cluster formation.
-In the course of evaluation, we will show that low SIM values produce a small amount, but polluted clusters, and a high SIM value produces a large amount, but clean clusters.
-We suppose the optimal value is somewhere in between.
+\subsubsection{Impact of the user-defined similarity value}
+In the introduced algorithms, the user-defined similarity (SIM) that the jobs in a cluster must fullfill to the cluster centroid controls the cluster formation.
+It is expected that low SIM values produce a smaller amount of noisy clusters and a high SIM value produces a large amount of clean clusters.
+We suppose the optimal value is application dependent.
+Although an optimal SIM value is depending on use case and dataset, a parameter exploration may provide important hints to find a good value and achieve optimal cluster qualities.
 
 First of all, we observe the clustering progress by recording the number of created clusters after each 10.000 jobs.
-The clustering progress is visualized in \Cref{fig:clustering_progress}.
+The clustering progress for different SIM values is visualized in \Cref{fig:clustering_progress}.
+The red line approximates the overall number of clusters, the green line shows how many contain at least two jobs and the blue line shows how many of them contain at least 10 jobs.
+The maximum number of clusters is equivalent to the number of jobs; it is visualized by the grey line.
+Coding with 100$\%$  similarity are of the same job type, i.e, they have exactly the same length and I/O behavior.
+
 The gradient of the curve shows the generalization capabilities of each algorithm for different SIM values.
 
 When looking for the optimal SIM, we created the following criteria.
@@ -1032,12 +1042,6 @@ We can also observe flattening curves with increasing numbers of jobs, which ind
 \end{figure}
 
 
-Although an optimal SIM value is depending on use case and dataset, a parameter exploration may provide important hints to find a good value and achieve optimal cluster qualities.
-\Cref{fig:clustering_progress} visualizes the cluster creation for different SIM values.
-The red line approximates the overall number of clusters, the green line shows how many contain at least two jobs and the blue line shows how many of them contain at least 10 jobs.
-
-Coding with 100$\%$  similarity are of the same job type, i.e, they have exactly the same length and I/O behavior.
-In \Cref{fig:clustering_progress} the threshold is visualized by the grey line.
 
 Apparently, for each algorithm (except HEX) there is some SIM value, when the clustering algorithms start working contra-productive, i.e., the number of clusters with more than two jobs is decreasing.
 This happens, because more clusters are splitted in individual jobs than created.
