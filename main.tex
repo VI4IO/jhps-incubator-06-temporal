@@ -872,12 +872,13 @@ match_write_bytes = [(match:0; len:1)]
 \end{lstlisting}
 
 \jk{Wollten wir nicht noch durch max = 16 teilen}
+\eb{Das wollten wir bei HEV\_NATIVE machen und das machen wir auch (siehe Section davor). Das hier ist etwas komplett anderes. Das ist ein Zwischenschritt fuer die Berechnung der Aehnlichkeit zwischen zwei Jobs. Im naechsten Paragraphen wird sie auch berechnet.}
 
 \paragraph{Similarity}
 Next, the similarity for coding with different lengths must be adjusted. Similarity between two jobs is the sum of matches divided by the sum of lengths of the longer phases. In this example, we get a similarity of 17$\%$:
 
 \begin{align}
-	similarity &= \frac{\sum_{m,i}{\text{match}_{m,i}}}{\sum_{m,i}{\text{length}_{m,i}}} = \frac{0 + 1 + 8/9 + 2/3 + 1 + 0 + 1}{5 + 4 + 1 + 7 + 3 + 1} = 0.17\\
+	similarity &= \frac{\sum_{m,i}{\text{match}_{m,i}}}{\sum_{m,i}{\text{length}_{m,i}}} = \frac{0 + 1 + \frac{8}{9} + \frac{2}{3} + 1 + 0 + 0}{5 + 4 + 7 + 1 + 3 + 1} = 0.17\\
 	&, \text{with } m \in \text{Metrics}, i \in \text{Phases of } m
 \end{align}
 
