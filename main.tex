@@ -876,9 +876,10 @@ match_write_bytes = [(match:0; len:1)]
 \paragraph{Similarity}
 Next, the similarity for coding with different lengths must be adjusted. Similarity between two jobs is the sum of matches divided by the sum of lengths of the longer phases. In this example, we get a similarity of 17$\%$:
 
-\begin{equation}
-similarity = (0 + 1 + 8/9 + 2/3 + 1 + 0 + 1) / (5 + 4 + 1 + 7 + 3 + 1) = 0.17
-\end{equation}
+\begin{align}
+	similarity &= \frac{\sum_{m,i}{\text{match}_{m,i}}}{\sum_{m,i}{\text{length}_{m,i}}} = \frac{0 + 1 + 8/9 + 2/3 + 1 + 0 + 1}{5 + 4 + 1 + 7 + 3 + 1} = 0.17\\
+	&, \text{with } m \in \text{Metrics}, i \in \text{Phases of } m
+\end{align}
 
 
 \subsubsection{Assessment}
