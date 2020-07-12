@@ -1,6 +1,4 @@
-\let\accentvec\vec
-\documentclass[]{llncs}
-\usepackage{colortbl}
+\documentclass{jhps}
 \usepackage{silence}
 \WarningFilter{todonotes}{The length}
 \WarningFilter{caption}{Unsupported}
@@ -8,30 +6,12 @@
 \WarningFilter{caption}{The option}
 \WarningFilter{caption}{Unknown document}
 
-\let\spvec\vec
-\let\vec\accentvec
-\usepackage{amsmath}
-\let\vec\spvec
-
-\usepackage{url}
-\usepackage{hyperref}
-\usepackage{array}
-
-\usepackage{caption}
-%\usepackage[position=t]{subcaption}
-\captionsetup{compatibility=false}
-\usepackage{subcaption}
-%\usepackage[caption=false]{subfig}
-
 \usepackage{array}
 \usepackage{cite}
 \usepackage{amsmath,amssymb,amsfonts}
 \usepackage{algorithmic}
-\usepackage{graphicx}
 \newsavebox{\imagebox}
 \usepackage{textcomp}
-\usepackage{xcolor}
-\usepackage{listings}
 \usepackage{lstautogobble}
 \usepackage[listings,skins,breakable,raster,most]{tcolorbox}
 \usepackage{numprint}
@@ -39,11 +19,9 @@
 \usetikzlibrary{positioning,shapes,arrows,fit,backgrounds}
 \usepackage{booktabs}
 \usepackage{multirow}
-\usepackage{soul}
 \usepackage{tabularx}
 \usepackage{mathtools}
 
-\usepackage{cleveref}
 \crefname{codecount}{Code}{Codes}
 
 \usepackage{todonotes}
@@ -57,107 +35,21 @@
 	  #1\ignorespaces
 	}
 
-
-\usepackage{graphicx}
-\graphicspath{%
-	{./pictures/}
-}
-
-\lstset{%
-	numberbychapter=false,
-	belowskip=-10pt,
-	aboveskip=10pt,
-}
-
-\lstdefinestyle{lstcodebox}{%
-	basicstyle=\scriptsize\ttfamily,
-	autogobble=true,
-	tabsize=2,
-	captionpos=b,
-	float,
-}
-
-\renewcommand{\ttdefault}{pcr}
-\lstdefinestyle{instylebf}{%
-	basicstyle=\bfseries\scriptsize\ttfamily,
-}
-
-\lstdefinestyle{instyle}{%
-	basicstyle=\scriptsize\ttfamily,
-}
-
-\lstdefinestyle{lstcommon}{ %
-%\lstdefinestyle{sig}{ %
-  %backgroundcolor=\color{white},   % choose the background color; you must add \usepackage{color} or \usepackage{xcolor}; should come as last argument
-  basicstyle=\fontsize{8}{8}\ttfamily,        % the size of the fonts that are used for the code
-  breakatwhitespace=false,         % sets if automatic breaks should only happen at whitespace
-  breaklines=true,                 % sets automatic line breaking
-  captionpos=n,                    % sets the caption-position to bottom
-  %commentstyle=\color{mygreen},    % comment style
-  deletekeywords={...},            % if you want to delete keywords from the given language
-  %escapeinside={\%*}{*)},          % if you want to add LaTeX within your code
-  extendedchars=true,              % lets you use non-ASCII characters; for 8-bits encodings only, does not work with UTF-8
-  frame=none,                    % adds a frame around the code
-  keepspaces=true,                 % keeps spaces in text, useful for keeping indentation of code (possibly needs columns=flexible)
-  keywordstyle=\bf\ttfamily,       % keyword style
-  language=C,                 % the language of the code
-  morekeywords={*,...},           % if you want to add more keywords to the set
-  %numbers=left,                    % where to put the line-numbers; possible values are (none, left, right)
-  numbersep=5pt,                   % how far the line-numbers are from the code
-  %numberstyle=\tiny\color{mygray}, % the style that is used for the line-numbers
-  rulecolor=\color{black},         % if not set, the frame-color may be changed on line-breaks within not-black text (e.g. comments (green here))
-  showspaces=false,                % show spaces everywhere adding particular underscores; it overrides 'showstringspaces'
-  showstringspaces=false,          % underline spaces within strings only
-  showtabs=false,                  % show tabs within strings adding particular underscores
-  stepnumber=1,                    % the step between two line-numbers. If it's 1, each line will be numbered
-  %stringstyle=\color{mymauve},     % string literal style
-  tabsize=2,                    % sets default tabsize to 2 spaces
-  title=\lstname                   % show the filename of files included with \lstinputlisting; also try caption instead of title
-}
-
-
-\lstset{ %
-  autogobble=true,
-  backgroundcolor=\color{white},   % choose the background color; you must add \usepackage{color} or \usepackage{xcolor}
-  basicstyle=\scriptsize\ttfamily,       % the size of the fonts that are used for the code
-  breakatwhitespace=false,         % sets if automatic breaks should only happen at whitespace
-  breaklines=true,                 % sets automatic line breaking
-  captionpos=b,                    % sets the caption-position to bottom
-  %commentstyle=\color{green},    % comment style
-  deletekeywords={...},            % if you want to delete keywords from the given language
-  escapeinside={(*}{*)},          % if you want to add LaTeX within your code
-  extendedchars=true,              % lets you use non-ASCII characters; for 8-bits encodings only, does not work with UTF-8
-  frame=none,                    % (none, single) adds a frame around the code
-  keepspaces=true,                 % keeps spaces in text, useful for keeping indentation of code (possibly needs columns=flexible)
-  keywordstyle=\color{blue},       % keyword style
-  language=Octave,                 % the language of the code
-  otherkeywords={*,...},           % if you want to add more keywords to the set
-  %numbers=left,                    % where to put the line-numbers; possible values are (none, left, right)
-  numbersep=5pt,                   % how far the line-numbers are from the code
-  numberstyle=\tiny\color{gray}, % the style that is used for the line-numbers
-  rulecolor=\color{black},         % if not set, the frame-color may be changed on line-breaks within not-black text (e.g. comments (green here))
-  showspaces=false,                % show spaces everywhere adding particular underscores; it overrides 'showstringspaces'
-  showstringspaces=false,          % underline spaces within strings only
-  showtabs=false,                  % show tabs within strings adding particular underscores
-  stepnumber=1,                    % the step between two line-numbers. If it's 1, each line will be numbered
-  stringstyle=\color{blue},     % string literal style
-  tabsize=2,                     % sets default tabsize to 2 spaces
-  title=\lstname,                  % show the filename of files included with \lstinputlisting; also try caption instead of title
-}
-
-
 \begin{document}
+
+\JHPSissue{0}   % keep 0 until the issue is assigned
+\JHPSkeywords{XX, TODO}   % add 2-5 keywords
+
+  % Author macro takes Name, Institution, Optional Link to the person, Optional Email
+\JHPSauthor{Eugen Betke}{DKRZ\\Hamburg, Germany}{}{betke@dkrz.de}
+\JHPSauthor{Julian Kunkel}{University of Reading\\Reading, UK}{https://hps.vi4io.org/about/people/julian_kunkel}{j.m.kunkel@reading.ac.uk}   % use empty email here
 
 \title{Classifying Temporal Characteristics of Job I/O Patterns Using Machine Learning Techniques}
 
-
-\institute{%
-DKRZ -- \email{betke@dkrz.de}%
-\and University of Reading--%
-\email{j.m.kunkel@reading.ac.uk}%
-}
-
-\author{Eugen Betke \inst{1} \and  Julian Kunkel\inst{2}}
+% add the section numbers to the listings/figures/tables
+\counterwithin{lstlisting}{section}
+\counterwithin{figure}{section}
+\counterwithin{table}{section}
 
 \maketitle
 
@@ -262,7 +154,7 @@ In our previous work, we computed three high-level metrics per job that aid user
 
 \begin{figure}[!bt]
 	\centering
-	\includegraphics[width=2.02in,height=2.52in]{./media/image4.png}
+	\includegraphics[width=2.02in,height=2.52in]{image4.png}
 	\caption{Example job-level metric.
 Score is the sum of all node scores.}
 	\label{fig:seg_example}
@@ -298,19 +190,19 @@ In practice, different jobs show a different runtime, and even when re-running t
 \begin{figure}
         \centering
          \begin{subfigure}[t]{\textwidth}
-           \includegraphics[width=4.61in,height=1.54in]{./media/image27.png}
+           \includegraphics[width=4.61in,height=1.54in]{image27.png}
            \caption{Job A runs on 13 nodes}
            \label{fig:typ_io:1}
          \end{subfigure}
 
         \begin{subfigure}[t]{\textwidth}
-           \includegraphics[width=4.61in,height=1.54in]{./media/image28.png}
+           \includegraphics[width=4.61in,height=1.54in]{image28.png}
            \caption{Job B runs on 225 nodes}
            \label{fig:typ_io:2}
          \end{subfigure}
 
         \begin{subfigure}[t]{\textwidth}
-          \includegraphics[width=4.61in,height=1.54in]{./media/image25.png}
+          \includegraphics[width=4.61in,height=1.54in]{image25.png}
           \caption{Job C runs on 40 nodes}
           \label{fig:typ_io:3}
         \end{subfigure}
@@ -641,7 +533,7 @@ There are various combinations possible of the different strategies.
 
 \begin{figure}
   \centering
-  \includegraphics[width=4.61in,height=2.38in]{./media/image3.png}
+  \includegraphics[width=4.61in,height=2.38in]{image3.png}
   \caption{Algorithms and their actual operation stacks.}
   \label{fig:clustering_stacks}
 \end{figure}
@@ -968,7 +860,7 @@ The metrics (md\_bytes, md\_mod, and md\_file\_delete) have the longest tail; so
 
 \begin{figure}
   \centering
-  \includegraphics[width=3.55in,height=3.56in]{./media/image23.png}
+  \includegraphics[width=3.55in,height=3.56in]{image23.png}
   \caption{I/O phases statistics.}
   \label{fig:phases_stats}
 \end{figure}
@@ -989,13 +881,13 @@ The top 20 largest clusters and total number of clusters is visualized in \Cref{
 
 \begin{figure}
  \begin{subfigure}[t]{0.45\textwidth}
-	\includegraphics[width=\textwidth]{./media/image12.png}
+	\includegraphics[width=\textwidth]{image12.png}
 	\caption{IO-metric}
 	\label{fig:datasets_clustering_results:io_metric}
  \end{subfigure}
  \hfill
 	\begin{subfigure}[t]{0.45\textwidth}
-	\includegraphics[width=\textwidth]{./media/image10.png}
+	\includegraphics[width=\textwidth]{image10.png}
 	\caption{IO-duration}
 	\label{fig:datasets_clustering_results:io_duration}
  \end{subfigure}
@@ -1091,14 +983,14 @@ One strategy for the analysis could also be to start with a low SIM value and th
 
 \begin{figure}
   \centering
-   \includegraphics[width=4.61in,height=1.85in]{./media/image15.png}
+   \includegraphics[width=4.61in,height=1.85in]{image15.png}
    \caption{Clustering progress.}
    \label{fig:clustering_progress}
 \end{figure}
 
 \begin{figure}
   \centering
-  \includegraphics[width=4.61in,height=3.68in]{./media/image18.png}
+  \includegraphics[width=4.61in,height=3.68in]{image18.png}
   \caption{Runtime for executing the clustering.}
   \label{fig:alg_runtimes}
 \end{figure}
@@ -1106,14 +998,14 @@ One strategy for the analysis could also be to start with a low SIM value and th
 
 \begin{figure}
   \centering
-  \includegraphics[width=4.61in,height=2.76in]{./media/image19.png}
+  \includegraphics[width=4.61in,height=2.76in]{image19.png}
   \caption{Similarity value exploration.}
   \label{fig:sim_exploration}
 \end{figure}
 
 \begin{figure}
   \centering
-  \includegraphics[width=4.61in,height=1.85in]{./media/image22.png}
+  \includegraphics[width=4.61in,height=1.85in]{image22.png}
   \caption{Cumulative number of jobs with different sizes.}
   \label{fig:cum_num_job_sizes}
 \end{figure}
@@ -1141,14 +1033,14 @@ To explain them, it is sufficient to investigate one cluster in detail for each 
 
 %\begin{figure}
 %  \centering
-%  \includegraphics[width=2.5in,height=0.12in]{./media/image16.png}
+%  \includegraphics[width=2.5in,height=0.12in]{image16.png}
 %  \caption{Equation}
 %  \label{fig:equation}
 %\end{figure}
 
 \begin{figure}
   \centering
-   \includegraphics[width=4.61in,height=6.44in]{./media/image11.png}
+   \includegraphics[width=4.61in,height=6.44in]{image11.png}
    \caption{Top 10 relevant jobs ordered by relevance.}
    \label{fig:top10_relevant_jobs}
 \end{figure}
@@ -1237,7 +1129,7 @@ The following observations are characteristic for this algorithm:
 %\begin{figure}[h]
 \begingroup
   \centering
-  \includegraphics[width=4.61in,height=1.39in]{./media/image20.png}
+  \includegraphics[width=4.61in,height=1.39in]{image20.png}
   \captionof{figure}{Length distribution in the cluster.}
   \label{fig:bin_all:length}
 \endgroup
@@ -1295,7 +1187,7 @@ The following is characteristic for this algorithm:
 %\begin{figure}[h]
 \begingroup
   \centering
-  \includegraphics[width=4.61in,height=1.38in]{./media/image13.png}
+  \includegraphics[width=4.61in,height=1.38in]{image13.png}
   \captionof{figure}{Job length distribution in the cluster.}
   \label{fig:bin_aggzeros:length}
 \endgroup
@@ -1357,7 +1249,7 @@ Cluster characteristics:
 %\begin{figure}[h]
 \begingroup
   \centering
-  \includegraphics[width=4.61in,height=1.39in]{./media/image5.png}
+  \includegraphics[width=4.61in,height=1.39in]{image5.png}
   \captionof{figure}{Length distribution in the cluster.}
   \label{fig:hex_lev:length}
 \endgroup
@@ -1416,7 +1308,7 @@ Clustering with SIM=0.99 results in clusters that have equal job lengths.
 %\begin{figure}[h]
 \begingroup
   \centering
-  \includegraphics[width=4.61in,height=1.39in]{./media/image8.png}
+  \includegraphics[width=4.61in,height=1.39in]{image8.png}
   \captionof{figure}{Length distribution in the cluster.}
   \label{fig:hex_native:length}
 \endgroup
@@ -1483,7 +1375,7 @@ Cluster characteristics:
 %\begin{figure}[h]
 \begingroup
   \centering
-  \includegraphics[width=4.61in,height=1.39in]{./media/image21.png}
+  \includegraphics[width=4.61in,height=1.39in]{image21.png}
   \captionof{figure}{Length distribution in the cluster.}
   \label{fig:pm_quant:length}
 \endgroup
@@ -1494,7 +1386,7 @@ The demonstration in this section shows how this approach can be used to identif
 
 \begin{figure}[h]
   \centering
-  \includegraphics[width=2.84in,height=2.85in]{./media/image1.png}
+  \includegraphics[width=2.84in,height=2.85in]{image1.png}
   \caption{One high I/O intensity job running on 46 nodes.
 Score is the sum of all nodes stacked by the node.
 A color represents one of the nodes.}
@@ -1562,7 +1454,7 @@ Information related to the cluster is in \Cref{tab:use_case:bin_all:stats}, \Cre
 %\begin{figure}[h]
 \begingroup
   \centering
-  \includegraphics[width=4.61in,height=1.39in]{./media/image9.png}
+  \includegraphics[width=4.61in,height=1.39in]{image9.png}
   \captionof{figure}{Length distribution in the cluster.}
   \label{fig:use_case:bin_all:length}
 \endgroup
@@ -1613,7 +1505,7 @@ Information related to the cluster is in \Cref{tab:use_case:bin_aggzeros:stats},
 %\begin{figure}[h]
 \begingroup
   \centering
-  \includegraphics[width=4.61in,height=1.39in]{./media/image6.png}
+  \includegraphics[width=4.61in,height=1.39in]{image6.png}
   \captionof{figure}{Length distribution in the cluster.}
   \label{fig:use_case:bin_aggzeros:length}
 \endgroup
@@ -1664,7 +1556,7 @@ Information related to the cluster is in \Cref{tab:use_case:hex_lev:stats}, \Cre
 %\begin{figure}[h]
 \begingroup
   \centering
-  \includegraphics[width=4.61in,height=1.39in]{./media/image17.png}
+  \includegraphics[width=4.61in,height=1.39in]{image17.png}
   \captionof{figure}{Length distribution in the cluster.}
   \label{fig:use_case:hex_lev:length}
 \endgroup
@@ -1717,7 +1609,7 @@ Information related to the cluster is in \Cref{tab:use_case:hex_native:stats}, \
 %\begin{figure}[h]\begingroup
 \begingroup
   \centering
-  \includegraphics[width=4.61in,height=1.39in]{./media/image2.png}
+  \includegraphics[width=4.61in,height=1.39in]{image2.png}
   \captionof{figure}{Length distribution in the cluster.}
   \label{fig:use_case:hex_native:length}
 \endgroup
@@ -1770,7 +1662,7 @@ Information\ related to the cluster is \Cref{tab:use_case:pm_quant:stats}, \Cref
 %\begin{figure}[h]
 \begingroup
   \centering
-  \includegraphics[width=4.61in,height=1.39in]{./media/image7.png}
+  \includegraphics[width=4.61in,height=1.39in]{image7.png}
   \captionof{figure}{Length distribution in the cluster.}
   \label{fig:use_case:pm_quant:length}
 \endgroup
@@ -1878,12 +1770,30 @@ The biggest problem is probably the large number of clusters.
 We assume that there indeed are so many different types of jobs, but there are too many of them for manual labeling.
 Therefore we need at least three further functions, that filter irrelevant clusters, sort clusters by a criteria and label remaining ones.
 
-%\setlength{\parskip}{0.0pt}
-%\printbibliography
-%\newpage
-%\clearpage
-%\pagebreak
-\null
-\bibliographystyle{splncs04}
-\bibliography{bibliography}{}
+
+\subsection*{Acknowledgment} %% Remove this section if not needed
+\textit{We thank XX for sponsoring.}
+
+  % The bibliography
+\addcontentsline{toc}{section}{Bibliography}
+\bibliography{bibliography.bib}
+
+\reviews   % The review section
+
+\subsection*{Reviewer: \href{Optional URL to reviewer page}{Firstname LastName}, Date: 2020-07-07}
+
+\paragraph{Overall summary and proposal for acceptance}
+
+\paragraph{Scope}   % in regards to the journal, i.e., does the topic fit?
+
+\paragraph{Significance}   % of the research, minor vs. major
+
+\paragraph{Readability}   % English and structure appropriate?
+
+\paragraph{Presentation}
+
+\paragraph{References}   % Correctly formatted?
+
+\paragraph{Correctness}   % Is the research correct
+
 \end{document}
