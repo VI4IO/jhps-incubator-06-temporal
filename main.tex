@@ -58,8 +58,6 @@
 	}
 
 
-
-
 \usepackage{graphicx}
 \graphicspath{%
 	{./pictures/}
@@ -265,7 +263,8 @@ In our previous work, we computed three high-level metrics per job that aid user
 \begin{figure}[!bt]
 	\centering
 	\includegraphics[width=2.02in,height=2.52in]{./media/image4.png}
-	\caption{Example job-level metric. Score is the sum of all node scores.}
+	\caption{Example job-level metric.
+Score is the sum of all node scores.}
 	\label{fig:seg_example}
 \end{figure}
 
@@ -315,7 +314,8 @@ In practice, different jobs show a different runtime, and even when re-running t
           \caption{Job C runs on 40 nodes}
           \label{fig:typ_io:3}
         \end{subfigure}
-\caption{Monitoring data of three jobs. Score is the sum of individual node scores.}
+\caption{Monitoring data of three jobs.
+Score is the sum of individual node scores.}
          \label{fig:typ_io:all}
 \end{figure}
 
@@ -343,11 +343,14 @@ The Nextgenio monitoring system~\cite{nextgenio2016}, has four main collectors.T
 
 \section{Methodology}
 
-The goal of this article is to research the impact of clustering strategies on a large number of jobs. Generally, machine learning algorithms expect a fixed number of features, therefore, the time series of statistics that is retrieved on the node-level needs to be pre-processed.
-The application of a “specific algorithm” can be understood as a number of successive processing steps on data. Roughly speaking, there are three basic steps: data pre-processing including coding, similarity computation, and clustering.
+The goal of this article is to research the impact of clustering strategies on a large number of jobs.
+Generally, machine learning algorithms expect a fixed number of features, therefore, the time series of statistics that is retrieved on the node-level needs to be pre-processed.
+The application of a “specific algorithm” can be understood as a number of successive processing steps on data.
+Roughly speaking, there are three basic steps: data pre-processing including coding, similarity computation, and clustering.
 We call one of such a combination a \textit{clustering stack}.
 The pre-processing converts the dynamic-sized monitoring data which depends on the number of captured metrics, allocated nodes, and application runtime into a suitable representation for the clustering algorithm.
-Then the clustering is applied. Finally, the clustering result needs to be assessed, i.e., how suitable is this strategy for our IO statistics and use cases?
+Then the clustering is applied.
+Finally, the clustering result needs to be assessed, i.e., how suitable is this strategy for our IO statistics and use cases?
 
 In the following, we have dedicated a section to each step listing and briefly discussing potential alternatives.
 The list does not intend to be complete but shows a variety of options.
@@ -415,7 +418,8 @@ The operations are summarized in \Cref{tab:coding_ops}.
  \centering
  \begin{tabularx}{\textwidth}{lX}
 	 Operation &  Description \\
-	 \hline	 Binarization & Segments are mapped to 9-bit numbers (v), where each position (i) represents a metric. The bits are set by the following function:
+	 \hline	 Binarization & Segments are mapped to 9-bit numbers (v), where each position (i) represents a metric.
+The bits are set by the following function:
 	 \vbox{
 		\begin{equation}
 			v_i =
@@ -425,11 +429,13 @@ The operations are summarized in \Cref{tab:coding_ops}.
 		\end{equation}
 	 } \\
 	 \hline
-	 Hex-Quantization & Quantize segments to 16 levels. \\
+	 Hex-Quantization & Quantize segments to 16 levels.\\
 	 \hline
-	 Zeros aggregation & Merge all consecutive zero segments. \\
+	 Zeros aggregation & Merge all consecutive zero segments.\\
 	 \hline
-	 Phase extraction &  Extract continuous sequences of non-zero segments. \par - Split time series at zero segments in sub time series (I/O phases) and remove zero segments. \par - Preserve order of I/O phases. \\
+	 Phase extraction &  Extract continuous sequences of non-zero segments.
+\par - Split time series at zero segments in sub time series (I/O phases) and remove zero segments.
+\par - Preserve order of I/O phases.\\
 	 \hline
  \end{tabularx}
  \caption{Coding operations.}
@@ -550,7 +556,7 @@ To create a flexible similarity function, we combine the Manhatten distance with
   \begin{tabularx}{\textwidth}{lX}
     Distance & Description \\
     \hline
-    Manhatten & The Manhatten distance between the vectors. \\
+    Manhatten & The Manhatten distance between the vectors.\\
     \hline
     Levenshtein &  Number of operation (inserts, deletes, and changes) requires to convert one coding in another \\
     \hline
@@ -586,15 +592,16 @@ They are described in the following:
   \begin{tabularx}{\textwidth}{lX}
     Algorithm & Description \\
     \hline
-    k-means & Runs a random initialization, then refines the clusters until the clusters don't change any more. \\
+    k-means & Runs a random initialization, then refines the clusters until the clusters don't change any more.\\
     \hline
-    Density clustering &  Group nearby elements recursively together as long as they are ($\epsilon$) close together. \\
+    Density clustering &  Group nearby elements recursively together as long as they are ($\epsilon$) close together.\\
     \hline
-    Agglomerative &  Hierarchically cluster data into groups of elements that belong closer together. \\
+    Agglomerative &  Hierarchically cluster data into groups of elements that belong closer together.\\
     \hline
-    \textbf{ClusteringTree} &  Create a hierarchical clustering for subset of data to train a decision tree, then apply the decision tree on the full dataset. \\
+    \textbf{ClusteringTree} &  Create a hierarchical clustering for subset of data to train a decision tree, then apply the decision tree on the full dataset.\\
     \hline
-    \textbf{SimplifiedDensity} &  Combines ideas from k-means with density clustering. The simplified clustering algorithms add a job to a cluster if similarity to the cluster centroid is equal or larger than the user defined value. \\
+    \textbf{SimplifiedDensity} &  Combines ideas from k-means with density clustering.
+The simplified clustering algorithms add a job to a cluster if similarity to the cluster centroid is equal or larger than the user defined value.\\
     \hline
   \end{tabularx}
   \caption{Selection of clustering algorithms}
@@ -888,10 +895,15 @@ match_write_bytes = [(match:0; len:1)]
 \end{lstlisting}
 
 \jk{Wollten wir nicht noch durch max = 16 teilen}
-\eb{Das wollten wir bei HEV\_NATIVE machen und das machen wir auch (siehe Section davor). Das hier ist etwas komplett anderes. Das ist ein Zwischenschritt fuer die Berechnung der Aehnlichkeit zwischen zwei Jobs. Im naechsten Paragraphen wird sie auch berechnet.}
+\eb{Das wollten wir bei HEV\_NATIVE machen und das machen wir auch (siehe Section davor).
+Das hier ist etwas komplett anderes.
+Das ist ein Zwischenschritt fuer die Berechnung der Aehnlichkeit zwischen zwei Jobs.
+Im naechsten Paragraphen wird sie auch berechnet.}
 
 \paragraph{Similarity}
-Next, the similarity for coding with different lengths must be adjusted. Similarity between two jobs is the sum of matches divided by the sum of lengths of the longer phases. In this example, we get a similarity of 17$\%$:
+Next, the similarity for coding with different lengths must be adjusted.
+Similarity between two jobs is the sum of matches divided by the sum of lengths of the longer phases.
+In this example, we get a similarity of 17$\%$:
 
 \begin{align}
 	similarity &= \frac{\sum_{m,i}{\text{match}_{m,i}}}{\sum_{m,i}{\text{length}_{m,i}}} = \frac{0 + 1 + \frac{8}{9} + \frac{2}{3} + 1 + 0 + 0}{5 + 4 + 7 + 1 + 3 + 1} = 0.17\\
@@ -1483,7 +1495,9 @@ The demonstration in this section shows how this approach can be used to identif
 \begin{figure}[h]
   \centering
   \includegraphics[width=2.84in,height=2.85in]{./media/image1.png}
-  \caption{One high I/O intensity job running on 46 nodes. Score is the sum of all nodes stacked by the node. A color represents one of the nodes.}
+  \caption{One high I/O intensity job running on 46 nodes.
+Score is the sum of all nodes stacked by the node.
+A color represents one of the nodes.}
   \label{fig:use_case}
 \end{figure}
 
@@ -1495,7 +1509,8 @@ Now we investigate the cluster that contains this job for the different algorith
 
 In the following, an attentive reader may notice that there is a discrepancy between the job visualization in  \Cref{fig:use_case} and the hexadecimal job codings.
 While in the figure we can see a less intensive phase in the beginning and a high intensive phase afterwards, the hexadecimal coding contains a more or less single high intensive I/O phase.
-The reason is that we use different reduction functions. While in the illustration we aggregate segments by the sum() function, for the coding we use mean() function for the same set of values.
+The reason is that we use different reduction functions.
+While in the illustration we aggregate segments by the sum() function, for the coding we use mean() function for the same set of values.
 While sum() is better for visualization, the mean value allows us to build simple algorithms.
 
 By accident, we have good conditions for all algorithms, and all the algorithms work well in this use case.
@@ -1821,8 +1836,11 @@ An example illustrates a typical case.
 Assume there are two jobs: one running on 16 nodes and other running on 32 nodes.
 Both are one segment long and only one I/O node that writes data to storage with a moderate performance.
 Without quantization we would represent these jobs by the following sequences:  [..., [0.0625], $ \ldots $ ] and [..., [0.03125], ...], where only active metrics have values larger than zero.
-Using the similarity function without quantization, i.e. with mean performance, would result in a similarity of 50$\%$ , and for SIM>0.5 they would be placed in separate clusters.
-The hexadecimal coding filters these jobs automatically. Segments with mean performance less than 0.125 are quantized to zero and zero sequences are removed from the dataset. This problem doesn’t occur.
+Using the similarity function without quantization, i.e.
+with mean performance, would result in a similarity of 50$\%$ , and for SIM>0.5 they would be placed in separate clusters.
+The hexadecimal coding filters these jobs automatically.
+Segments with mean performance less than 0.125 are quantized to zero and zero sequences are removed from the dataset.
+This problem doesn’t occur.
 The main question remains what characterizes I/O and which characteristics should be involved in job comparison.
 
 \begin{itemize}
