@@ -1132,7 +1132,7 @@ The following general characteristic observations are made:
       0:0:0:0:0:0:294:0:0:0:0:32:0:0:0:0:0:0:0:0:0:0:0:32:0:0:0:0:0:0:0:0:0:0:0:32:0:0:0:0:0:0:0:0:0:0 &  centroid \\
       \multicolumn{2}{l}{}                                                                             \\
       \rowcolor{tabhcolor}
-      Binary coding of other jobs                                                                      &  Count    \\
+      Binary coding of jobs in the cluster                                                                      &  Count    \\
       \hline
       0:0:0:0:0:0:359:96:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0   &  95       \\
       0:0:0:0:0:0:295:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0    &  62       \\
@@ -1199,13 +1199,13 @@ The following is characteristic for this algorithm:
   \begin{tiny}
     \begin{tabular}{@{ }l@{ }|@{ }r@{ }}
       \rowcolor{tabhcolor}
-      Binary coding                                                                          &  Type     \\
+      Binary coding of the centroid                                                                         &  Type     \\
       \hline
       272:272:272:272:272:278:286:272:272:272:272:272:272:272:272:272:272:272:272            &  centroid \\
       \multicolumn{2}{l}{}                                                                   \\
       \hline
       \rowcolor{tabhcolor}
-      Binary coding                                                                          &  Count    \\
+      Binary coding of jobs in the cluster                                                                          &  Count    \\
       272:272:272:272:272:278:286:272:272:272:272:272:272:272:272:272:272:272:272            &  528      \\
       272:272:272:272:272:406:286:272:272:272:272:272:272:272:272:272                        &  96       \\
       272:272:272:272:272:279:31:272:272:272:272:272:272:272:272:272:272:272:272:272:272:272 &  53       \\
@@ -1235,18 +1235,21 @@ The following is characteristic for this algorithm:
 
 
 \paragraph{HEX\_LEV}
-Information related to the cluster is in \Cref{tab:hex_lev:stats}, \Cref{tab:hex_lev:top_jobs}, and in \Cref{fig:hex_lev:length}.
-HEX\_LEV reacts slowly to the increasing SIM value, due to the longer hexadecimal codings, compared to binary codings.
-Therefore, we chose a SIM value higher than for BIN algorithms.
-But even with a high SIM value, we can observe that some jobs have a different I/O behavior than the centroid and the rest of the jobs.
-The reason is that Levenshtein distance is not performance aware, i.e., the distance between value 1 and 2 is the same as for 1 and 8.
-There is no such a job in the example below, but we can observe this in other clusters.
-Cluster characteristics:
+Information related to the selected cluster is provided in \Cref{fig:hex_lev}.
+Due to the longer hexadecimal codings, smaller changes in the SIM value don't change the clusters as quickly,  compared to binary codings.
+Therefore, for this exploration, we chose a SIM value higher than for BIN algorithms.
 
+In the selected cluster, there is mostly one segment of IO activity.
+
+General cluster characteristics:
 \begin{enumerate}
- \item Similar job lengths
- \item Mostly clean clusters, but can contain outlier jobs
+ \item Similar job lengths.
+ \item Mostly clean clusters, but a cluster can contain outlier jobs.
 \end{enumerate}
+
+We observe that even with a high SIM value some jobs have a different I/O behavior than the centroid and the rest of the jobs.
+The reason is for the Levenshtein distance the distance between value 1 and 2 is the same as for 1 and 8; however, we would consider the two jobs closer together.
+
 
 \noindent\begin{minipage}{\textwidth}
 \captionsetup{type=table}
@@ -1265,6 +1268,8 @@ Cluster characteristics:
 \endgroup
 
 \medskip
+
+\jk{Hier unten werden einige Zeichen abgeschnitten, warum das komische AT KLAMMER in tabular?}
 
 \begingroup
   \begin{subtable}{\textwidth}
@@ -1288,7 +1293,7 @@ Cluster characteristics:
       0:0:0:0:0:0:1:1:1 & 0:...:0           & 0:0:0:0:0:0:1:0:0 & 0:...:0           & 75       \\
     \end{tabular}
   \end{tiny}
-  \caption{Centroid and Top 5 job types}
+  \caption{Centroid and Top 5 job types. The metrics that have no IO activity are not included in the table.}
   \label{tab:hex_lev:top_jobs}
   \end{subtable}
 \endgroup
