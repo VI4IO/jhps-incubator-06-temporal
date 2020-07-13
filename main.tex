@@ -28,7 +28,7 @@
 \newcommand{\jk}[1]{\todo[inline]{JK:\@#1}}
 \newcommand{\eb}[1]{\todo[inline]{EB:\@#1}}
 
-\definecolor{tabhcolor}{rgb}{0.63, 0.79, 0.95}
+%\definecolor{tblhead}{rgb}{0.63, 0.79, 0.95}
 \newcolumntype{$}{>{\global\let\currentrowstyle\relax}}
 \newcolumntype{^}{>{\currentrowstyle}}
 \newcommand{\rowstyle}[1]{\gdef\currentrowstyle{#1}%
@@ -969,7 +969,7 @@ To understand the aggregation behavior better, alternative visualizations are in
 In \Cref{fig:sim_exploration}, the number of clusters created for a given similarity value is plotted.
 The red line approximates the overall number of clusters, the green line shows how many contain at least two jobs and the blue line shows how many of them contain at least 10 jobs.
 The maximum number of clusters is equivalent to the number of jobs; it is visualized by the gray line.
-Coding with 100$\%$  similarity are of the same job type, i.e, they have exactly the same length and I/O behavior.
+Coding with 100$\%$  similarity are of the same job phenotype, i.e, they have exactly the same length and I/O behavior.
 
 The gradient of the curve shows the generalization capabilities of each algorithm for different SIM values.
 Apparently, for all algorithms (except HEX) there is a SIM value, where the number of clusters with more than ten and two jobs is decreasing, i.e., the clustering algorithms start to split clusters into individual job clusters.
@@ -1061,7 +1061,7 @@ After manual exploration of selected clusters, we noticed some show a SIM-value 
 To explain them, for each algorithm we investigate one cluster of these in detail.
 % we provide an overview of the top clusters and then => wird nicht gemacht außer bei BIN
 
-For the presentation of the clusters, we provide a description of particular observations followed by a table containing statistics, then the codings for centroid and most frequent unique jobs in the cluster -- we call such a a unique representation a \textit{job type}.
+For the presentation of the clusters, we provide a description of particular observations followed by a table containing statistics, then the codings for centroid and most frequent unique jobs in the cluster -- we call such a a unique representation a \textit{job phenotype}.
 At the end, we include an illustration which describes the segment length distribution of jobs in the cluster that indicates how much the algorithm groups across different job runtime.
 
 \subsubsection{Algorithm characteristics}
@@ -1082,8 +1082,8 @@ As the similarity of 70\% considers empty segments as well, jobs with few IO seg
 
 The following general characteristic observations are made:
 \begin{enumerate}
- \item Job types can significantly differ from centroid and from each other.
- \item Lengths of job types in a cluster are relatively close to the centroid.
+ \item Job phenotypes can significantly differ from centroid and from each other.
+ \item Lengths of job phenotypes in a cluster are relatively close to the centroid.
 \end{enumerate}
 
 \noindent\begin{minipage}{\textwidth}
@@ -1112,7 +1112,7 @@ The following general characteristic observations are made:
   \centering
   \begin{tabular}{lr}
     Number of jobs & 7615 \\
-    Number of job types & 3306 \\
+    Number of job phenotypes & 3306 \\
   \end{tabular}
   \caption{Cluster statistics.}
   \label{tab:bin_all:stats}
@@ -1125,13 +1125,13 @@ The following general characteristic observations are made:
   \begin{subtable}{\textwidth}
   \centering
   \begin{tiny}
-    \begin{tabular}{@{ }l@{ }|@{ }r@{ }}
-      \rowcolor{tabhcolor}
+    \begin{tabular}{l|r}
+      \rowcolor{tblhead}
       Binary coding of the centroid                                                                                 &  Type     \\
       \hline
       0:0:0:0:0:0:294:0:0:0:0:32:0:0:0:0:0:0:0:0:0:0:0:32:0:0:0:0:0:0:0:0:0:0:0:32:0:0:0:0:0:0:0:0:0:0 &  centroid \\
       \multicolumn{2}{l}{}                                                                             \\
-      \rowcolor{tabhcolor}
+      \rowcolor{tblhead}
       Binary coding of jobs in the cluster                                                                      &  Count    \\
       \hline
       0:0:0:0:0:0:359:96:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0   &  95       \\
@@ -1141,7 +1141,7 @@ The following general characteristic observations are made:
       0:0:0:0:0:6:6:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0  &  40       \\
     \end{tabular}
   \end{tiny}
-  \caption{Centroid and Top 5 job types.}
+  \caption{Centroid and Top 5 job phenotypes.}
   \label{tab:bin_all:top_jobs}
   \end{subtable}
 \endgroup
@@ -1170,7 +1170,7 @@ The following is characteristic for this algorithm:
 
 \begin{enumerate}
  \item Job types can significantly differ from centroid and from each other.
- \item Lengths of job types in a cluster are relatively far from the centroid and compared to BIN\_ALL.
+ \item Lengths of job phenotypes in a cluster are relatively far from the centroid and compared to BIN\_ALL.
  \item I/O intensive clusters appear to be cleaner than BIN\_ALL.
 \end{enumerate}
 
@@ -1183,7 +1183,7 @@ The following is characteristic for this algorithm:
   \begin{tabular}{ll}
     \centering
     Number of jobs & 1295 \\
-    Number of job types & 336 \\
+    Number of job phenotypes & 336 \\
   \end{tabular}
   \caption{Cluster statistics.}
   \label{tab:bin_aggzeros:stats}
@@ -1197,14 +1197,14 @@ The following is characteristic for this algorithm:
   \begin{subtable}{\textwidth}
   \centering
   \begin{tiny}
-    \begin{tabular}{@{ }l@{ }|@{ }r@{ }}
-      \rowcolor{tabhcolor}
+    \begin{tabular}{l|r}
+      \rowcolor{tblhead}
       Binary coding of the centroid                                                                         &  Type     \\
       \hline
       272:272:272:272:272:278:286:272:272:272:272:272:272:272:272:272:272:272:272            &  centroid \\
       \multicolumn{2}{l}{}                                                                   \\
       \hline
-      \rowcolor{tabhcolor}
+      \rowcolor{tblhead}
       Binary coding of jobs in the cluster                                                                          &  Count    \\
       272:272:272:272:272:278:286:272:272:272:272:272:272:272:272:272:272:272:272            &  528      \\
       272:272:272:272:272:406:286:272:272:272:272:272:272:272:272:272                        &  96       \\
@@ -1213,7 +1213,7 @@ The following is characteristic for this algorithm:
       272:272:272:272:272:279:319:272:272:272:272:272:272:272:272:272:272:272:272:272:272    &  50       \\
     \end{tabular}
   \end{tiny}
-  \caption{Centroid and Top 5 job types}
+  \caption{Centroid and Top 5 job phenotypes}
   \label{tab:bin_aggzeros:top_jobs}
   \end{subtable}
 \endgroup
@@ -1260,7 +1260,7 @@ In the selected cluster, there is mostly one segment of IO activity.
   \begin{tabular}{ll}
     \centering
 		Number of jobs & 5769 \\
-		Number of job types & 2473 \\
+		Number of job phenotypes & 2473 \\
 	\end{tabular}
 	\caption{Cluster statistics.}
 	\label{tab:hex_lev:stats}
@@ -1275,15 +1275,15 @@ In the selected cluster, there is mostly one segment of IO activity.
   \begin{subtable}{\textwidth}
   \centering
   \begin{tiny}
-    \begin{tabular}{@{ }l@{ }@{ }l@{ }@{ }l@{ }@{ }l@{ }|@{ }r@{ }}
-      \rowcolor{tabhcolor}
-      \multicolumn{4}{@{ }l|@{ }}{Hexadecimal coding} & \\
-      \rowcolor{tabhcolor}
+    \begin{tabular}{llll|r}
+      \rowcolor{tblhead}
+      \multicolumn{4}{l|}{Hexadecimal coding} & \\
+      \rowcolor{tblhead}
       md\_file\_create  & md\_file\_delete  & md\_mod           & read\_calls       & Type     \\
       \hline
       0:...:0           & 0:0:0:1:0:0:0:0:0 & 0:...:0           & 0:...:0           & centroid \\
       \multicolumn{5}{l}{}\\
-      \rowcolor{tabhcolor}
+      \rowcolor{tblhead}
       md\_file\_create  & md\_file\_delete  & md\_mod           & read\_calls       & Count    \\
       \hline
       0:...:0           & 0:0:0:0:0:0:1:0:0 & 0:...:0           & 0:...:0           & 606      \\
@@ -1293,7 +1293,7 @@ In the selected cluster, there is mostly one segment of IO activity.
       0:0:0:0:0:0:1:1:1 & 0:...:0           & 0:0:0:0:0:0:1:0:0 & 0:...:0           & 75       \\
     \end{tabular}
   \end{tiny}
-  \caption{Centroid and Top 5 job types. The metrics that have no IO activity are not included in the table.}
+  \caption{Centroid and Top 5 job phenotypes. The metrics that have no IO activity are not included in the table.}
   \label{tab:hex_lev:top_jobs}
   \end{subtable}
 \endgroup
@@ -1339,7 +1339,7 @@ In the selected cluster, jobs with a length of 4 have mostly 1 the activity of o
   \centering
   \begin{tabular}{ll}
     Number of jobs & 20908 \\
-    Number of job types & 11997 \\
+    Number of job phenotypes & 11997 \\
   \end{tabular}
   \caption{Cluster statistics.}
   \label{tab:hex_native:stats}
@@ -1352,15 +1352,15 @@ In the selected cluster, jobs with a length of 4 have mostly 1 the activity of o
   \begin{subtable}{\textwidth}
   \centering
   \begin{tiny}
-    \begin{tabular}{@{ }l@{ }@{ }l@{ }@{ }l@{ }|@{ }r@{ }}
-      \rowcolor{tabhcolor}
-      \multicolumn{3}{@{ }l|@{ }}{Hexadecimal coding} &            \\
-      \rowcolor{tabhcolor}
+    \begin{tabular}{lll|r}
+      \rowcolor{tblhead}
+      \multicolumn{3}{l|}{Hexadecimal coding} &            \\
+      \rowcolor{tblhead}
       md\_file\_delete     &  md\_mod   & md\_other & Type     \\
       \hline
       0:\dots:0            &  0:0:1:0   & 0:0:1:0   & centroid \\
       \multicolumn{4}{l}{} \\
-      \rowcolor{tabhcolor}
+      \rowcolor{tblhead}
       md\_file\_delete     &  md\_mod   & md\_other & Count    \\
       \hline
       0:\dots:0            &  0:\dots:0 & 0:0:1:0   & 5,010    \\
@@ -1370,7 +1370,7 @@ In the selected cluster, jobs with a length of 4 have mostly 1 the activity of o
       0:0:1:0              &  0:0:1:0   & 0:\dots:0 & 676      \\
     \end{tabular}
   \end{tiny}
-  \caption{Centroid and Top 5 job types.}
+  \caption{Centroid and Top 5 job phenotypes.}
   \label{tab:hex_native:top_jobs}
   \end{subtable}
 \endgroup
@@ -1391,20 +1391,19 @@ In the selected cluster, jobs with a length of 4 have mostly 1 the activity of o
 \end{minipage}
 
 \paragraph{PM\_QUANT}
-Information\ related to the cluster is in \Cref{fig:pm_quant}.
+Information related to the selected cluster is shown in \Cref{fig:pm_quant}.
 The first thing to mention are the high generalization capabilities of the algorithm, i.e., that many jobs are mapped to a relatively low number of types.
 The next typical property is shown in \Cref{fig:pm_quant:length}, where we can see that almost the full range of job lengths is represented in the cluster.
-This happens, because the PM ignores zero segments completely.
-We saw that already in BIN\_AGGZEROS, where a similar effect was caused by the aggregation of zero segments.
-For example, for PM, the job types in \Cref{fig:pm_quant:top_jobs} in the row one and two are 100$\%$  similar.
-Remarkable is also the cleanliness of the clusters.
+This happens, because the PM ignores zero segments.
+The aggregation of zero segments is important as most jobs have few IO phases, in contrast to BIN\_AGGZEROS, it works more efficient.
+For example, for PM, the job phenotypes in \Cref{fig:pm_quant:top_jobs} in the row one and two are 100$\%$ similar.
 The centroid and the jobs contain quite similar I/O patterns.
 
-Cluster characteristics:
+General cluster characteristics:
 \begin{enumerate}
- \item Low number of job types
- \item Relatively large number of job lengths
- \item I/O pattern
+ \item Low number of job phenotypes represented in a cluster.
+ \item Relatively large number of job lengths represented in a cluster.
+ \item I/O pattern of jobs in a cluster are similar.
 \end{enumerate}
 
 \noindent\begin{minipage}{\textwidth}
@@ -1415,7 +1414,7 @@ Cluster characteristics:
   \centering
   \begin{tabular}{ll}
     Number of jobs & 5175 \\
-    Number of job types & 154 \\
+    Number of job phenotypes & 154 \\
   \end{tabular}
   \caption{Cluster statistics.}
   \label{fig:pm_quant:stats}
@@ -1428,15 +1427,15 @@ Cluster characteristics:
   \begin{subtable}{\textwidth}
   \centering
   \begin{tiny}
-    \begin{tabular}{@{ }l@{ }@{ }l@{ }|@{ }r@{ }}
-      \rowcolor{tabhcolor}
-      \multicolumn{2}{@{ }l|@{ }}{Hexadecimal coding} &              \\
-      \rowcolor{tabhcolor}
+    \begin{tabular}{ll|r}
+      \rowcolor{tblhead}
+      \multicolumn{2}{l|}{Hexadecimal coding} &              \\
+      \rowcolor{tblhead}
       md\_file\_delete     &  md\_mod     & Type     \\
       \hline
       4:0:0:0:0:0          &  4:0:0:0:0:0 & centroid \\
       \multicolumn{3}{l}{} \\
-			\rowcolor{tabhcolor}
+			\rowcolor{tblhead}
       md\_file\_delete     &  md\_mod     & Count    \\
       \hline
       4                    &  4           & 2329     \\
@@ -1446,7 +1445,7 @@ Cluster characteristics:
       0:4                  &  0:4         & 57       \\
     \end{tabular}
   \end{tiny}
-  \caption{Centroid and Top 5 job types.}
+  \caption{Centroid and Top 5 job phenotypes.}
   \label{fig:pm_quant:top_jobs}
   \end{subtable}
 \endgroup
@@ -1503,7 +1502,7 @@ Information related to the cluster is in \Cref{tab:use_case:bin_all:stats}, \Cre
   \begin{tabular}{ll}
     SIM & 0.7 \\
     Number of jobs & 27 \\
-    Number of job types & 17 \\
+    Number of job phenotypes & 17 \\
   \end{tabular}
   \captionof{table}{Cluster statistics.}
   \label{tab:use_case:bin_all:stats}
@@ -1514,14 +1513,14 @@ Information related to the cluster is in \Cref{tab:use_case:bin_all:stats}, \Cre
 \begingroup
   \centering
   \begin{tiny}
-    \begin{tabular}{@{ }l@{ }|@{ }r@{ }}
-      \rowcolor{tabhcolor}
+    \begin{tabular}{l|r}
+      \rowcolor{tblhead}
       Binary coding                                                                                          &  Type     \\
       \hline
       192:192:192:192:192:192:196:192:192:192:192:192:192:192:192:192:192:192:192:192:192:192:64:64:64:64:64 &  job      \\
       192:192:192:192:192:192:192:192:192:192:192:454:230:192:192:192:192:192:192:192:192:192:192:192        &  centroid \\
       \multicolumn{2}{l}{}                                                                                   \\
-      \rowcolor{tabhcolor}
+      \rowcolor{tblhead}
       Binary coding                                                                                          &  Count    \\
       \hline
       192:192:192:192:192:454:198:192:192:192:192:192:192:192:192:192:192:192:192:192:192:192:192:192        &  5        \\
@@ -1531,7 +1530,7 @@ Information related to the cluster is in \Cref{tab:use_case:bin_all:stats}, \Cre
       228:192:192:192:192:192:192:192:192:192:192:192:192:192:192:192:192:192                                &  2        \\
     \end{tabular}
   \end{tiny}
-  \captionof{table}{Job, centroid and Top 5 job types.}
+  \captionof{table}{Job, centroid and Top 5 job phenotypes.}
   \label{tab:use_case:bin_all:top_jobs}
 \endgroup
 %\end{table}
@@ -1554,7 +1553,7 @@ Information related to the cluster is in \Cref{tab:use_case:bin_aggzeros:stats},
   \begin{tabular}{ll}
     SIM & 0.7 \\
     Number of jobs & 8 \\
-    Number of job types & 8 \\
+    Number of job phenotypes & 8 \\
   \end{tabular}
   \captionof{table}{Cluster statistics.}
   \label{tab:use_case:bin_aggzeros:stats}
@@ -1565,14 +1564,14 @@ Information related to the cluster is in \Cref{tab:use_case:bin_aggzeros:stats},
 \begingroup
   \centering
   \begin{tiny}
-    \begin{tabular}{@{ }l@{ }|@{ }r@{ }}
-      \rowcolor{tabhcolor}
+    \begin{tabular}{l|r}
+      \rowcolor{tblhead}
       Binary coding                                                                                             &  Type     \\
       \hline
       192:192:192:192:192:192:196:192:192:192:192:192:192:192:192:192:192:192:192:192:192:192:64:64:64:64:64    &  job      \\
       511:238:192:510:192:224:228:192:192:192:192:192:192:192:192:192:192:192:192:192:192:64:64:64:64:64        &  centroid \\
       \multicolumn{2}{l}{}                                                                                      \\
-      \rowcolor{tabhcolor}
+      \rowcolor{tblhead}
       Binary coding                                                                                             &  Count    \\
       \hline
       0:224:192:192:192:192:228:192:192:192:192:192:192:192:192:192:192:192:192:192:192:64:64:64:64:64          &  1        \\
@@ -1582,7 +1581,7 @@ Information related to the cluster is in \Cref{tab:use_case:bin_aggzeros:stats},
       207:463:225:495:246:224:198:192:192:192:192:192:192:192:192:192:192:192:192:192:192:192:64:64:64:64:64:64 &  1        \\
     \end{tabular}
   \end{tiny}
-  \captionof{table}{Job, centroid and Top 5 job types.}
+  \captionof{table}{Job, centroid and Top 5 job phenotypes.}
   \label{tab:use_case:bin_aggzeros:top_jobs}
 \endgroup
 %\end{table}
@@ -1605,7 +1604,7 @@ Information related to the cluster is in \Cref{tab:use_case:hex_lev:stats}, \Cre
   \begin{tabular}{ll}
     SIM & 0.9 \\
     Number of jobs & 209 \\
-    Number of job types & 189 \\
+    Number of job phenotypes & 189 \\
   \end{tabular}
   \captionof{table}{Cluster statistics.}
   \label{tab:use_case:hex_lev:stats}
@@ -1615,16 +1614,16 @@ Information related to the cluster is in \Cref{tab:use_case:hex_lev:stats}, \Cre
 %\begin{table}
 \begingroup
   \begin{tiny}
-    \begin{tabular}{@{ }l@{ }@{ }l@{ }|@{ }r@{ }}
-      \rowcolor{tabhcolor}
-      \multicolumn{2}{@{ }l|@{ }}{Hexadecimal coding} & \\
-      \rowcolor{tabhcolor}
+    \begin{tabular}{ll|r}
+      \rowcolor{tblhead}
+      \multicolumn{2}{l|}{Hexadecimal coding} & \\
+      \rowcolor{tblhead}
       md\_other                                           &  read\_calls                                           & Type     \\
       \hline
       0:\dots:0                                           &  3:3:8:8:8:5:6:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8 & job      \\
       0:\dots:0                                           &  8:8:8:8:8:2:6:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8 & centroid \\
       \multicolumn{3}{l}{}                                \\
-      \rowcolor{tabhcolor}      md\_other                                           &  read\_calls                                           & Count    \\
+      \rowcolor{tblhead}      md\_other                                           &  read\_calls                                           & Count    \\
       \hline
       0:\dots:0                                           &  0:0:0:0:0:0:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8   & 4        \\
       0:\dots:0                                           &  8:8:8:8:8:2:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8   & 4        \\
@@ -1633,7 +1632,7 @@ Information related to the cluster is in \Cref{tab:use_case:hex_lev:stats}, \Cre
       0:\dots:0                                           &  0:0:0:0:0:0:2:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8   & 2        \\
     \end{tabular}
   \end{tiny}
-  \captionof{table}{Job, centroid and Top 5 job types.}
+  \captionof{table}{Job, centroid and Top 5 job phenotypes.}
   \label{tab:use_case:hex_lev:top_jobs}
 \endgroup
 %\end{table}
@@ -1656,7 +1655,7 @@ Information related to the cluster is in \Cref{tab:use_case:hex_native:stats}, \
   \begin{tabular}{ll}
     SIM & 0.99 \\
     Number of jobs & 20 \\
-    Number of job types & 20 \\
+    Number of job phenotypes & 20 \\
   \end{tabular}
   \captionof{table}{Cluster statistics.}
   \label{tab:use_case:hex_native:stats}
@@ -1667,16 +1666,16 @@ Information related to the cluster is in \Cref{tab:use_case:hex_native:stats}, \
 \begingroup
   \centering
   \begin{tiny}
-    \begin{tabular}{@{ }l@{ }|@{ }r@{ }}
-      \rowcolor{tabhcolor}
+    \begin{tabular}{l|r}
+      \rowcolor{tblhead}
       Hexadecimal coding & \\
-      \rowcolor{tabhcolor}
+      \rowcolor{tblhead}
       read\_calls                                           & Type     \\
       \hline
       3:3:8:8:8:5:6:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8 & job      \\
       8:8:8:8:8:2:4:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8 & centroid \\
       \multicolumn{2}{l}{}\\
-			\rowcolor{tabhcolor}
+			\rowcolor{tblhead}
       read\_calls                                           & Count    \\
       \hline
       8:8:8:8:8:3:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8 & 3        \\
@@ -1694,7 +1693,7 @@ Information related to the cluster is in \Cref{tab:use_case:hex_native:stats}, \
 %\begin{figure}[h]\begingr
 \begingroup
   \centering
-  \includegraphics[width=4.61in,height=1.39in]{image2.png}
+  \includegraphics[width=4.61in]{image2.png}
   \captionof{figure}{Length distribution in the cluster.}
   \label{fig:use_case:hex_native:length}
 \endgroup
@@ -1709,7 +1708,7 @@ Information\ related to the cluster is \Cref{tab:use_case:pm_quant:stats}, \Cref
   \begin{tabular}{ll}
     SIM                 & 0.7 \\
     Number of jobs      & 68  \\
-    Number of job types & 59  \\
+    Number of job phenotypes & 59  \\
   \end{tabular}
   \captionof{table}{Cluster statistics.}
   \label{tab:use_case:pm_quant:stats}
@@ -1720,16 +1719,16 @@ Information\ related to the cluster is \Cref{tab:use_case:pm_quant:stats}, \Cref
 \begingroup
   \centering
   \begin{tiny}
-    \begin{tabular}{@{ }l@{ }|@{ }r@{ }}
-      \rowcolor{tabhcolor}
+    \begin{tabular}{l|r}
+      \rowcolor{tblhead}
       Hexadecimal coding & \\
-      \rowcolor{tabhcolor}
+      \rowcolor{tblhead}
       read\_calls                                           & Type     \\
       \hline
       3:3:8:8:8:5:6:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8 & job      \\
       8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8   & centroid \\
       \multicolumn{2}{l}{}\\
-      \rowcolor{tabhcolor}
+      \rowcolor{tblhead}
       read\_calls                                           & Count    \\
       \hline
       8:8:8:8:8:2:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8   & 4        \\
@@ -1739,7 +1738,7 @@ Information\ related to the cluster is \Cref{tab:use_case:pm_quant:stats}, \Cref
       8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8   & 2        \\
     \end{tabular}
   \end{tiny}
-  \captionof{table}{Job, centroid and Top 5 job types.}
+  \captionof{table}{Job, centroid and Top 5 job phenotypes.}
   \label{tab:use_case:pm_quant:top_jobs}
 \endgroup
 %\end{table}
