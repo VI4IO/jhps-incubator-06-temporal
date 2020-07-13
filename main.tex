@@ -1488,7 +1488,7 @@ Now, we identify and investigate the cluster that contains this job for the diff
 Overall, we find this job leads to good conditions for all algorithms, i.e., all the algorithms work well in this use case.
 
 \paragraph{BIN\_ALL}
-Information related to the cluster is in \Cref{tab:use_case:bin}.
+Information related to the cluster of the job is in \Cref{tab:use_case:bin}.
 We find that the identified jobs in the cluster are sufficiently related.
 
 \noindent\begin{minipage}{\textwidth}
@@ -1616,7 +1616,14 @@ Compared to BIN, the cluster is smaller but the jobs have a more similar ending.
 
 
 \paragraph{HEX\_LEV}
-Information related to the cluster is in \Cref{tab:use_case:hex_lev}.
+Information related to the cluster is in \Cref{fig:use_case:hex_lev}.
+Overall, the job is matched partially, jobs in the cluster may contain at the beginning an idle phase.
+
+Notice that there is a discrepancy between the job visualization in \Cref{fig:use_case} and the hexadecimal job codings.
+While in \Cref{fig:use_case:hex_lev} we can see a less intensive phase in the beginning and a high intensive phase afterwards, the hexadecimal coding contains a more or less single high intensive I/O phase.
+The reason is that we use different reduction functions.
+While in the illustration we aggregate segments by the sum() function, for the coding we use mean() function for the same set of values.
+While sum() is better for visualization, the mean value allows us to build simple algorithms.
 
 \noindent\begin{minipage}{\textwidth}
 \captionsetup{type=table}
@@ -1678,7 +1685,8 @@ Information related to the cluster is in \Cref{tab:use_case:hex_lev}.
 
 
 \paragraph{HEX\_NATIVE}
-Information related to the cluster is in \Cref{tab:use_case:hex_native}.
+Information related to the cluster is in \Cref{fig:use_case:hex_native}.
+Again, the jobs look similar, however, the increase in performance and drop in segment\,5 is not captured.
 
 \noindent\begin{minipage}{\textwidth}
 \captionsetup{type=table}
@@ -1742,7 +1750,8 @@ Information related to the cluster is in \Cref{tab:use_case:hex_native}.
 
 
 \paragraph{PM\_QUANT}
-Information\ related to the cluster is \Cref{tab:use_case:pm_quant}.
+Information\ related to the cluster is in \Cref{fig:use_case:pm_quant}.
+Even with a smaller SIM value, the jobs appear related while they cover a variety of job length as well.
 
 \noindent\begin{minipage}{\textwidth}
 \captionsetup{type=table}
@@ -1804,7 +1813,7 @@ Information\ related to the cluster is \Cref{tab:use_case:pm_quant}.
 \label{fig:use_case:pm_quant}
 \end{minipage}
 
-\subsubsection{Discussion}
+\subsection{Discussion}
 Indeed clustering of hexadecimal codings produces usable results.
 The examples in Table 2 show two randomly picked clusters.
 The similar I/O behavior.
