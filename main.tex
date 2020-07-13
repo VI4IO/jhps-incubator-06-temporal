@@ -336,6 +336,7 @@ The bits are set by the following function:
  \caption{Coding operations.}
  \label{tab:coding_ops}
 \end{table}
+
 \paragraph{Binary coding}
 Binary coding represents monitoring data as a sequence of numbers, where each number represents the overall file system usage.
 The number is computed based on the 9 metrics found in the segment, e.g., if a phase is read and write intensive it is encoded as one type of behavior.
@@ -1813,13 +1814,44 @@ Even with a smaller SIM value, the jobs appear related while they cover a variet
 \label{fig:use_case:pm_quant}
 \end{minipage}
 
-\subsection{Discussion}
-Indeed clustering of hexadecimal codings produces usable results.
-The examples in Table 2 show two randomly picked clusters.
-The similar I/O behavior.
 
-Another\ critical point of usage of Levenshtein distance is that it doesn't consider the performance.
-For example, the following three codings would be considered as similar, since they differ in one position only.
+
+\subsection{Discussion}
+We evaluated similarity between jobs quantitatively and qualitatively for the different algorithms.
+As most jobs contain only a subset of I/O-intensive segments, the assessment of similarity should ignore these phases.
+There may be specific use cases where the exact job-length play a role but generally it appears that a user or support member should be interested in similar I/O-patterns as otherwise the clusters will be polluted with likely irrelevant jobs.
+
+
+\paragraph{Coding.} The coding of the time series data has a big impact on the potential similarity that can be uncovered.
+We explored binary, hexadecimal, and the native (floating point, e.g., mean) values.
+
+We noticed in the experiments with native coding that the amount of generated clusters skyrocketed.
+The reason is that similarity for short jobs exceed a high SIM value quickly and this leads to the creation of new clusters, which in turn leads to long clustering runtimes.
+An example illustrates a typical case:
+Assume there are two jobs: one running on 16 nodes and other running on 32 nodes.
+Both are one segment long and only one I/O node that writes data to storage with a moderate performance.
+Without quantization we would represent these jobs by the following sequences:  [..., [0.0625], $ \ldots $ ] and [..., [0.03125], ...], where only active metrics have values larger than zero.
+Using the similarity function without quantization, i.e., with mean performance, would result in a similarity of 50$\%$, and for SIM $>0.5$ they would be placed in separate clusters.
+
+The hexadecimal coding quantizes the data, making them identical, and filters many jobs automatically.
+Segments with mean performance less than 0.125 are rounded to zero and zero sequences are removed from the dataset.
+
+Rounding is not necessary for PM.
+It can work directly with floating point numbers.
+As it generalized better for smaller similarity, it wouldn't create that many clusters as for the other methods.
+The initial motivation behind the use of hexadecimal coding was to apply string methods such as Levenshtein and make data comparable with other algorithms.
+%For example, this allows us to see how the additional features affect the quality of clusters.
+%By accident, this was also the right decision.
+
+
+%It also needs to be investigated, if these considerations are correct for HPC systems that are running hundreds of jobs in parallel, because one job alone would typically not be able to produce a significant amount of I/O that can slow down the file system performance.
+
+\medskip
+
+\paragraph{Lengths-invariance.}
+With the Levensthein distance, we attempted to resolve this issue allowing to assign jobs of different length into the same cluster.
+However, the Levenshtein distance cannot consider the performance of a segment.
+For example, the following three codings would be considered to be all different by one symbol, since they differ in one position only.
 
 \begin{lstlisting}
 phase_coding_1 : [2:2:2:2:2:9:2:2]
@@ -1827,25 +1859,23 @@ phase_coding_2 : [2:2:2:2:2:8:2:2]
 phase_coding_3 : [2:2:2:2:2:0:2:2]
 \end{lstlisting}
 
-Intuitively, we would say that {phase\_coding\_1 and{ phase\_coding\_2 are more similar than {phase\_coding\_2 and {phase\_coding\_3 , because the difference at 6th position is in the first case smaller (9 and 8) is smaller than in the second case (8 and 0).
-Particularly bad affected are short coding, as the example in the previous sections shows.
+Intuitively, we would say that {phase\_coding\_1 and{ phase\_coding\_2 are more similar than {phase\_coding\_2 and {phase\_coding\_3, because the difference at 6th position is smaller between Job\,8 and 9 is smaller than to Job\,3.
+Short runtimes lead to more polluted clusters.
 
-The current version of the PM algorithm ignores non-IO parts (sequences of zeros) of the monitoring data, and  handles segment sequences like [0,0,0,0,1] and [1] equally.
-These sequences would produce different average I/O loads on the storage.
-Intuitively, we would say these jobs have different I/O behaviour and should consider that in the approach.
+\medskip
 
-
+The current version of the PM algorithm ignores non-IO parts (sequences of zeros) of the monitoring data, and  handles segment sequences like [0,0,0,0,1] and [1] equally:
 \begin{lstlisting}
 job1_metric1 : [0,0,0,0,1]
 job1_metric1 : [1]
 \end{lstlisting}
 
-One could also argue that the phase definition was chosen incorrectly.
-Currently, phases are defined for each metric individually, without consideration what is going on on other metrics.
-For illustration, consider the following two jobs.
-Currently, the algorithm recognizes the I/O pattern as 100$\%$  similar.
-Alternatively, one could say that running two metrics at the same time is another I/O pattern, as running them shifted, because on a storage system the jobs would produce different I/O loads.
+These sequences would produce different average I/O loads on the storage.
+Intuitively, we would judge these jobs have different I/O behaviour as the ratio between computational and IO load is different.
 
+One could argue that the phase definition was chosen incorrectly.
+Currently, phases are defined for each metric individually, without consideration of the overall behavior on  other metrics.
+For illustration, consider the following two jobs:
 \begin{lstlisting}
 job1_metric1 : [0:1]
 job1_metric2 : [1:0]
@@ -1853,42 +1883,29 @@ job2_metric1 : [1:0]
 job2_metric2 : [1:0]
 \end{lstlisting}
 
-The benefit of ignoring these both aspects is simplicity.
-This reduces the number of clusters and the results are easier to understand.
-It also needs to be investigated, if these considerations are correct for HPC systems that are running hundreds of jobs in parallel, because one job alone would typically not be able to produce a significant amount of I/O that can slow down the file system performance.
+Currently, the algorithm recognizes the I/O patterns to be 100$\%$ similar.
+Alternatively, one could say that running two metrics at the same time is another I/O pattern, as running them shifted, because on a storage system the jobs would produce different I/O loads.
+For jobs with many IO phases, this situation is less likely but for shorter jobs, it may happen.
+The benefit of ignoring these aspects is simplicity; this clustering reduces the number of clusters and  results are easier to understand.
+
+\medskip
+
+\paragraph{Characterization of IO.}
+The main questions for a user that applies a clustering algorithm remain: how to define similarity.
+Depending on the use case, the relevant I/O-behavior and characteristics involved in job comparison must be defined to allow identification of jobs depending on temporal behavior.
+In our case, we discussed similarity based on profiles and time series data.
+We explored various variants for the handling of fluctuation in the time series data that consider time series of different length, omit empty phases, and allow some reordering of phases.
+To answer these questions, a discussion with the community about the use cases and a study of more use cases is necessary.
+
+
+\section{Conclusion}
 
 The success of general purpose clustering and classification algorithms depends on right feature selection and data transformation.
 In particular, feature selection is often quite challenging.
-This makes training of models a kind of try and error approach.
+This makes training of models a trial-and-error approach.
 Even if an optimal solution is found there is no guarantee that the approach with other data on other systems.
 
-As you might have noticed, quantization is not necessary for PM.
-It can perfectly work directly with floating point numbers, such as mean performance values.
-The main motivation behind the use of hexadecimal coding is that it makes PM comparable with other algorithms.
-For example, this allows us to see how the additional features affect the quality of clusters.
-By accident, this was also the right decision.
-We noticed that in the experiments with floating point numbers the amount of generated clusters skyrocketed.
-The reason is that similarity for short jobs exceeds SIM value very fast and this leads to the creation of new clusters, which in turn leads to long clustering runtimes.
-An example illustrates a typical case.
-Assume there are two jobs: one running on 16 nodes and other running on 32 nodes.
-Both are one segment long and only one I/O node that writes data to storage with a moderate performance.
-Without quantization we would represent these jobs by the following sequences:  [..., [0.0625], $ \ldots $ ] and [..., [0.03125], ...], where only active metrics have values larger than zero.
-Using the similarity function without quantization, i.e.
-with mean performance, would result in a similarity of 50$\%$ , and for SIM>0.5 they would be placed in separate clusters.
-The hexadecimal coding filters these jobs automatically.
-Segments with mean performance less than 0.125 are quantized to zero and zero sequences are removed from the dataset.
-This problem doesn’t occur.
-The main question remains what characterizes I/O and which characteristics should be involved in job comparison.
 
-\begin{itemize}
-	\item Are two jobs similar if they have similar I/O phases?
-	\item Are two jobs similar if one job has an I/O phase at the beginning and the other at the same I/O phase at the end?
-	\item Are two jobs similar if they have different lengths, but similar I/O phases?
-\end{itemize}
-
-To answer these questions we need a discussion with the community and a study of more use cases.
-
-\section{Conclusion}
 After a series of experiments with general purpose algorithms we could not achieve optimal results.
 The investigation of resulting clusters shows that they are obviously polluted.
 One problem might be that we apply a combination of a clustering and a classification algorithm.
