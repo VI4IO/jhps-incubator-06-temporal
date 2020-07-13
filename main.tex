@@ -1235,11 +1235,8 @@ The following is characteristic for this algorithm:
 
 
 \paragraph{HEX\_LEV}
-Information related to the selected cluster is provided in \Cref{fig:hex_lev}.
 Due to the longer hexadecimal codings, smaller changes in the SIM value don't change the clusters as quickly,  compared to binary codings.
 Therefore, for this exploration, we chose a SIM value higher than for BIN algorithms.
-
-In the selected cluster, there is mostly one segment of IO activity.
 
 General cluster characteristics:
 \begin{enumerate}
@@ -1249,6 +1246,9 @@ General cluster characteristics:
 
 We observe that even with a high SIM value some jobs have a different I/O behavior than the centroid and the rest of the jobs.
 The reason is for the Levenshtein distance the distance between value 1 and 2 is the same as for 1 and 8; however, we would consider the two jobs closer together.
+
+Information related to the selected cluster is provided in \Cref{fig:hex_lev}.
+In the selected cluster, there is mostly one segment of IO activity.
 
 
 \noindent\begin{minipage}{\textwidth}
@@ -1315,16 +1315,21 @@ The reason is for the Levenshtein distance the distance between value 1 and 2 is
 
 
 \paragraph{HEX\_NATIVE}
-Information related to the cluster is in \Cref{tab:hex_native:stats}, \Cref{tab:hex_native:top_jobs}, and in \Cref{fig:hex_native:length}.
 The SIM value exploration shows that this algorithm works best with high SIM values.
 Clustering with SIM=0.99 results in clusters that have equal job lengths.
-(For SIM=0.99 the centroid must be longer than 100 segments to attract jobs with other lengths.)Cluster characteristics:
+From the definition of the equation, for a similarity of 99\% the centroid must be longer than 100 segments to attract jobs with 99 or 101 length.
+
+General cluster characteristics:
 \begin{enumerate}
- \item Similar job lengths
- \item Jobs are relatively close to the centroid
- \item Low number of outliers
+ \item Similar job lengths (even for lower SIM).
+ \item Jobs are relatively close to the centroid.
+ \item Low number of outliers.
 \end{enumerate}
 
+Information related to the selected cluster is given in \Cref{fig:hex_native}.
+In the selected cluster, jobs with a length of 4 have mostly 1 the activity of one segment in common.
+
+\jk{Wie kann man das verstehen, obwohl sich der Kasten in zwei Kästen unterscheidet ist das immer noch 99\% ähnlich. Warum haben wir eigtl. nicht die selbe SIM gewählt? 99\% finde ich recht unglücklich für das Beispiel.}
 
 \noindent\begin{minipage}{\textwidth}
 \captionsetup{type=table}
@@ -1386,7 +1391,7 @@ Clustering with SIM=0.99 results in clusters that have equal job lengths.
 \end{minipage}
 
 \paragraph{PM\_QUANT}
-Information\ related to the cluster is in \Cref{fig:pm_quant:stats}, \Cref{fig:pm_quant:top_jobs}, and in \Cref{fig:pm_quant:length}.
+Information\ related to the cluster is in \Cref{fig:pm_quant}.
 The first thing to mention are the high generalization capabilities of the algorithm, i.e., that many jobs are mapped to a relatively low number of types.
 The next typical property is shown in \Cref{fig:pm_quant:length}, where we can see that almost the full range of job lengths is represented in the cluster.
 This happens, because the PM ignores zero segments completely.
@@ -1394,6 +1399,7 @@ We saw that already in BIN\_AGGZEROS, where a similar effect was caused by the a
 For example, for PM, the job types in \Cref{fig:pm_quant:top_jobs} in the row one and two are 100$\%$  similar.
 Remarkable is also the cleanliness of the clusters.
 The centroid and the jobs contain quite similar I/O patterns.
+
 Cluster characteristics:
 \begin{enumerate}
  \item Low number of job types
