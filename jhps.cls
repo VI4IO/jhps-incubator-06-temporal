@@ -146,6 +146,7 @@
   \else
     This manuscript is in the JHPS incubator and has \textbf{not been assigned an issue}. \\[0.2cm]
     %\begin{minipage}{11cm}
+    %\setcounter{tocdepth}{2}
     %\tableofcontents
     %\end{minipage}
     \vspace*{-2cm}
@@ -193,6 +194,15 @@
     \end{minipage}
     }
     %}
+
+    \ifnum\the\JHPSissue>0
+    \else
+      \begin{minipage}{11cm}
+      \setcounter{tocdepth}{2}
+      \tableofcontents
+      \end{minipage}
+      %\vspace*{-2cm}
+    \fi
   \end{center}%
 }
 
@@ -291,7 +301,7 @@
 
   \clearpage
   \pagestyle{reviews}
-  \section{Reviews}
+  \section*{Reviews}
   \label{sec:reviews}
   \textit{This section is optional for reviewers and shows their assessment that lead to the acceptance of the original manuscript. Reviewers may or may not update their review for a major update of the paper, the exact trail is available in GitHub repository of this article. The reviews are part of the article and validate the acceptance. Please check the details on the JHPS webpage.}
 

@@ -244,8 +244,11 @@ The pre-processing converts the dynamic-sized monitoring data which depends on t
 Then the clustering is applied.
 Finally, the clustering result needs to be assessed, i.e., how suitable is this strategy for our IO statistics and use cases?
 
-In the following, we have dedicated a section to each step listing and briefly discussing potential alternatives.
-The list does not intend to be complete but shows a variety of options.
+\subsection{Overview}
+
+In the following, we have dedicated a section to each step in the analysis.
+We are listing and briefly discussing potential alternatives.
+The list of alternatives does not intend to be complete but shows a variety of options.
 
 \subsubsection{Data pre-processing}
 The 4-dimensional data from our monitoring system is too fine-grained for mass analysis,
@@ -528,8 +531,10 @@ This approach allows a performant implementation, but they also allow a job to b
 Hence, the result depends on the processing order of the jobs, though it is deterministic.
 
 
-\subsubsection{Clustering stacks}
-There are various combinations possible of the different strategies.
+\subsubsection{Clustering Stacks}
+There are various combinations of the different strategies possible.
+For simplicity, we refer to one clustering stack just as algorithm.
+During our research, we explored various combinations out of the possible combinations but we found that these do not perform well and are not interesting to discuss.
 
 \begin{figure}
   \centering
@@ -538,8 +543,7 @@ There are various combinations possible of the different strategies.
   \label{fig:clustering_stacks}
 \end{figure}
 
-For simplicity, we refer to one clustering stack just as algorithm.
-During our research, we explored various combinations out of the possible combinations but we found that these do not perform well and are not interesting to discuss.
+
 
 The operation stack which we describe in this article is visualized in \Cref{fig:clustering_stacks}.
 In brief, the algorithms are as follows:
@@ -803,7 +807,7 @@ In this example, we get a similarity of 17$\%$:
 \end{align}
 
 
-\subsubsection{Assessment}
+\subsection{Assessment}
 Lastly, the quality of the obtained clusters must be assessed.
 Overall, we will assess their suitability using quantitative metrics such as the number of generated clusters and their sizes and qualitatively by manually exploring clusters of relevant jobs.
 We want to emphasize that our goal is to find similar jobs.
@@ -818,7 +822,10 @@ For the qualitative analysis, we start by looking into a job that is given to us
 In the same cluster, we expect the sequences to be similar.
 If not, the clustering algorithm is not effective.
 
-\subsection{Description of our data set}
+
+\section{Evaluation}
+
+\subsection{Description of Our Data Set}
 
 This section describes the job data extracted from Mistral, originally we gathered 1\,million jobs from a period of 203 days.
 Mostly jobs are allowed to run up to 8-hours, leading to time series with up to 48 segments.
@@ -866,7 +873,7 @@ The metrics (md\_bytes, md\_mod, and md\_file\_delete) have the longest tail; so
 \end{figure}
 
 
-\subsection{Evaluation of ML}
+\subsection{Limitations of the ML Algorithms}
 This section contains data statistics, and the clustering results in \Cref{fig:datasets_clustering_results} for applying the ML algorithm (hierarchical clustering + decision tree) but using the two different job profiles (IO-Metric and IO-Duration).
 Due to lack of tools, we determine cluster quality on a small scale.
 
@@ -919,17 +926,17 @@ Probably, the particular random datasets used for training does not represent th
 However, even with a good feature set that works on our test system, it is unlikely that the strategy and trained model will be portable to other systems.
 Therefore, we conclude that this adapted version of hierarchical clustering based on job profiles isn't suitable to analyze the workload.
 
-\subsection{Evaluation of non-standard clustering algorithms}
+\subsection{Quantitative Evaluation}
 This section contains data statistics, clustering progress, and clustering results when applying the five customized algorithms (BIN\_ALL, BIN\_AGGZEROS, HEX\_LEV, HEX\_NATIVE, PM\_QUANT).
 %Due to lack of tools, we determine cluster quality on a small scale.
 
-\subsubsection{Test setup}
+\subsubsection{Implementation}
 For the performance tests we allocate a compute node on Mistral supercomputer.
 It is equipped with 2x Intel(R) Xeon(R) CPU E5-2680 v3 @ 2.50GHz, 64GB DDR4 RAM.
 The clustering algorithms are implemented in Rust and run on a single core.
 They are applied on pre-computed codings datasets, so that the clustering runtimes do not include the creation of the codings.
 
-\subsubsection{Quantitative impact of the user-defined similarity}
+\subsubsection{Impact of the User-Defined Similarity}
 In the introduced algorithms, the user-defined similarity (SIM) that the jobs in a cluster must fullfill to the cluster centroid controls the cluster formation.
 It is expected that low SIM values produce a smaller amount of noisy clusters and a high SIM value produces a large amount of clean clusters.
 We suppose the optimal value is application dependent.
@@ -1010,7 +1017,7 @@ One strategy for the analysis could also be to start with a low SIM value and th
   \label{fig:cum_num_job_sizes}
 \end{figure}
 
-\subsection{Cluster relevance}
+\subsection{Cluster Relevance}
 
 To assess the quality of the quantitative clustering better and to aid support staff to identify relevant clusters, we define a relevance of clusters as listed in \Cref{eq:rel}.
 The idea behind the relevance definition is the following: the larger the cluster (in terms of jobs) and the longer the jobs, the more potential load these jobs can produce.
@@ -1024,12 +1031,13 @@ In this analysis, we just looked at our definition of weighted relevance.
 \end{equation}
 
 To give you an impression of cluster qualities for different SIM values, we visualize the Top 10 relevant clusters in \Cref{fig:top10_relevant_jobs}.
-The colors indicate the mean similarity of jobs to the cluster centroid.
-The number above the bar denotes the mean job length of the cluster.
 
-In principle, the figure confirms that SIM values larger than optimum provide not much improvement, but nevertheless, it does not mean that the cluster quality is acceptable.
-After manual exploration of selected clusters, we noticed some show a SIM-value independent characteristics.
-To explain them, it is sufficient to investigate one cluster in detail for each algorithm, as we do in the next sections.
+The figure confirms that each algorithm creates different clusters as the length of the most relevant clusters and amount is dissimilar.
+For a small SIM value, the first few clusters contain a large quantity of shorter (but not so similar) jobs.
+However, due to our definition of the relevance metrics, we can observe that smaller clusters with longer jobs are often considered more relevant.
+This can be as extreme as a cluster with average length of $>40$ segments is ranked next to one with average length of $1$ segment.
+We believe that clustering by relevance (potentially extended by the occupied node number) is useful for support staff to identify optimization potential.
+
 
 %\begin{figure}
 %  \centering
@@ -1041,25 +1049,44 @@ To explain them, it is sufficient to investigate one cluster in detail for each 
 \begin{figure}
   \centering
    \includegraphics[width=4.61in,height=6.44in]{image11.png}
-   \caption{Top 10 relevant jobs ordered by relevance.}
+   \caption{Top 10 relevant jobs ordered by relevance.
+   The colors indicate the mean similarity of the jobs in a cluster to the cluster centroid.
+   The number above a bar denotes the mean job length of the cluster.}
    \label{fig:top10_relevant_jobs}
 \end{figure}
 
-\jk{END of review}
+\subsection{Qualitative Evaluation}
+The analysis so far does not mean that the quality of the clusters is acceptable.
+After manual exploration of selected clusters, we noticed some show a SIM-value independent characteristics.
+To explain them, for each algorithm we provide an overview of the top clusters and then investigate one cluster of these in detail.
 
-\subsubsection{Cluster presentation format}
-The next sections we have the following format, a description of any particular observations if necessary, followed by a table containing the most important statistics, and by the codings for job, centroid and and the Top 5 job types.
-At the end we include an illustration which describes the length distribution of the cluster.
+For the presentation of the clusters, we provide a description of particular observations followed by a table containing statistics, then the codings for centroid and most frequent unique jobs in the cluster -- we call such a a unique representation a \textit{job type}.
+At the end, we include an illustration which describes the segment length distribution of jobs in the cluster that indicates how much the algorithm groups across different job runtime.
+
 \subsubsection{Algorithm characteristics}
 \paragraph{BIN\_ALL}
-Information related to the cluster is in \Cref{tab:bin:largest_clusters}, \Cref{tab:bin_all:stats}, \Cref{tab:bin_all:top_jobs}, and \Cref{fig:bin_all:length}.
-One of the first observations we did for BIN family algorithms is that the six largest clusters contain the shortest jobs (one segment long).
-They are listed in \Cref{tab:bin:largest_clusters}.
-All jobs in each cluster have exactly the same codings.
-The reason that both algorithms create the same clusters, is that the zero aggregation has no effect on formation of these clusters, because the jobs are too short (the minimum job length required for effective zero aggregation is at least three segments) and that the dataset contains a vast amount of such jobs.
-The largest cluster is even representative in Top10 relevant jobs in ref\_top\_ten.
+Information related to the largest clusters is in \Cref{tab:bin:largest_clusters}.
+Looking at \Cref{tab:bin:largest_clusters}, the first observations for this algorithm is that the six largest clusters contain the shortest possible jobs (one segment long).
+In each cluster, all jobs have the identical coding; these short running jobs are likely pre/post-processing jobs.
 
-%\begin{table}[h]
+Therefore, the selected cluster for inspection is in the Top 20, information is shown in \Cref{tab:bin_all}.
+\jk{War es top 20?}
+There are about 3300 different types of unique jobs, it contains jobs with a length between 41 and 60.
+Most jobs in the cluster are shorter than 49 segments, because the main Mistral partitions can allocate jobs for at most 8 hours, and that is the majority of jobs.
+Since each segment is 10 min long, the runtime of jobs with 49 segments is about 8.16 hours.
+The other jobs must be special allocations.
+
+By inspecting individual jobs in \Cref{tab:bin_all:top_jobs}, we can see that the centroid has 4 segments $\neq 0$ and the jobs are mostly empty.
+As the similarity of 70\% considers empty segments as well, jobs with few IO segments are found in this cluster.
+
+The following general characteristic observations are made:
+\begin{enumerate}
+ \item Job types can significantly differ from centroid and from each other.
+ \item Lengths of job types in a cluster are relatively close to the centroid.
+\end{enumerate}
+
+\noindent\begin{minipage}{\textwidth}
+
 \begingroup
   \centering
   \begin{tabular}{ll}
@@ -1072,47 +1099,39 @@ The largest cluster is even representative in Top10 relevant jobs in ref\_top\_t
     $[128]$ & 10,228 \\
     $[8]$   & 9,446  \\
   \end{tabular}
-  \captionof{table}{Top 6 largest clusters created by BIN algorithms with SIM = 0.7.}
+  \captionof{table}{BIN algorithm: Top 6 largest clusters created with SIM = 0.7.}
   \label{tab:bin:largest_clusters}
 \endgroup
-%\end{table}
 
-Most jobs in the cluster are shorter than 49 segments, because the main Mistral partitions can allocate jobs for at most 8 hours, and that is the majority of jobs.
-The other jobs must be special allocations.
-Since each segment is 10 min long, the runtime of jobs with 49 segments is about 8.16 hours.
-The other jobs must be special allocations or jobs from other partitions.
+\medskip
 
-The following observations are characteristic for this algorithm:
-\begin{enumerate}
- \item Job types can significantly differ from centroid and from each other.
- \item Lengths of job types in a cluster are relatively close to the centroid.
-\end{enumerate}
-
-%\begin{table}[h]
+\captionsetup{type=table}
 \begingroup
+  \begin{subtable}{\textwidth}
   \centering
   \begin{tabular}{lr}
-    SIM & 0.7 \\
     Number of jobs & 7615 \\
     Number of job types & 3306 \\
   \end{tabular}
-  \captionof{table}{Cluster statistics.}
+  \caption{Cluster statistics.}
   \label{tab:bin_all:stats}
+  \end{subtable}
 \endgroup
-%\end{table}
 
-%\begin{table}[h]
+\medskip
+
 \begingroup
+  \begin{subtable}{\textwidth}
   \centering
   \begin{tiny}
     \begin{tabular}{@{ }l@{ }|@{ }r@{ }}
       \rowcolor{tabhcolor}
-      Binary coding                                                                                    &  Type     \\
+      Binary coding of the centroid                                                                                 &  Type     \\
       \hline
       0:0:0:0:0:0:294:0:0:0:0:32:0:0:0:0:0:0:0:0:0:0:0:32:0:0:0:0:0:0:0:0:0:0:0:32:0:0:0:0:0:0:0:0:0:0 &  centroid \\
       \multicolumn{2}{l}{}                                                                             \\
       \rowcolor{tabhcolor}
-      Binary coding                                                                                    &  Count    \\
+      Binary coding of other jobs                                                                      &  Count    \\
       \hline
       0:0:0:0:0:0:359:96:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0   &  95       \\
       0:0:0:0:0:0:295:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0    &  62       \\
@@ -1121,22 +1140,33 @@ The following observations are characteristic for this algorithm:
       0:0:0:0:0:6:6:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0  &  40       \\
     \end{tabular}
   \end{tiny}
-  \captionof{table}{Centroid and Top 5 job types.}
+  \caption{Centroid and Top 5 job types; the SIM was 0.7.}
   \label{tab:bin_all:top_jobs}
+  \end{subtable}
 \endgroup
-%\end{table}
 
-%\begin{figure}[h]
+\medskip
+
 \begingroup
+  \begin{subfigure}{\textwidth}
   \centering
-  \includegraphics[width=4.61in,height=1.39in]{image20.png}
-  \captionof{figure}{Length distribution in the cluster.}
+  \includegraphics[width=4.61in]{image20.png}
+  \caption{Length distribution of the jobs.}
   \label{fig:bin_all:length}
+  \end{subfigure}
 \endgroup
-%\end{figure}
+
+\captionof{figure}{BIN algorithm: Information of the selected cluster.}
+\label{fig:bin_all}
+\end{minipage}
 
 \paragraph{BIN\_AGGZEROS}
 Information related to the cluster is in \Cref{tab:bin_aggzeros:stats}, \Cref{tab:bin_aggzeros:top_jobs}, and in \Cref{fig:bin_aggzeros:length}.
+
+
+The reason that both algorithms create the same clusters, is that the zero aggregation has no effect on formation of these clusters, because the the dataset contains a vast amount of too short jobs: the minimum job length required for effective zero aggregation is at least three segments.
+
+
 The following is characteristic for this algorithm:
 
 \begin{enumerate}
@@ -1146,7 +1176,7 @@ The following is characteristic for this algorithm:
 \end{enumerate}
 
 
-%\begin{table}[h]
+%\begin{table}
 \begingroup
   \begin{tabular}{ll}
     \centering
@@ -1159,7 +1189,7 @@ The following is characteristic for this algorithm:
 \endgroup
 %\end{table}
 
-%\begin{table}[h]
+%\begin{table}
 \begingroup
   \centering
   \begin{tiny}
@@ -1184,7 +1214,7 @@ The following is characteristic for this algorithm:
 \endgroup
 %\end{table}
 
-%\begin{figure}[h]
+%\begin{figure}
 \begingroup
   \centering
   \includegraphics[width=4.61in,height=1.38in]{image13.png}
@@ -1206,7 +1236,7 @@ Cluster characteristics:
  \item Similar job lengths
  \item Mostly clean clusters, but can contain outlier jobs
 \end{enumerate}
-%\begin{table}[h]
+%\begin{table}
 \begingroup
 	\centering
 	\begin{tabular}{ll}
@@ -1219,7 +1249,7 @@ Cluster characteristics:
 \endgroup
 %\end{table}
 
-%\begin{table}[h]
+%\begin{table}
 \begingroup
   \centering
   \begin{tiny}
@@ -1246,7 +1276,7 @@ Cluster characteristics:
 \endgroup
 %\end{table}
 
-%\begin{figure}[h]
+%\begin{figure}
 \begingroup
   \centering
   \includegraphics[width=4.61in,height=1.39in]{image5.png}
@@ -1266,7 +1296,7 @@ Clustering with SIM=0.99 results in clusters that have equal job lengths.
  \item Low number of outliers
 \end{enumerate}
 
-%\begin{table}[h]
+%\begin{table}
 \begingroup
   \centering
   \begin{tabular}{ll}
@@ -1279,7 +1309,7 @@ Clustering with SIM=0.99 results in clusters that have equal job lengths.
 \endgroup
 %\end{table}
 
-%\begin{table}[h]
+%\begin{table}
 \begingroup
   \centering
   \begin{tiny}
@@ -1305,7 +1335,7 @@ Clustering with SIM=0.99 results in clusters that have equal job lengths.
   \label{tab:hex_native:top_jobs}\endgroup
 %\end{table}
 
-%\begin{figure}[h]
+%\begin{figure}
 \begingroup
   \centering
   \includegraphics[width=4.61in,height=1.39in]{image8.png}
@@ -1332,7 +1362,7 @@ Cluster characteristics:
  \item I/O pattern
 \end{enumerate}
 
-%\begin{table}[h]
+%\begin{table}
 \begingroup
   \centering
   \begin{tabular}{ll}
@@ -1345,7 +1375,7 @@ Cluster characteristics:
 \endgroup
 %\end{table}
 
-%\begin{table}[h]
+%\begin{table}
 \begingroup
   \centering
   \begin{tiny}
@@ -1372,7 +1402,7 @@ Cluster characteristics:
 \endgroup
 %\end{table}
 
-%\begin{figure}[h]
+%\begin{figure}
 \begingroup
   \centering
   \includegraphics[width=4.61in,height=1.39in]{image21.png}
@@ -1381,10 +1411,10 @@ Cluster characteristics:
 \endgroup
 %\end{figure}
 
-\subsection{Use case: I/O intensive job}
+\subsection{Use Case: Tracking an I/O-Intensive Job}
 The demonstration in this section shows how this approach can be used to identify a cluster of I/O-intensive jobs similar to an existing job.
 
-\begin{figure}[h]
+\begin{figure}
   \centering
   \includegraphics[width=2.84in,height=2.85in]{image1.png}
   \caption{One high I/O intensity job running on 46 nodes.
@@ -1412,7 +1442,7 @@ The reader can make up his own mind.
 \paragraph{BIN\_ALL}
 Information related to the cluster is in \Cref{tab:use_case:bin_all:stats}, \Cref{tab:use_case:bin_all:top_jobs}, and in \Cref{fig:use_case:bin_all:length}.
 
-%\begin{table}[h]
+%\begin{table}
 \begingroup
   \centering
   \begin{tabular}{ll}
@@ -1425,7 +1455,7 @@ Information related to the cluster is in \Cref{tab:use_case:bin_all:stats}, \Cre
 \endgroup
 %\end{table}
 
-%\begin{table}[h]
+%\begin{table}
 \begingroup
   \centering
   \begin{tiny}
@@ -1451,7 +1481,7 @@ Information related to the cluster is in \Cref{tab:use_case:bin_all:stats}, \Cre
 \endgroup
 %\end{table}
 
-%\begin{figure}[h]
+%\begin{figure}
 \begingroup
   \centering
   \includegraphics[width=4.61in,height=1.39in]{image9.png}
@@ -1463,7 +1493,7 @@ Information related to the cluster is in \Cref{tab:use_case:bin_all:stats}, \Cre
 \paragraph{BIN\_AGGZEROS}
 Information related to the cluster is in \Cref{tab:use_case:bin_aggzeros:stats}, \Cref{tab:use_case:bin_aggzeros:top_jobs}, and in \Cref{fig:use_case:bin_aggzeros:length}.
 
-%\begin{table}[h]
+%\begin{table}
 \begingroup
   \centering
   \begin{tabular}{ll}
@@ -1476,7 +1506,7 @@ Information related to the cluster is in \Cref{tab:use_case:bin_aggzeros:stats},
 \endgroup
 %\end{table}
 
-%\begin{table}[h]
+%\begin{table}
 \begingroup
   \centering
   \begin{tiny}
@@ -1502,7 +1532,7 @@ Information related to the cluster is in \Cref{tab:use_case:bin_aggzeros:stats},
 \endgroup
 %\end{table}
 
-%\begin{figure}[h]
+%\begin{figure}
 \begingroup
   \centering
   \includegraphics[width=4.61in,height=1.39in]{image6.png}
@@ -1514,7 +1544,7 @@ Information related to the cluster is in \Cref{tab:use_case:bin_aggzeros:stats},
 \paragraph{HEX\_LEV}
 Information related to the cluster is in \Cref{tab:use_case:hex_lev:stats}, \Cref{tab:use_case:hex_lev:top_jobs}, and in \Cref{fig:use_case:hex_lev:length}.
 
-%\begin{table}[h]
+%\begin{table}
 \begingroup
   \centering
   \begin{tabular}{ll}
@@ -1527,7 +1557,7 @@ Information related to the cluster is in \Cref{tab:use_case:hex_lev:stats}, \Cre
 \endgroup
 %\end{table}
 
-%\begin{table}[h]
+%\begin{table}
 \begingroup
   \begin{tiny}
     \begin{tabular}{@{ }l@{ }@{ }l@{ }|@{ }r@{ }}
@@ -1553,7 +1583,7 @@ Information related to the cluster is in \Cref{tab:use_case:hex_lev:stats}, \Cre
 \endgroup
 %\end{table}
 
-%\begin{figure}[h]
+%\begin{figure}
 \begingroup
   \centering
   \includegraphics[width=4.61in,height=1.39in]{image17.png}
@@ -1565,7 +1595,7 @@ Information related to the cluster is in \Cref{tab:use_case:hex_lev:stats}, \Cre
 \paragraph{HEX\_NATIVE}
 Information related to the cluster is in \Cref{tab:use_case:hex_native:stats}, \Cref{tab:use_case:hex_native:job_centroid}, and in \Cref{fig:use_case:hex_native:length}.
 
-%\begin{table}[h]
+%\begin{table}
 \begingroup
   \centering
   \begin{tabular}{ll}
@@ -1578,7 +1608,7 @@ Information related to the cluster is in \Cref{tab:use_case:hex_native:stats}, \
 \endgroup
 %\end{table}
 
-%\begin{table}[h]
+%\begin{table}
 \begingroup
   \centering
   \begin{tiny}
@@ -1606,7 +1636,7 @@ Information related to the cluster is in \Cref{tab:use_case:hex_native:stats}, \
 \endgroup
 %\end{table}
 
-%\begin{figure}[h]\begingroup
+%\begin{figure}[h]\begingr
 \begingroup
   \centering
   \includegraphics[width=4.61in,height=1.39in]{image2.png}
@@ -1618,7 +1648,7 @@ Information related to the cluster is in \Cref{tab:use_case:hex_native:stats}, \
 \paragraph{PM\_QUANT}
 Information\ related to the cluster is \Cref{tab:use_case:pm_quant:stats}, \Cref{tab:use_case:pm_quant:top_jobs}, and in \Cref{fig:use_case:pm_quant:length}.
 
-%\begin{table}[h]
+%\begin{table}
 \begingroup
   \centering
   \begin{tabular}{ll}
@@ -1631,7 +1661,7 @@ Information\ related to the cluster is \Cref{tab:use_case:pm_quant:stats}, \Cref
 \endgroup
 %\end{table}
 
-%\begin{table}[h]
+%\begin{table}
 \begingroup
   \centering
   \begin{tiny}
@@ -1659,7 +1689,7 @@ Information\ related to the cluster is \Cref{tab:use_case:pm_quant:stats}, \Cref
 \endgroup
 %\end{table}
 
-%\begin{figure}[h]
+%\begin{figure}
 \begingroup
   \centering
   \includegraphics[width=4.61in,height=1.39in]{image7.png}
@@ -1742,7 +1772,8 @@ The main question remains what characterizes I/O and which characteristics shoul
 \end{itemize}
 
 To answer these questions we need a discussion with the community and a study of more use cases.
-\subsection{Conclusion}
+
+\section{Conclusion}
 After a series of experiments with general purpose algorithms we could not achieve optimal results.
 The investigation of resulting clusters shows that they are obviously polluted.
 One problem might be that we apply a combination of a clustering and a classification algorithm.
@@ -1763,7 +1794,8 @@ The integration of the awareness of I/O performance produces better, but still n
 We suppose that the I/O phase awareness is the missing feature for success.
 The final algorithm that detects phases and differentiates performance values produces at first sight clean results.
 Due to the huge amount of clusters and lack of automatic evaluation tools, we can not prove this statement for all clustres.
-\subsection{Future work}
+
+\subsection{Future Work}
 We see a high potential in the new clustering algorithm, but it requires some improvements to be useful.
 Although groping seems to work well, the algorithm has at least one serious issue.
 The biggest problem is probably the large number of clusters.
@@ -1772,7 +1804,7 @@ Therefore we need at least three further functions, that filter irrelevant clust
 
 
 \subsection*{Acknowledgment} %% Remove this section if not needed
-\textit{We thank XX for sponsoring.}
+\textit{We thank the reviewers XX and YY for the feedback.}
 
   % The bibliography
 \addcontentsline{toc}{section}{Bibliography}
