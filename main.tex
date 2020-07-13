@@ -1479,38 +1479,37 @@ A color represents one of the nodes.}
 
 Firstly, we find an I/O intensive job that we use to identify similar jobs.
 The selected job is visualized in \Cref{fig:use_case}.
-We can see that this job reads data over the whole runtime.
-At beginning, only a subset of the nodes is reading most of the data, later more nodes participate in the reading The amount of transmitted data is not large, but the amount of read calls is exceptionally high and may potentially degrade the file system performance.
-Now we investigate the cluster that contains this job for the different algorithms.
+This relatively long job (27~segments) reveals one heavily used metric.
+The job reads data over its runtime but doesn't have any noteworthy activities in any other metrics.
+At beginning, only a subset of the nodes is reading most of the data, later more nodes participate in the reading.
+The amount of transmitted data is not large but the number of read calls is high and may potentially degrade the file system performance.
+Now, we identify and investigate the cluster that contains this job for the different algorithms and discuss if these jobs are similar.
 
-In the following, an attentive reader may notice that there is a discrepancy between the job visualization in  \Cref{fig:use_case} and the hexadecimal job codings.
-While in the figure we can see a less intensive phase in the beginning and a high intensive phase afterwards, the hexadecimal coding contains a more or less single high intensive I/O phase.
-The reason is that we use different reduction functions.
-While in the illustration we aggregate segments by the sum() function, for the coding we use mean() function for the same set of values.
-While sum() is better for visualization, the mean value allows us to build simple algorithms.
+Overall, we find this job leads to good conditions for all algorithms, i.e., all the algorithms work well in this use case.
 
-By accident, we have good conditions for all algorithms, and all the algorithms work well in this use case.
-We have a relatively long job with one heavily used metric, and we can identify a cluster with similar jobs.
-We omit comments.
-The reader can make up his own mind.
 \paragraph{BIN\_ALL}
-Information related to the cluster is in \Cref{tab:use_case:bin_all:stats}, \Cref{tab:use_case:bin_all:top_jobs}, and in \Cref{fig:use_case:bin_all:length}.
+Information related to the cluster is in \Cref{tab:use_case:bin}.
+We find that the identified jobs in the cluster are sufficiently related.
 
-%\begin{table}
+\noindent\begin{minipage}{\textwidth}
+\captionsetup{type=table}
+
 \begingroup
+  \begin{subtable}{\textwidth}
   \centering
   \begin{tabular}{ll}
-    SIM & 0.7 \\
     Number of jobs & 27 \\
     Number of job phenotypes & 17 \\
   \end{tabular}
-  \captionof{table}{Cluster statistics.}
+  \caption{Cluster statistics.}
   \label{tab:use_case:bin_all:stats}
+\end{subtable}
 \endgroup
-%\end{table}
 
-%\begin{table}
+\medskip
+
 \begingroup
+  \begin{subtable}{\textwidth}
   \centering
   \begin{tiny}
     \begin{tabular}{l|r}
@@ -1530,38 +1529,52 @@ Information related to the cluster is in \Cref{tab:use_case:bin_all:stats}, \Cre
       228:192:192:192:192:192:192:192:192:192:192:192:192:192:192:192:192:192                                &  2        \\
     \end{tabular}
   \end{tiny}
-  \captionof{table}{Job, centroid and Top 5 job phenotypes.}
+  \caption{Job, centroid and Top 5 job phenotypes.}
   \label{tab:use_case:bin_all:top_jobs}
+\end{subtable}
 \endgroup
-%\end{table}
 
-%\begin{figure}
+\medskip
+
 \begingroup
+  \begin{subfigure}{\textwidth}
   \centering
   \includegraphics[width=4.61in,height=1.39in]{image9.png}
-  \captionof{figure}{Length distribution in the cluster.}
+  \caption{Length distribution in the cluster.}
   \label{fig:use_case:bin_all:length}
+  \end{subfigure}
 \endgroup
-%\end{figure}
+
+\captionof{figure}{BIN algorithm: Information of the selected cluster (SIM=0.7).}
+\label{fig:use_case:bin}
+\end{minipage}
+
 
 \paragraph{BIN\_AGGZEROS}
-Information related to the cluster is in \Cref{tab:use_case:bin_aggzeros:stats}, \Cref{tab:use_case:bin_aggzeros:top_jobs}, and in \Cref{fig:use_case:bin_aggzeros:length}.
+Information related to the cluster is in \Cref{fig:use_case:bin_aggzeros}.
+Compared to BIN, the cluster is smaller but the jobs have a more similar ending.
 
-%\begin{table}
+\jk{Vl. hätte man einfach nur den Job als Centroid nehmen sollen und Ähnlichkeit aller Jobs dazu feststellen?}
+
+\noindent\begin{minipage}{\textwidth}
+\captionsetup{type=table}
+
 \begingroup
+  \begin{subtable}{\textwidth}
   \centering
   \begin{tabular}{ll}
-    SIM & 0.7 \\
     Number of jobs & 8 \\
     Number of job phenotypes & 8 \\
   \end{tabular}
-  \captionof{table}{Cluster statistics.}
+  \caption{table}{Cluster statistics.}
   \label{tab:use_case:bin_aggzeros:stats}
+\end{subtable}
 \endgroup
-%\end{table}
 
-%\begin{table}
+\medskip
+
 \begingroup
+  \begin{subtable}{\textwidth}
   \centering
   \begin{tiny}
     \begin{tabular}{l|r}
@@ -1581,38 +1594,49 @@ Information related to the cluster is in \Cref{tab:use_case:bin_aggzeros:stats},
       207:463:225:495:246:224:198:192:192:192:192:192:192:192:192:192:192:192:192:192:192:192:64:64:64:64:64:64 &  1        \\
     \end{tabular}
   \end{tiny}
-  \captionof{table}{Job, centroid and Top 5 job phenotypes.}
+  \caption{Job, centroid and Top 5 job phenotypes.}
   \label{tab:use_case:bin_aggzeros:top_jobs}
+\end{subtable}
 \endgroup
-%\end{table}
 
-%\begin{figure}
+\medskip
+
 \begingroup
+  \begin{subfigure}{\textwidth}
   \centering
   \includegraphics[width=4.61in,height=1.39in]{image6.png}
-  \captionof{figure}{Length distribution in the cluster.}
+  \caption{Length distribution in the cluster.}
   \label{fig:use_case:bin_aggzeros:length}
+  \end{subfigure}
 \endgroup
-%\end{figure}
+
+\captionof{figure}{BIN\_AGGZEROS algorithm: Information of the selected cluster (SIM=0.7).}
+\label{fig:use_case:bin_aggzeros}
+\end{minipage}
+
 
 \paragraph{HEX\_LEV}
-Information related to the cluster is in \Cref{tab:use_case:hex_lev:stats}, \Cref{tab:use_case:hex_lev:top_jobs}, and in \Cref{fig:use_case:hex_lev:length}.
+Information related to the cluster is in \Cref{tab:use_case:hex_lev}.
 
-%\begin{table}
+\noindent\begin{minipage}{\textwidth}
+\captionsetup{type=table}
+
 \begingroup
+  \begin{subtable}{\textwidth}
   \centering
   \begin{tabular}{ll}
-    SIM & 0.9 \\
     Number of jobs & 209 \\
     Number of job phenotypes & 189 \\
   \end{tabular}
-  \captionof{table}{Cluster statistics.}
+  \caption{Cluster statistics.}
   \label{tab:use_case:hex_lev:stats}
+  \end{subtable}
 \endgroup
-%\end{table}
 
-%\begin{table}
+\medskip
+
 \begingroup
+  \begin{subtable}{\textwidth}
   \begin{tiny}
     \begin{tabular}{ll|r}
       \rowcolor{tblhead}
@@ -1632,38 +1656,49 @@ Information related to the cluster is in \Cref{tab:use_case:hex_lev:stats}, \Cre
       0:\dots:0                                           &  0:0:0:0:0:0:2:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8   & 2        \\
     \end{tabular}
   \end{tiny}
-  \captionof{table}{Job, centroid and Top 5 job phenotypes.}
+  \caption{Job, centroid and Top 5 job phenotypes.}
   \label{tab:use_case:hex_lev:top_jobs}
+  \end{subtable}
 \endgroup
-%\end{table}
 
-%\begin{figure}
+\medskip
+
 \begingroup
+  \begin{subfigure}{\textwidth}
   \centering
-  \includegraphics[width=4.61in,height=1.39in]{image17.png}
-  \captionof{figure}{Length distribution in the cluster.}
+  \includegraphics[width=4.61in]{image17.png}
+  \caption{Length distribution in the cluster.}
   \label{fig:use_case:hex_lev:length}
+  \end{subfigure}
 \endgroup
-%\end{figure}
+
+\captionof{figure}{HEX\_LEV algorithm: Information of the selected cluster (SIM=0.9).}
+\label{fig:use_case:hex_lev}
+\end{minipage}
+
 
 \paragraph{HEX\_NATIVE}
-Information related to the cluster is in \Cref{tab:use_case:hex_native:stats}, \Cref{tab:use_case:hex_native:job_centroid}, and in \Cref{fig:use_case:hex_native:length}.
+Information related to the cluster is in \Cref{tab:use_case:hex_native}.
 
-%\begin{table}
+\noindent\begin{minipage}{\textwidth}
+\captionsetup{type=table}
+
 \begingroup
+  \begin{subtable}{\textwidth}
   \centering
   \begin{tabular}{ll}
-    SIM & 0.99 \\
     Number of jobs & 20 \\
     Number of job phenotypes & 20 \\
   \end{tabular}
-  \captionof{table}{Cluster statistics.}
+  \caption{Cluster statistics.}
   \label{tab:use_case:hex_native:stats}
+  \end{subtable}
 \endgroup
-%\end{table}
 
-%\begin{table}
+\medskip
+
 \begingroup
+  \begin{subtable}{\textwidth}
   \centering
   \begin{tiny}
     \begin{tabular}{l|r}
@@ -1685,38 +1720,49 @@ Information related to the cluster is in \Cref{tab:use_case:hex_native:stats}, \
       6:5:6:7:6:2:7:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8 & 1        \\
     \end{tabular}
   \end{tiny}
-  \captionof{table}{Job and centroid coding sequences.}
+  \caption{Job and centroid coding sequences.}
   \label{tab:use_case:hex_native:job_centroid}
+  \end{subtable}
 \endgroup
-%\end{table}
 
-%\begin{figure}[h]\begingr
+\medskip
+
 \begingroup
+  \begin{subfigure}{\textwidth}
   \centering
   \includegraphics[width=4.61in]{image2.png}
-  \captionof{figure}{Length distribution in the cluster.}
+  \caption{Length distribution in the cluster.}
   \label{fig:use_case:hex_native:length}
+  \end{subfigure}
 \endgroup
-%\end{figure}
+
+\captionof{figure}{HEX\_NATIVE algorithm: Information of the selected cluster (SIM=0.99).}
+\label{fig:use_case:hex_native}
+\end{minipage}
+
 
 \paragraph{PM\_QUANT}
-Information\ related to the cluster is \Cref{tab:use_case:pm_quant:stats}, \Cref{tab:use_case:pm_quant:top_jobs}, and in \Cref{fig:use_case:pm_quant:length}.
+Information\ related to the cluster is \Cref{tab:use_case:pm_quant}.
 
-%\begin{table}
+\noindent\begin{minipage}{\textwidth}
+\captionsetup{type=table}
+
 \begingroup
+  \begin{subtable}{\textwidth}
   \centering
   \begin{tabular}{ll}
-    SIM                 & 0.7 \\
     Number of jobs      & 68  \\
     Number of job phenotypes & 59  \\
   \end{tabular}
-  \captionof{table}{Cluster statistics.}
+  \caption{Cluster statistics.}
   \label{tab:use_case:pm_quant:stats}
+  \end{subtable}
 \endgroup
-%\end{table}
 
-%\begin{table}
+\medskip
+
 \begingroup
+  \begin{subtable}{\textwidth}
   \centering
   \begin{tiny}
     \begin{tabular}{l|r}
@@ -1738,19 +1784,25 @@ Information\ related to the cluster is \Cref{tab:use_case:pm_quant:stats}, \Cref
       8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8   & 2        \\
     \end{tabular}
   \end{tiny}
-  \captionof{table}{Job, centroid and Top 5 job phenotypes.}
+  \caption{Job, centroid and Top 5 job phenotypes.}
   \label{tab:use_case:pm_quant:top_jobs}
+  \end{subtable}
 \endgroup
-%\end{table}
 
-%\begin{figure}
+\medskip
+
 \begingroup
+  \begin{subfigure}{\textwidth}
   \centering
   \includegraphics[width=4.61in,height=1.39in]{image7.png}
-  \captionof{figure}{Length distribution in the cluster.}
+  \caption{figure}{Length distribution in the cluster.}
   \label{fig:use_case:pm_quant:length}
+  \end{subfigure}
 \endgroup
-%\end{figure}
+
+\captionof{figure}{PM\_QUANT algorithm: Information of the selected cluster (SIM=0.7).}
+\label{fig:use_case:pm_quant}
+\end{minipage}
 
 \subsubsection{Discussion}
 Indeed clustering of hexadecimal codings produces usable results.
