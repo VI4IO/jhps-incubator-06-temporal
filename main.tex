@@ -24,6 +24,7 @@
 
 \crefname{codecount}{Code}{Codes}
 
+\usepackage{verbatimbox}
 \usepackage{todonotes}
 \newcommand{\jk}[1]{\todo[inline]{JK:\@#1}}
 \newcommand{\eb}[1]{\todo[inline]{EB:\@#1}}
@@ -567,21 +568,22 @@ The 4d time series can be transformed into the required fixed size input format 
 We explored two job profiles: IO-metric and I/O-duration.
 The \textbf{IO-metric job profile} utilizes three features, Job-I/O-Balance, Job-I/O-Utilization, and Job-I/O-Problem-Time (as defined in \cite{iocats2020}).
 After the data pre-processing, we obtain a set of 3-dimensional data points with a domain between 0 and 1.
-The maximum distance between any two jobs ($SIM_{max}$) is 1.44.
+The maximum distance between any two jobs ($\epsilon_{max}$) is 1.44.
 
 The \textbf{IO-duration job profile} contains the fraction of runtime, a job spent doing the individual I/O categories leading to 27 columns.
 The columns are named according to the following scheme: metric\_category, e.g, bytes\_read\_0 or md\_file\_delete\_4.
 The first part is the one of the nine metric names and the second part is the category number (LowIO=0, HighIO=1 and CriticalIO=4).
 These columns are used for machine learning as input features.
 There is a constraint for each metric (metric\_0 + metric\_1 + metric\_4 = 1), that makes 9 features redundant, because they can be computed from the other features.
-So we have to deal with 18 features; $SIM_{max}$ is 1.17.
+So we have to deal with 18 features; $\epsilon_{max}$ is 1.17.
 
 \jk{Warum ist das hier 1.17, checke ich nicht}
+\eb{Das ist die maximale Distance zwischen zwei Punkten in einem 18-dimensionalen Raum: 18**(1/18) = 1.1741872530996615}
 
 \paragraph{Clustering algorithm}
 We intended to apply agglomerative clustering.
 \jk{Könnte noch bissl unklar sein}
-The algorithm uses Euclidean distance as a similarity measure, i.e., if the component wise distance between two job vectors is shorter than the defined distance (SIM), then these jobs belong to the same cluster.
+The algorithm uses Euclidean distance as a similarity measure, i.e., if the component wise distance between two job vectors is shorter than the defined distance ($\epsilon$), then these jobs belong to the same cluster.
 
 We found that the size of our datasets is the first obstacle to the suitable clustering algorithms.
 For example, the scaling behavior of the agglomerative clustering algorithm that is used in this work can handle around 10,000 jobs in a reasonable amount of time as the complexity is \(N^{2}\).
@@ -884,7 +886,7 @@ In particular we use the agglomerative clustering algorithm, decision trees, and
 
 
 \subsubsection{Results}
-We conducted several experiments with different SIM values between 0 and $SIM_{max}$.
+We conducted several experiments with different SIM values between 0 and $\epsilon_{max}$.
 The top 20 largest clusters and total number of clusters is visualized in \Cref{fig:datasets_clustering_results:io_metric} and \Cref{fig:datasets_clustering_results:io_duration} for IO-metric and IO-duration job-profiles, respectively.
 
 \begin{figure}
@@ -905,12 +907,17 @@ The top 20 largest clusters and total number of clusters is visualized in \Cref{
 \end{figure}
 
 \jk{Können wir EPS im Bild durch SIM ersetzen, dann ist das einheitlich.}
+\eb{Keine Ahnung, ob das eine gute Idee ist, weil die Parameter unterschiedlich sind:
+	EPS: je kleiner,  desto praeziser Clustering,
+	SIM: je groesser, desto praeziser ist Clustering.
+}
 
 We can see that IO-duration generated two very large clusters regardless of SIM.
 From Cluster\,3 of IO-duration, the number of jobs inside looks then similar as for IO-metric.
 In IO-metric, we can see that with increasing SIM, the number of jobs per cluster increase (as expected).
 
 \jk{Kann es sein, dass EPS=0.3 bei beiden eben nicht das gleiche Verhältnis ist, ich meine SIMmax ist ja unterschiedlich wenn ich 3 Metriken oder 18 habe?}
+\eb{Oh ja, das hat mich auch beschaeftigt. Aber bei einer Parameter exploration ist es irrelevant, weil man systematische diverse Parameter durchgeht, ohne nach Optimum zu streben.}
 
 A look inside clusters reveals chaotic clustering results.
 For both datasets and for all SIM values we could find many coding sequences in a cluster that we wouldn't locate together.
@@ -920,8 +927,9 @@ For example, one observed cluster contains the following sequences (binary encod
 \end{lstlisting}
 
 We looked in the Top 10 largest clusters and a random selection of clusters to find the same picture:
-Even with low $SIM_{max}$ values the algorithms appears to produce polluted clusters, i.e, with samples from other clusters.
+Even with low $\epsilon$ values the algorithms appears to produce polluted clusters, i.e, with samples from other clusters.
 \jk{Warum sim max hier}
+\eb{Das ist Bullshit. EPS ist rightig. Hab korrigiert}
 Like in the example above, we couldn't understand the logic behind the results.
 Probably, the particular random datasets used for training does not represent the specifics of parallel jobs  well enough for proper clustering.
 However, even with a good feature set that works on our test system, it is unlikely that the strategy and trained model will be portable to other systems.
@@ -1073,6 +1081,7 @@ In each cluster, all jobs have the identical coding; these short running jobs ar
 
 Therefore, the selected cluster for inspection is further down in the Top 20, information is shown in \Cref{fig:bin_all}.
 \jk{War es top 20?}
+\eb{Es waren mal Top 20, als es es noch kein Job Typen Konzept exisitierte.}
 There are about 3300 different types of unique jobs, it contains jobs with a length between 41 and 60.
 Most jobs in the cluster are shorter than 49 segments, because the main Mistral partitions can allocate jobs for at most 8 hours, and that is the majority of jobs.
 Since each segment is 10 min long, the runtime of jobs with 49 segments is about 8.16 hours.
@@ -1270,7 +1279,6 @@ In the selected cluster, there is mostly one segment of IO activity.
 
 \medskip
 
-\jk{Hier unten werden einige Zeichen abgeschnitten, warum das komische AT KLAMMER in tabular?}
 
 \begingroup
   \begin{subtable}{\textwidth}
@@ -1331,6 +1339,34 @@ Information related to the selected cluster is given in \Cref{fig:hex_native}.
 In the selected cluster, jobs with a length of 4 have mostly 1 the activity of one segment in common.
 
 \jk{Wie kann man das verstehen, obwohl sich der Kasten in zwei Kästen unterscheidet ist das immer noch 99\% ähnlich. Warum haben wir eigtl. nicht die selbe SIM gewählt? 99\% finde ich recht unglücklich für das Beispiel.}
+
+\begin{myverbbox}[\tiny]{\verbA}
+Gegeben sei zwei hexadecimale Codings fuer zwei Jobs:
+job1 = \left[ 0\dots0], [0\dots0], [0\dots0], [0\dots0], [0\dots0], [0\dots0], [0\dots0], [0:0:1:0], [0:0:1:0]]
+job2 = \left[ 0\dots0], [0\dots0], [0\dots0], [0\dots0], [0\dots0], [0\dots0], [0\dots0], [0:0:0:0], [0:0:2:0]]
+
+Aenhlichkeit einzelner Metriken:
+metric\_1 = 100%
+metric\_2 = 100%
+metric\_3 = 100%
+metric\_4 = 100%
+metric\_5 = 100%
+metric\_6 = 100%
+metric\_7 = 100%
+md\_mod = (16-(0-0) + 16-(0-0) + 16-(1-0) + 16-(0-0))/(16*4) = 98,4%
+md\_other = (16-(0-0) + 16-(0-0) + 16-(2-1) + 16-(0-0))/(16*4) = 98,4%
+
+Die Gesamtaehnlichkeit ist dann die folgende:
+similarity = (100*7 + 98,4*2)/9 = 99.65%
+\end{myverbbox}
+
+\eb{
+	Beispiel: \\
+	\begin{tiny}
+		\verbA
+	\end{tiny}
+}
+
 
 \noindent\begin{minipage}{\textwidth}
 \captionsetup{type=table}
@@ -1489,7 +1525,7 @@ Now, we identify and investigate the cluster that contains this job for the diff
 Overall, we find this job leads to good conditions for all algorithms, i.e., all the algorithms work well in this use case.
 
 \paragraph{BIN\_ALL}
-Information related to the cluster of the job is in \Cref{tab:use_case:bin}.
+Information related to the cluster of the job is in \Cref{fig:use_case:bin}.
 We find that the identified jobs in the cluster are sufficiently related.
 
 \noindent\begin{minipage}{\textwidth}
@@ -1556,6 +1592,12 @@ Information related to the cluster is in \Cref{fig:use_case:bin_aggzeros}.
 Compared to BIN, the cluster is smaller but the jobs have a more similar ending.
 
 \jk{Vl. hätte man einfach nur den Job als Centroid nehmen sollen und Ähnlichkeit aller Jobs dazu feststellen?}
+\eb{Ist eine gute Idee fuer den zweiten Workflow.
+	Die LookUp Operation wuerde allerdings einige Minuten dauern.
+	Nach meiner Vorstellung wird ein Job nach dem Ende sofort einem Cluster zugeordnet.
+	So liegen die Cluster schon bereit.
+	Eine Look-up Operation wuerde dann nur wenige Millisekundne dauern.
+}
 
 \noindent\begin{minipage}{\textwidth}
 \captionsetup{type=table}
