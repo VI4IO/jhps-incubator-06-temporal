@@ -1946,6 +1946,7 @@ To answer these questions, a discussion with the community about the use cases a
 \section{Conclusion}
 
 In this work, we described various approaches to cluster 1 million jobs based on their IO behavior.
+Clustering of jobs is important for data-center support staff to focus their effort on relevant jobs.
 Therefore, we pre-processed the periodically gathered node metrics by converting this fine-grained resolution into 10-minute segments using various pre-processing stacks.
 Our contribution is the systematic evaluation and discussion of various approaches for the clustering.
 The success of clustering algorithms depends on the right feature selection and data transformation.
@@ -1973,6 +1974,7 @@ Therefore, we consider the quantization of hexadecimal is appropriate for this u
 The phase matching algorithm detects phases and differentiates performance values.
 In our analysis, it produced even for smaller relative similarity good results.
 These algorithms can be used in practice to identify jobs similar to another.
+We defined the cluster relevance that aids data center employees to select jobs of relevance.
 %Due to the huge amount of clusters and lack of automatic evaluation tools, we can not prove this statement for all clustres.
 %This makes training of models a trial-and-error approach.
 
@@ -1981,6 +1983,7 @@ These algorithms can be used in practice to identify jobs similar to another.
 To address the issue with the large number of clusters we will research three additional functions: 1) filter irrelevant clusters, 2) sort clusters by a criteria, and 3) automatic labeling.
 
 We intend to conduct a survey and discussion with users to answer the question what similarity of IO jobs means.
+We will extend relevance to cover node count as well to represent the actual costs of running a job better.
 
 We see a high potential in the new clustering algorithms to apply them on the fly to jobs of interest.
 For this case, the jobs could be grouped based on distance to this particular job and allowing the user to modify the similarity online.
