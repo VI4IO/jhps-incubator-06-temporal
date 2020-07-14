@@ -1819,8 +1819,7 @@ Even with a smaller SIM value, the jobs appear related while they cover a variet
 \subsection{Discussion}
 We evaluated similarity between jobs quantitatively and qualitatively for the different algorithms.
 As most jobs contain only a subset of I/O-intensive segments, the assessment of similarity should ignore these phases.
-There may be specific use cases where the exact job-length play a role but generally it appears that a user or support member should be interested in similar I/O-patterns as otherwise the clusters will be polluted with likely irrelevant jobs.
-
+There may be specific use cases where the exact job-length play a role but generally it appears that a user or support member should be interested in similar I/O-patterns as otherwise the clusters will be polluted with  irrelevant jobs.
 
 \paragraph{Coding.} The coding of the time series data has a big impact on the potential similarity that can be uncovered.
 We explored binary, hexadecimal, and the native (floating point, e.g., mean) values.
@@ -1862,6 +1861,12 @@ phase_coding_3 : [2:2:2:2:2:0:2:2]
 Intuitively, we would say that {phase\_coding\_1 and{ phase\_coding\_2 are more similar than {phase\_coding\_2 and {phase\_coding\_3, because the difference at 6th position is smaller between Job\,8 and 9 is smaller than to Job\,3.
 Short runtimes lead to more polluted clusters.
 
+Here is another example that illustrated the issue of noise in clusters for Levensthein:
+Suppose two jobs [0:6:0:0] and [0:388:174:0] are in the same cluster with the centroid [0:388:0:0].
+Even if in both cases the similarity between the cluster and the centroid is 75$\%$  (only one change is required), we would intuitively say that these jobs are completely different, not even close to the 75$\%$  mark.
+We can easily construct another sequence, e.g., [0:389:0:0], where a similarity of 75$\%$  are justified.
+For this reason, we found that the Levenshtein distance is generally not suitable.
+
 \medskip
 
 The current version of the PM algorithm ignores non-IO parts (sequences of zeros) of the monitoring data, and  handles segment sequences like [0,0,0,0,1] and [1] equally:
@@ -1888,8 +1893,6 @@ Alternatively, one could say that running two metrics at the same time is anothe
 For jobs with many IO phases, this situation is less likely but for shorter jobs, it may happen.
 The benefit of ignoring these aspects is simplicity; this clustering reduces the number of clusters and  results are easier to understand.
 
-\medskip
-
 \paragraph{Characterization of IO.}
 The main questions for a user that applies a clustering algorithm remain: how to define similarity.
 Depending on the use case, the relevant I/O-behavior and characteristics involved in job comparison must be defined to allow identification of jobs depending on temporal behavior.
@@ -1904,21 +1907,19 @@ The success of general purpose clustering and classification algorithms depends 
 In particular, feature selection is often quite challenging.
 This makes training of models a trial-and-error approach.
 Even if an optimal solution is found there is no guarantee that the approach with other data on other systems.
+We assume that there indeed are so many different types of jobs, but there are too many of them for manual labeling.
 
 
-After a series of experiments with general purpose algorithms we could not achieve optimal results.
+After a series of experiments with general purpose algorithms we could not achieve the optimal results.
 The investigation of resulting clusters shows that they are obviously polluted.
 One problem might be that we apply a combination of a clustering and a classification algorithm.
 The classification algorithm is trained by the potential erroneous output of the clustering algorithm and it can itself produce erroneous output, which multiples the total error.
 Another problem might be that both algorithms are not aware of I/O performance and I/O phases.
 As this work shows, this might be quite important.
 At least, we achieve better results by considering both aspects.
-The Levenshtein-distance based algorithms produce better, but still not sophisticated results.
-This is a direct consequence of the usage of the Levenshtein distance, which is illustrated in the following example.
-Suppose two jobs {[0:6:0:0]and [0:388:174:0] are in the same cluster with the centroid {[0:388:0:0].
-Even if in both cases the similarity between the cluster and the centroid is 75$\%$  (only one change is required), we would intuitively say that these jobs are completely different, not even close to the 75$\%$  mark.
-We can easily construct another sequence, e.g., {[0:389:0:0], where the 75$\%$  are justified.
-The reason for such clustering failures, ist that Levenshtein distance is not able to extract and to use the meaning that was coded into the numbers.
+
+For this reason, we found that the Levenshtein distance is generally not suitable.
+
 Job comparison by means of hexadecimal coding is more precise, because hexadecimal coding sequences are much longer.
 Absolute coding aggregates three dimensions (Metric, Nodes, and FileSystems) resulting in a nine times shorter coding sequence than hexadecimal coding, which aggregates only two dimensions (Nodes, and FileSystems).
 Having more data, a more precise computation.
@@ -1927,12 +1928,15 @@ We suppose that the I/O phase awareness is the missing feature for success.
 The final algorithm that detects phases and differentiates performance values produces at first sight clean results.
 Due to the huge amount of clusters and lack of automatic evaluation tools, we can not prove this statement for all clustres.
 
+
 \subsection{Future Work}
-We see a high potential in the new clustering algorithm, but it requires some improvements to be useful.
-Although groping seems to work well, the algorithm has at least one serious issue.
-The biggest problem is probably the large number of clusters.
-We assume that there indeed are so many different types of jobs, but there are too many of them for manual labeling.
-Therefore we need at least three further functions, that filter irrelevant clusters, sort clusters by a criteria and label remaining ones.
+To address the issue with the large number of clusters we will research three additional functions: 1) filter irrelevant clusters, 2) sort clusters by a criteria, and 3) automatic labeling.
+
+We intend to conduct a survey and discussion with users to answer the question what similarity of IO jobs means.
+
+We see a high potential in the new clustering algorithms to apply them on the fly to jobs of interest.
+For this case, the jobs could be grouped based on distance to this particular job and allowing the user to modify the similarity online.
+Conducting a study about this approach is our next goal.
 
 
 \subsection*{Acknowledgment} %% Remove this section if not needed
