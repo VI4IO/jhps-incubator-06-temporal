@@ -922,11 +922,7 @@ In IO-metric, we can see that with increasing SIM, the number of jobs per cluste
 
 A look inside clusters reveals chaotic clustering results.
 For both datasets and for all SIM values we could find many coding sequences in a cluster that we wouldn't locate together.
-For example, one observed cluster contains the following sequences.
-%\begin{lstlisting}
-%[1], [0:0:14:0], [4:0], [0:0:4:0], [272:272:272]
-%\end{lstlisting}
-
+As the examples in \Cref{tab:ml_examples} show, observed cluster contains the following sequences.
 
 \npdecimalsign{.}
 \nprounddigits{3}
@@ -953,7 +949,6 @@ For example, one observed cluster contains the following sequences.
  \end{subtable}
  \begin{subtable}{\textwidth}
    \centering
-   %\begin{scriptsize}
      \begin{tabular}{n{1}{\rd} n{1}{\rd} n{1}{\rd} n{1}{\rd} n{1}{\rd} n{1}{\rd}n{1}{\rd}n{1}{\rd}|l}
        \rot{1\_md\_file\_delete} & \rot{1\_md\_mod} & \rot{1\_md\_other} & \rot{1\_md\_read} & \rot{1\_read\_bytes} & \rot{1\_read\_calls} & \rot{1\_write\_bytes} & \rot{1\_write\_calls} & \rot{Binary coding} \\
        \hline
@@ -961,13 +956,11 @@ For example, one observed cluster contains the following sequences.
        0.012578616               & 0.01257862       & 0.24528302         & 0.006289308       & 0.00617284           & 0.006172840          & 0.01257862            & 0.01257862            & 510:0:0             \\
        0.016666667               & 0.01666667       & 0.25000000         & 0.016666667       & 0.00000000           & 0.000000000          & 0.00000000            & 0.01666667            & 14:280              \\
      \end{tabular}
-   %\end{scriptsize}
    \caption{IO-duration job profiles}
  \end{subtable}
  \caption{Jobs found in the same cluster with their profiles coding ($\epsilon = 0.03$). Columns containing zeros only are omitted.}
  \label{tab:ml_examples}
 \end{table}
-
 
 We looked in the Top 10 largest clusters and a random selection of clusters to find the same picture:
 Even with low $\epsilon$ values the algorithms appears to produce polluted clusters, i.e, with samples from other clusters.
