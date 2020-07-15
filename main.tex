@@ -16,6 +16,7 @@
 \usepackage{lstautogobble}
 \usepackage[listings,skins,breakable,raster,most]{tcolorbox}
 \usepackage{numprint}
+\usepackage{adjustbox}
 \usepackage{tikz}
 \usetikzlibrary{positioning,shapes,arrows,fit,backgrounds}
 \usepackage{booktabs}
@@ -220,7 +221,7 @@ The similarity measure between two jobs should consider those sources of variabi
 
 There are different goals for the data analysis done by the user running the application or the support staff of the data center.
 Whether or not the timeline is similar when executing an application with a different configuration and input dataset depends on the purpose of the analysis and task that follows the analysis.
-For these reasons, we decided to explore a variety of alternative options for distance metrics and pre-processing and assess their suitability.
+For these reasons, we decided to explore a variety of alternative optionsfor distance metrics and pre-processing and assess their suitability.
 
 
 \section{Related work}
@@ -401,16 +402,18 @@ Coding is reversible, e.g., when having value 48, the computation of active metr
 To reduce the 4-dimensional data, we reduce that structure to two dimensions (segments metrics) by aggregating other dimensions by applying sum() function on score values.
 In the resulting table we leave zero scores, and change scores larger than zero to one.
 After coding each segment, the jobs can be represented as a sequence of numbers, e.g.,
-\begin{lstlisting}
-'jobid': 'jobA', 'coding': [1:5:0:0:0:0:0:0:96:96:96:96:96:96:96], 'length': 15
+
+\begin{lstlisting}[caption={Binary coding of a 15 segments long job.}]
+[1:5:0:0:0:0:0:0:96:96:96:96:96:96:96]
 \end{lstlisting}
+
 The monitoring dataset doesn't provide information about what happens during the zero segments.
 It can be anything, like a job is waiting for resources, or computing something.
 It can also be that the job script cannot start immediately or run on a slow network.
 To catch such jobs, we aggregate multiple consecutive zero segments into one zero segment, thus the coding of the previous job would replace all 0:...:0 sequences just with 0.
 
-\begin{lstlisting}
-'jobid': 'jobA', 'coding': [1:5:0:96:96:96:96:96:96:96], 'length': 15
+\begin{lstlisting}[caption={Binary coding of a 15 segments long job with zero aggregation applied.}]
+[1:5:0:96:96:96:96:96:96:96]
 \end{lstlisting}
 
 Note, that the job length does not change, only the sequence length.
@@ -424,8 +427,7 @@ Firstly, the dimension reduction aggregates the file system and the node dimensi
 Secondly, the mean values are quantized into 16 levels -- 0 represents the interval [0,0.25), 1 [0.5,0.75), $ \ldots $ , [3.75,4].
 The example below shows hexadecimal coding for a job containing 6 segments.
 
-\begin{lstlisting}
-jobB: 'length': 6, 'coding':
+\begin{lstlisting}[caption={Hexadecimal coding of a six segments long job.}]
 'md_file_create' : [002229],
 'md_file_delete' : [000000],
 'md_mod'         : [000000],
@@ -606,12 +608,11 @@ similarity \left( job_{A}\text{, jo}b_{B} \right) =1- \frac{levenshtein \left( c
 \end{equation}
 It is the number of Levenshtein operations (changes/deletes/inserts) divided by the length of the longest sequence, and subtracted from the value one.
 
-\begin{lstlisting}
+\begin{lstlisting}[caption={The similarity between these two jobs is 73 percent.}]
 'jobid': 'jobA', 'coding': [1:5:0:0:0:0:0:0:96:96:96:96:96:96:96], 'length': 15
 'jobid': 'jobB', 'coding': [0:0:0:0:0:0:0:0:0:96:96:96:96:96:98], 'length': 15
 \end{lstlisting}
 
-The similarity between these two jobs is 73 percent.
 
 \subsubsection{BIN\_AGGZEROS}
 This is a variant of BIN\_ALL where subsequent zero-sequences are reduced to a single zero segment before \Cref{eq:lev} is applied.
@@ -621,8 +622,8 @@ The example below shows the reduced codings from the previous example.
 similarity \left( job_{A}\text{, jo}b_{B} \right) =1- \frac{levenshtein \left( coding_{A}\text{, codin}g_{B} \right) }{max \left( length_{A}\text{, lengt}h_{B} \right) }
 \end{equation}
 
-The two previous jobs are now encoded slightly different leading to a similarity of 53 percent:
-\begin{lstlisting}
+%\begin{lstlisting}[caption={The similarity between these two jbos is 53 percent.}]
+\begin{lstlisting}[caption={The two previous jobs are now encoded slightly different leading to a similarity of 53 percent.}]
 'jobid': 'jobA', 'coding': [1:5:0:96:96:96:96:96:96:96], 'length': 15
 'jobid': 'jobB', 'coding': [0:96:96:96:96:96:98], 'length': 15
 \end{lstlisting}
@@ -921,10 +922,52 @@ In IO-metric, we can see that with increasing SIM, the number of jobs per cluste
 
 A look inside clusters reveals chaotic clustering results.
 For both datasets and for all SIM values we could find many coding sequences in a cluster that we wouldn't locate together.
-For example, one observed cluster contains the following sequences (binary encoding):
-\begin{lstlisting}
-[1], [0:0:14:0], [4:0], [0:0:4:0], [272:272:272]
-\end{lstlisting}
+For example, one observed cluster contains the following sequences.
+%\begin{lstlisting}
+%[1], [0:0:14:0], [4:0], [0:0:4:0], [272:272:272]
+%\end{lstlisting}
+
+
+\npdecimalsign{.}
+\nprounddigits{3}
+\def\rd{3}
+\newcolumntype{R}[2]{%
+    >{\adjustbox{angle=#1,lap=\width-(#2)}\bgroup}%
+    l%
+    <{\egroup}%
+}
+\newcommand*\rot{\multicolumn{1}{R{45}{1em}}}% no optional argument here, please!
+
+\begin{table}[b]
+ \centering
+ \begin{subtable}{\textwidth}
+   \centering
+     \begin{tabular}{lln{1}{\rd}|l}
+       \rot{Job-IO-Utilization} & \rot{Job-IO-Problem\_time} & \rot{Job-IO-Balance} & \rot{Binary coding}                     \\
+       \hline
+       4                 & 1                   & 0.4375000     & 118                                     \\
+       4                 & 1                   & 0.4450206     & 368:368:368:368:368:368:374:368:368:368 \\
+       4                 & 1                   & 0.4583333     & 496:496                                 \\
+     \end{tabular}
+   \caption{IO-metrics job profiles}
+ \end{subtable}
+ \begin{subtable}{\textwidth}
+   \centering
+   %\begin{scriptsize}
+     \begin{tabular}{n{1}{\rd} n{1}{\rd} n{1}{\rd} n{1}{\rd} n{1}{\rd} n{1}{\rd}n{1}{\rd}n{1}{\rd}|l}
+       \rot{1\_md\_file\_delete} & \rot{1\_md\_mod} & \rot{1\_md\_other} & \rot{1\_md\_read} & \rot{1\_read\_bytes} & \rot{1\_read\_calls} & \rot{1\_write\_bytes} & \rot{1\_write\_calls} & \rot{Binary coding} \\
+       \hline
+       0.009259259               & 0.01851852       & 0.25000000         & 0.027777778       & 0.00462963           & 0.009259259          & 0.00462963            & 0.03240741            & 340:510:272         \\
+       0.012578616               & 0.01257862       & 0.24528302         & 0.006289308       & 0.00617284           & 0.006172840          & 0.01257862            & 0.01257862            & 510:0:0             \\
+       0.016666667               & 0.01666667       & 0.25000000         & 0.016666667       & 0.00000000           & 0.000000000          & 0.00000000            & 0.01666667            & 14:280              \\
+     \end{tabular}
+   %\end{scriptsize}
+   \caption{IO-duration job profiles}
+ \end{subtable}
+ \caption{Jobs found in the same cluster with their profiles coding ($\epsilon = 0.03$). Columns containing zeros only are omitted.}
+ \label{tab:ml_examples}
+\end{table}
+
 
 We looked in the Top 10 largest clusters and a random selection of clusters to find the same picture:
 Even with low $\epsilon$ values the algorithms appears to produce polluted clusters, i.e, with samples from other clusters.
