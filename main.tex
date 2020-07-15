@@ -437,15 +437,15 @@ Secondly, the mean values are quantized into 16 levels -- 0 represents the inter
 The example below shows hexadecimal coding for a job containing 6 segments.
 
 \begin{lstlisting}[caption={Hexadecimal coding of a six segments long job.}]
-'md_file_create' : [002229],
-'md_file_delete' : [000000],
-'md_mod'         : [000000],
-'md_other'       : [000000],
-'md_read'        : [000930],
-'read_bytes'     : [500000],
-'read_calls'     : [000000],
-'write_bytes'    : [0000ff],
-'write_calls'    : [000000]
+'md_file_create' : [0:0:2:2:2:9]
+'md_file_delete' : [0:0:0:0:0:0]
+'md_mod'         : [0:0:0:0:0:0]
+'md_other'       : [0:0:0:0:0:0]
+'md_read'        : [0:0:0:9:3:0]
+'read_bytes'     : [5:0:0:0:0:0]
+'read_calls'     : [0:0:0:0:0:0]
+'write_bytes'    : [0:0:0:0:f:f]
+'write_calls'    : [0:0:0:0:0:0]
 \end{lstlisting}
 
 \subsubsection{Similarity}
@@ -831,7 +831,7 @@ We will discuss the details of each step on the following example; a blue font e
 			\label{lst:sim:pm_quant:phases:job_b}
 		\end{minipage}
 	\end{minipage}
-	\caption{Hexadecimal codings and their I/O of two jobs.}
+	\caption{Hexadecimal codings of two jobs and their I/O phases.}
 	\label{lst:sim:pm_quant}
 \end{listing}
 
