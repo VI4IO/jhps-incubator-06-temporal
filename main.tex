@@ -777,7 +777,7 @@ We will discuss the details of each step on the following example; a blue font e
 			write_calls    [0:0:0:0:0:0:0:0:0:0:0:0:0]
 			\end{lstlisting}
 			\vspace{-2em}
-			\subcaption{Job A}
+			\subcaption{Coding of Job A}
 			\label{lst:sim:pm_quant:job_a}
 		\end{minipage}
 		\noindent\begin{minipage}{0.39\textwidth}
@@ -811,7 +811,7 @@ We will discuss the details of each step on the following example; a blue font e
 		write_calls    [0:0:0:0:0:0:0:0:0:0:0:0:0:0:0]
 		\end{lstlisting}
 		\vspace{-2em}
-		\subcaption{Job B}
+		\subcaption{Coding of Job B}
 		\label{lst:sim:pm_quant:job_b}
 		\end{minipage}
 		\noindent\begin{minipage}{0.39\textwidth}
@@ -831,7 +831,7 @@ We will discuss the details of each step on the following example; a blue font e
 			\label{lst:sim:pm_quant:phases:job_b}
 		\end{minipage}
 	\end{minipage}
-	\caption{The similarity between these two jobs is 73 percent}
+	\caption{Hexadecimal codings and their I/O of two jobs.}
 	\label{lst:sim:pm_quant}
 \end{listing}
 
@@ -856,53 +856,83 @@ In this example, that is md\_file\_create, read\_bytes and write\_bytes metrics:
 Now we slide the shorter phase over the longer and compute similarity to the corresponding part such that we can find the best match.
 In the example, the best match is found on position five.
 
-\noindent\begin{minipage}{0.33\textwidth}
-\begin{lstlisting}
-[2:2:2:2:8:2:2]
-[9:3:-:-:-:-:-]
-similarity
-= (2/9+2/3)/7
-= 13%
+\def\mpw{0.32}
+\begin{listing}
+	\noindent\begin{minipage}{\mpw\textwidth}
+		\begin{lstlisting}
+		[2:2:2:2:8:2:2]
+		[9:3:-:-:-:-:-]
+		similarity
+		= (2/9+2/3)/7
+		= 13%
+		\end{lstlisting}
+		\vspace{-2.5em}
+		\subcaption{Shift 0 positions}
+	\end{minipage}
+	\hfill
+	\noindent\begin{minipage}{\mpw\textwidth}
+		\begin{lstlisting}
+		[2:2:2:2:8:2:2]
+		[-:9:3:-:-:-:-]
+		similarity
+		= (2/9+2/3)/7
+		= 13%
+		\end{lstlisting}
+		\vspace{-2.5em}
+		\subcaption{Shift 1 position}
+	\end{minipage}
+	\hfill
+	\noindent\begin{minipage}{\mpw\textwidth}
+		\begin{lstlisting}
+		[2:2:2:2:8:2:2]
+		[-:-:9:3:-:-:-]
+		similarity
+		= (2/9+2/3)/7
+		= 13%
+		\end{lstlisting}
+		\vspace{-2.5em}
+		\subcaption{Shift 2 positions}
+	\end{minipage}
 
-[2:2:2:2:8:2:2]
-[-:9:3:-:-:-:-]
-similarity
-= (2/9+2/3)/7
-= 13%
-\end{lstlisting}
-\end{minipage}
-%
-\noindent\begin{minipage}{0.33\textwidth}
-\begin{lstlisting}
-[2:2:2:2:8:2:2]
-[-:-:9:3:-:-:-]
-similarity
-= (2/9+2/3)/7
-= 13%
+	\noindent\begin{minipage}{\mpw\textwidth}
+		\begin{lstlisting}
+		[2:2:2:2:8:2:2]
+		[-:-:-:9:3:-:-]
+		similarity
+		= (2/9+3/8)/7
+		= 8%
+		\end{lstlisting}
+		\vspace{-2.5em}
+		\subcaption{Shift 3 positions}
+	\end{minipage}
+	\hfill
+	\noindent\begin{minipage}{\mpw\textwidth}
+		\begin{lstlisting}
+		[2:2:2:2:8:2:2]
+		[-:-:-:-:9:3:-]
+		similarity
+		= (8/9+2/3)/7
+		= 22%
+		\end{lstlisting}
+		\vspace{-2.5em}
+		\subcaption{Shift 4 positions}
+	\end{minipage}
+	\hfill
+	\noindent\begin{minipage}{\mpw\textwidth}
+		\begin{lstlisting}
+		[2:2:2:2:8:2:2]
+		[-:-:-:-:-:9:3]
+		similarity
+		= (2/9+2/3)/7
+		= 13%
+		\end{lstlisting}
+		\vspace{-2.5em}
+		\subcaption{Shift 5 positions}
+	\end{minipage}
+	\caption{Phase matching example.}
+	\label{lst:pm_quant:phase_matching_example}
+\end{listing}
 
-[2:2:2:2:8:2:2]
-[-:-:-:9:3:-:-]
-similarity
-= (2/9+3/8)/7
-= 8%
-\end{lstlisting}
-\end{minipage}
-%
-\noindent\begin{minipage}{0.33\textwidth}
-\begin{lstlisting}
-[2:2:2:2:8:2:2]
-[-:-:-:-:9:3:-]
-similarity
-= (8/9+2/3)/7
-= 22%
-
-[2:2:2:2:8:2:2]
-[-:-:-:-:-:9:3]
-similarity
-= (2/9+2/3)/7
-= 13%
-\end{lstlisting}
-\end{minipage}
 
 After repeating this step for all possible combinations of I/O phases, we chose those with the pairs with the highest similarity, and computed the match between them.
 I/O phases without a pair are assigned virtually to empty phases, and their match is zero.
