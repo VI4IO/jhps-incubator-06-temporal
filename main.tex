@@ -942,18 +942,18 @@ The example below shows the pairs of I/O phases and their matches.
 \begin{table}
 \centering
 \begin{tabular}{lllrr}
-	Metric           & I/O Phase A                 & I/O Phase B                 & Match       & Length \\ 
+	Metric           & I/O Phase A                 & I/O Phase B                 & Match     & Length \\ 
 	\hline
-	md\_file\_create & \lstinline|[-:-:-:-:-]|     & \lstinline|[2:2:2:9:3]|     & 0           & 5      \\ 
-	                 & \lstinline|[-:1:-:-]|       & \lstinline|[9:1:1:1]|       & 1           & 4      \\ 
-	read\_bytes      & \lstinline|[2:2:2:2:8:2:2]| & \lstinline|[-:-:-:-:9:3:-]| & (8/9 + 2/3) & 7      \\ 
-	                 & \lstinline|[1]|             & \lstinline|[1]|             & 1           & 1      \\ 
-	                 & \lstinline|[8:1:1]|         & \lstinline|[-:-:-]|         & 0           & 3      \\ 
-	write\_bytes     & \lstinline|[5]|             & \lstinline|[-]|             & 0           & 1      \\ 
+	md\_file\_create & \lstinline|[-:-:-:-:-]|     & \lstinline|[2:2:2:9:3]|     & 0         & 5      \\ 
+	                 & \lstinline|[-:1:-:-]|       & \lstinline|[9:1:1:1]|       & 1         & 4      \\ 
+	read\_bytes      & \lstinline|[2:2:2:2:8:2:2]| & \lstinline|[-:-:-:-:9:3:-]| & 8/9 + 2/3 & 7      \\ 
+	                 & \lstinline|[1]|             & \lstinline|[1]|             & 1         & 1      \\ 
+	                 & \lstinline|[8:1:1]|         & \lstinline|[-:-:-]|         & 0         & 3      \\ 
+	write\_bytes     & \lstinline|[5]|             & \lstinline|[-]|             & 0         & 1      \\ 
 	\hline
-	Sum              &                             &                             & 3.56        & 22     \\ 
+	Sum              &                             &                             & 3.56      & 21     \\ 
 \end{tabular}
-\caption{Best combination of I/O phases, that achieves highes possible similarity.}
+\caption{Best combination of I/O phases, that achieves highest possible similarity.}
 \end{table}
 
 %\jk{Wollten wir nicht noch durch max = 16 teilen}
@@ -968,7 +968,7 @@ Similarity between two jobs is the sum of matches divided by the sum of lengths 
 In this example, we get a similarity of 17$\%$:
 
 \begin{align}
-	similarity &= \frac{\sum_{m,i}{\text{match}_{m,i}}}{\sum_{m,i}{\text{length}_{m,i}}} = \frac{0 + 1 + \frac{8}{9} + \frac{2}{3} + 1 + 0 + 0}{5 + 4 + 7 + 1 + 3 + 1} = 0.17\\
+	similarity &= \frac{\sum_{m,i}{\text{match}_{m,i}}}{\sum_{m,i}{\text{length}_{m,i}}} = \frac{3.56}{21} \approx 0.17\\
 	&, \text{with } m \in \text{Metrics}, i \in \text{Phases of } m
 \end{align}
 
