@@ -29,7 +29,7 @@
 \usepackage{verbatimbox}
 \usepackage{todonotes}
 \newcommand{\jk}[1]{\todo[inline]{JK:\@#1}}
-\newcommand{\eb}[1]{\todo[inline]{EB:\@#1}}
+\newcommand{\eb}[1]{\todo[inline, color=GreenYellow]{EB:\@#1}}
 
 %\definecolor{tblhead}{rgb}{0.63, 0.79, 0.95}
 \newcolumntype{$}{>{\global\let\currentrowstyle\relax}}
@@ -579,8 +579,8 @@ These columns are used for machine learning as input features.
 There is a constraint for each metric (metric\_0 + metric\_1 + metric\_4 = 1), that makes 9 features redundant, because they can be computed from the other features.
 So we have to deal with 18 features; $\epsilon_{max}$ is 1.17.
 
-\jk{Warum ist das hier 1.17, checke ich nicht}
-\eb{Das ist die maximale Distance zwischen zwei Punkten in einem 18-dimensionalen Raum: 18**(1/18) = 1.1741872530996615}
+%\jk{Warum ist das hier 1.17, checke ich nicht}
+%\eb{Das ist die maximale Distance zwischen zwei Punkten in einem 18-dimensionalen Raum: 18**(1/18) = 1.1741872530996615}
 
 \paragraph{Clustering algorithm}
 We apply agglomerative clustering.
@@ -887,7 +887,7 @@ In particular we use the agglomerative clustering algorithm, decision trees, and
 
 
 \subsubsection{Results}
-We conducted several experiments with different SIM values between 0 and $\epsilon_{max}$.
+We conducted several experiments with different $\epsilon$ values between 0 and $\epsilon_{max}$.
 The top 20 largest clusters and total number of clusters is visualized in \Cref{fig:datasets_clustering_results:io_metric} and \Cref{fig:datasets_clustering_results:io_duration} for IO-metric and IO-duration job-profiles, respectively.
 
 \begin{figure}
@@ -913,15 +913,15 @@ The top 20 largest clusters and total number of clusters is visualized in \Cref{
 	SIM: je groesser, desto praeziser ist Clustering.
 }
 
-We can see that IO-duration generated two very large clusters regardless of SIM.
+We can see that IO-duration generated two very large clusters regardless of $\epsilon$.
 From Cluster\,3 of IO-duration, the number of jobs inside looks then similar as for IO-metric.
-In IO-metric, we can see that with increasing SIM, the number of jobs per cluster increase (as expected).
+In IO-metric, we can see that with increasing $\epsilon$, the number of jobs per cluster increase (as expected).
 
-\jk{Kann es sein, dass EPS=0.3 bei beiden eben nicht das gleiche Verhältnis ist, ich meine SIMmax ist ja unterschiedlich wenn ich 3 Metriken oder 18 habe?}
+\jk{Kann es sein, dass EPS=0.3 bei beiden eben nicht das gleiche Verhältnis ist, ich meine $\epsilon_{max}$ ist ja unterschiedlich wenn ich 3 Metriken oder 18 habe?}
 \eb{Oh ja, das hat mich auch beschaeftigt. Aber bei einer Parameter exploration ist es irrelevant, weil man systematische diverse Parameter durchgeht, ohne nach Optimum zu streben.}
 
 A look inside clusters reveals chaotic clustering results.
-For both datasets and for all SIM values we could find many coding sequences in a cluster that we wouldn't locate together.
+For both datasets and for all $\epsilon$ values we could find many coding sequences in a cluster that we wouldn't locate together.
 As the examples in \Cref{tab:ml_examples} show, observed cluster contains the following sequences.
 
 \npdecimalsign{.}
@@ -1374,34 +1374,34 @@ General cluster characteristics:
 Information related to the selected cluster is given in \Cref{fig:hex_native}.
 In the selected cluster, jobs with a length of 4 have mostly 1 the activity of one segment in common.
 
-\jk{Wie kann man das verstehen, obwohl sich der Kasten in zwei Kästen unterscheidet ist das immer noch 99\% ähnlich. Warum haben wir eigtl. nicht die selbe SIM gewählt? 99\% finde ich recht unglücklich für das Beispiel.}
+%\jk{Wie kann man das verstehen, obwohl sich der Kasten in zwei Kästen unterscheidet ist das immer noch 99\% ähnlich. Warum haben wir eigtl. nicht die selbe SIM gewählt? 99\% finde ich recht unglücklich für das Beispiel.}
 
-\begin{myverbbox}[\tiny]{\verbA}
-Gegeben sei zwei hexadecimale Codings fuer zwei Jobs:
-job1 = \left[ 0\dots0], [0\dots0], [0\dots0], [0\dots0], [0\dots0], [0\dots0], [0\dots0], [0:0:1:0], [0:0:1:0]]
-job2 = \left[ 0\dots0], [0\dots0], [0\dots0], [0\dots0], [0\dots0], [0\dots0], [0\dots0], [0:0:0:0], [0:0:2:0]]
+%\begin{myverbbox}[\tiny]{\verbA}
+%Gegeben sei zwei hexadecimale Codings fuer zwei Jobs:
+%job1 = \left[ 0\dots0], [0\dots0], [0\dots0], [0\dots0], [0\dots0], [0\dots0], [0\dots0], [0:0:1:0], [0:0:1:0]]
+%job2 = \left[ 0\dots0], [0\dots0], [0\dots0], [0\dots0], [0\dots0], [0\dots0], [0\dots0], [0:0:0:0], [0:0:2:0]]
 
-Aenhlichkeit einzelner Metriken:
-metric\_1 = 100%
-metric\_2 = 100%
-metric\_3 = 100%
-metric\_4 = 100%
-metric\_5 = 100%
-metric\_6 = 100%
-metric\_7 = 100%
-md\_mod = (16-(0-0) + 16-(0-0) + 16-(1-0) + 16-(0-0))/(16*4) = 98,4%
-md\_other = (16-(0-0) + 16-(0-0) + 16-(2-1) + 16-(0-0))/(16*4) = 98,4%
+%Aenhlichkeit einzelner Metriken:
+%metric\_1 = 100%
+%metric\_2 = 100%
+%metric\_3 = 100%
+%metric\_4 = 100%
+%metric\_5 = 100%
+%metric\_6 = 100%
+%metric\_7 = 100%
+%md\_mod = (16-(0-0) + 16-(0-0) + 16-(1-0) + 16-(0-0))/(16*4) = 98,4%
+%md\_other = (16-(0-0) + 16-(0-0) + 16-(2-1) + 16-(0-0))/(16*4) = 98,4%
 
-Die Gesamtaehnlichkeit ist dann die folgende:
-similarity = (100*7 + 98,4*2)/9 = 99.65%
-\end{myverbbox}
+%Die Gesamtaehnlichkeit ist dann die folgende:
+%similarity = (100*7 + 98,4*2)/9 = 99.65%
+%\end{myverbbox}
 
-\eb{
-	Beispiel: \\
-	\begin{tiny}
-		\verbA
-	\end{tiny}
-}
+%\eb{
+%  Beispiel: \\
+%  \begin{tiny}
+%    \verbA
+%  \end{tiny}
+%}
 
 
 \noindent\begin{minipage}{\textwidth}
@@ -1627,13 +1627,13 @@ We find that the identified jobs in the cluster are sufficiently related.
 Information related to the cluster is in \Cref{fig:use_case:bin_aggzeros}.
 Compared to BIN, the cluster is smaller but the jobs have a more similar ending.
 
-\jk{Vl. hätte man einfach nur den Job als Centroid nehmen sollen und Ähnlichkeit aller Jobs dazu feststellen?}
-\eb{Ist eine gute Idee fuer den zweiten Workflow.
-	Die LookUp Operation wuerde allerdings einige Minuten dauern.
-	Nach meiner Vorstellung wird ein Job nach dem Ende sofort einem Cluster zugeordnet.
-	So liegen die Cluster schon bereit.
-	Eine Look-up Operation wuerde dann nur wenige Millisekundne dauern.
-}
+%\jk{Vl. hätte man einfach nur den Job als Centroid nehmen sollen und Ähnlichkeit aller Jobs dazu feststellen?}
+%\eb{Ist eine gute Idee fuer den zweiten Workflow.
+%  Die LookUp Operation wuerde allerdings einige Minuten dauern.
+%  Nach meiner Vorstellung wird ein Job nach dem Ende sofort einem Cluster zugeordnet.
+%  So liegen die Cluster schon bereit.
+%  Eine Look-up Operation wuerde dann nur wenige Millisekundne dauern.
+%}
 
 \noindent\begin{minipage}{\textwidth}
 \captionsetup{type=table}
