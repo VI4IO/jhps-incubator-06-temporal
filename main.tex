@@ -562,6 +562,9 @@ This section describes the evaluated algorithms in detail.
 
 To apply existing clustering algorithms, first, a job-profile is created in the pre-processing.
 The 4d time series can be transformed into the required fixed size input format accepted by the general-purpose ML clustering algorithms.
+In the preprocessing step, the MinMaxScaler scales the features to values between 0 and 1 using MinMax normalization.
+Therefore, the highest distance between two points can be at most \(\epsilon_\text{max} = d^{1/d}\), where d is the dimension of the dataset.
+
 We explored two job profiles: IO-metric and I/O-duration.
 The \textbf{IO-metric job profile} utilizes three features, Job-I/O-Balance, Job-I/O-Utilization, and Job-I/O-Problem-Time (as defined in \cite{iocats2020}).
 After the data pre-processing, we obtain a set of 3-dimensional data points with a domain between 0 and 1.
@@ -578,7 +581,7 @@ So we have to deal with 18 features; $\epsilon_{max}$ is 1.17.
 \eb{Das ist die maximale Distance zwischen zwei Punkten in einem 18-dimensionalen Raum: 18**(1/18) = 1.1741872530996615}
 
 \paragraph{Clustering algorithm}
-We intended to apply agglomerative clustering.
+We apply agglomerative clustering.
 \jk{Könnte noch bissl unklar sein}
 The algorithm uses Euclidean distance as a similarity measure, i.e., if the component wise distance between two job vectors is shorter than the defined distance ($\epsilon$), then these jobs belong to the same cluster.
 
