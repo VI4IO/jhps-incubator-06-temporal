@@ -939,24 +939,28 @@ I/O phases without a pair are assigned virtually to empty phases, and their matc
 To compute the match we divide the lowest value for each segment and sum up the values.
 The example below shows the pairs of I/O phases and their matches.
 
-\begin{lstlisting}
-job1_md_file_create : [[2:2:2:9:3], [9:1:1:1]]
-job2_md_file_create : [[-:-:-:-:-], [-:1:-:-]]
-match_md_file_create = [(match:0; len:5), (match:1; len:4)]
+\begin{table}
+\centering
+\begin{tabular}{lllrr}
+	Metric           & I/O Phase A                 & I/O Phase B                 & Match       & Length \\ 
+	\hline
+	md\_file\_create & \lstinline|[-:-:-:-:-]|     & \lstinline|[2:2:2:9:3]|     & 0           & 5      \\ 
+	                 & \lstinline|[-:1:-:-]|       & \lstinline|[9:1:1:1]|       & 1           & 4      \\ 
+	read\_bytes      & \lstinline|[2:2:2:2:8:2:2]| & \lstinline|[-:-:-:-:9:3:-]| & (8/9 + 2/3) & 7      \\ 
+	                 & \lstinline|[1]|             & \lstinline|[1]|             & 1           & 1      \\ 
+	                 & \lstinline|[8:1:1]|         & \lstinline|[-:-:-]|         & 0           & 3      \\ 
+	write\_bytes     & \lstinline|[5]|             & \lstinline|[-]|             & 0           & 1      \\ 
+	\hline
+	Sum              &                             &                             & 3.56        & 22     \\ 
+\end{tabular}
+\caption{Best combination of I/O phases, that achieves highes possible similarity.}
+\end{table}
 
-job1_read_bytes : [[-:-:-:-:9:3:-], [1], [-:-:-]]
-job2_read_bytes : [[2:2:2:2:8:2:2], [1], [8:1:1]]
-match_read_bytes = [match:(8/9 + 2/3); len:7), (match:1; len:1), (match:0; len:3)]
-job1_write_bytes = [[-]]
-job2_write_bytes = [[5]]
-match_write_bytes = [(match:0; len:1)]
-\end{lstlisting}
-
-\jk{Wollten wir nicht noch durch max = 16 teilen}
-\eb{Das wollten wir bei HEV\_NATIVE machen und das machen wir auch (siehe Section davor).
-Das hier ist etwas komplett anderes.
-Das ist ein Zwischenschritt fuer die Berechnung der Aehnlichkeit zwischen zwei Jobs.
-Im naechsten Paragraphen wird sie auch berechnet.}
+%\jk{Wollten wir nicht noch durch max = 16 teilen}
+%\eb{Das wollten wir bei HEV\_NATIVE machen und das machen wir auch (siehe Section davor).
+%Das hier ist etwas komplett anderes.
+%Das ist ein Zwischenschritt fuer die Berechnung der Aehnlichkeit zwischen zwei Jobs.
+%Im naechsten Paragraphen wird sie auch berechnet.}
 
 \paragraph{Similarity}
 Next, the similarity for coding with different lengths must be adjusted.
