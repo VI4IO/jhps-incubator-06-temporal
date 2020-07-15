@@ -23,8 +23,13 @@
 \usepackage{multirow}
 \usepackage{tabularx}
 \usepackage{mathtools}
+\usepackage{newfloat}
+\usepackage{subcaption}
 
 \crefname{codecount}{Code}{Codes}
+
+\DeclareFloatingEnvironment[fileext=frm,placement={!ht},name=Listing,within=section]{listing}
+
 
 \usepackage{verbatimbox}
 \usepackage{todonotes}
@@ -32,11 +37,15 @@
 \newcommand{\eb}[1]{\todo[inline, color=GreenYellow]{EB:\@#1}}
 
 %\definecolor{tblhead}{rgb}{0.63, 0.79, 0.95}
-\newcolumntype{$}{>{\global\let\currentrowstyle\relax}}
-\newcolumntype{^}{>{\currentrowstyle}}
-\newcommand{\rowstyle}[1]{\gdef\currentrowstyle{#1}%
-	  #1\ignorespaces
-	}
+%\newcolumntype{$}{>{\global\let\currentrowstyle\relax}}
+%\newcolumntype{^}{>{\currentrowstyle}}
+%\newcommand{\rowstyle}[1]{\gdef\currentrowstyle{#1}%
+%    #1\ignorespaces
+%  }
+
+\lstset{%
+	autogobble=true,
+}
 
 \begin{document}
 
@@ -601,39 +610,83 @@ This workaround involves three steps:
 
 \subsubsection{BIN\_ALL}
 This algorithm converts the time series data via binary coding to a string and then determine the relative similarity using the Levenshtein distance.
+The Levenshtein based similarity between two jobs is determined using \Cref{eq:sim:bin_all}.
 
-The Levenshtein based similarity between two jobs is determined using \Cref{eq:lev}.
 \begin{equation}
-similarity \left( job_{A}\text{, jo}b_{B} \right) =1- \frac{levenshtein \left( coding_{A}\text{, codin}g_{B} \right) }{max \left( length_{A}\text{, lengt}h_{B} \right) } \label{eq:lev}
+similarity \left( job_{A}\text{, jo}b_{B} \right) =1- \frac{levenshtein \left( coding_{A}\text{, codin}g_{B} \right) }{max \left( length_{A}\text{, lengt}h_{B} \right) } \label{eq:sim:bin_all}
 \end{equation}
 It is the number of Levenshtein operations (changes/deletes/inserts) divided by the length of the longest sequence, and subtracted from the value one.
 
-\begin{lstlisting}[caption={The similarity between these two jobs is 73 percent.}]
-'jobid': 'jobA', 'coding': [1:5:0:0:0:0:0:0:96:96:96:96:96:96:96], 'length': 15
-'jobid': 'jobB', 'coding': [0:0:0:0:0:0:0:0:0:96:96:96:96:96:98], 'length': 15
-\end{lstlisting}
+%\begin{lstlisting}[caption={The similarity between these two jobs is 73 percent.}]
+%'jobid': 'jobA', 'coding': [1:5:0:0:0:0:0:0:96:96:96:96:96:96:96], 'length': 15
+%'jobid': 'jobB', 'coding': [0:0:0:0:0:0:0:0:0:96:96:96:96:96:98], 'length': 15
+%\end{lstlisting}
+
+\begin{listing}
+	\noindent\begin{minipage}{0.50\textwidth}
+		\begin{lstlisting}
+		[1:5:0:0:0:0:0:96:96:96:96:96:96:96]
+		\end{lstlisting}
+		\vspace{-2em}
+		\subcaption{Job A}
+		\label{lst:test:a}
+	\end{minipage}
+	\hfill
+	\noindent\begin{minipage}{0.50\textwidth}
+		\begin{lstlisting}
+		[0:0:0:0:0:0:0:0:96:96:96:96:96:98]
+		\end{lstlisting}
+		\vspace{-2em}
+		\subcaption{Job B}
+		\label{lst:test:b}
+	\end{minipage}
+	\caption{The similarity between these two jobs is 73 percent}
+	\label{lst:test}
+\end{listing}
 
 
 \subsubsection{BIN\_AGGZEROS}
-This is a variant of BIN\_ALL where subsequent zero-sequences are reduced to a single zero segment before \Cref{eq:lev} is applied.
+This is a variant of BIN\_ALL where subsequent zero-sequences are reduced to a single zero segment before \Cref{eq:sim:bin_aggzeros} is applied.
 This allows us to focus on I/O intensive parts of the job.
 The example below shows the reduced codings from the previous example.
+
 \begin{equation}
-similarity \left( job_{A}\text{, jo}b_{B} \right) =1- \frac{levenshtein \left( coding_{A}\text{, codin}g_{B} \right) }{max \left( length_{A}\text{, lengt}h_{B} \right) }
+similarity \left( job_{A}\text{, jo}b_{B} \right) =1- \frac{levenshtein \left( coding_{A}\text{, codin}g_{B} \right) }{max \left( length_{A}\text{, lengt}h_{B} \right) } \label{eq:sim:bin_aggzeros}
 \end{equation}
 
 %\begin{lstlisting}[caption={The similarity between these two jbos is 53 percent.}]
-\begin{lstlisting}[caption={The two previous jobs are now encoded slightly different leading to a similarity of 53 percent.}]
-'jobid': 'jobA', 'coding': [1:5:0:96:96:96:96:96:96:96], 'length': 15
-'jobid': 'jobB', 'coding': [0:96:96:96:96:96:98], 'length': 15
-\end{lstlisting}
+%\begin{lstlisting}[caption={The two previous jobs are now encoded slightly different leading to a similarity of 53 percent.}]
+%'jobid': 'jobA', 'coding': [1:5:0:96:96:96:96:96:96:96], 'length': 15
+%'jobid': 'jobB', 'coding': [0:96:96:96:96:96:98], 'length': 15
+%\end{lstlisting}
+
+\begin{listing}
+	\noindent\begin{minipage}{0.49\textwidth}
+		\begin{lstlisting}
+		[1:5:0:96:96:96:96:96:96:96]
+		\end{lstlisting}
+		\vspace{-2em}
+		\subcaption{Job A}
+		\label{lst:sim:bin_aggzeros:job_a}
+	\end{minipage}
+	\noindent\begin{minipage}{0.49\textwidth}
+		\begin{lstlisting}
+		[0:96:96:96:96:96:98]
+		\end{lstlisting}
+		\vspace{-2em}
+		\subcaption{Job B}
+		\label{lst:sim:bin_aggzeros:job_b}
+	\end{minipage}
+	\caption{The similarity between these two jobs is 73 percent}
+	\label{lst:sim:bin_aggzeros}
+\end{listing}
 
 \subsubsection{HEX\_LEV}
 This algorithm works on the same principle like the BIN algorithms, with the difference that it applies a hexadecimal coding and then computes the mean similarity across all metrics using Levenshtein.
 This adaption allows a comparison of time series where one metrics differs as only one metric string would differ while with binary coding the overall string would be different.
 
 \begin{multline}
-  similarity \left( job_{A}\text{, jo}b_{B} \right) = 1 -\frac{ \sum_{m \in Metrics}^{} levenshtein \left( coding_{A,m}\text{, coding}_{B,m} \right) }{|Metrics| \cdot L_{B}} \\
+	similarity \left( job_{A}\text{, jo}b_{B} \right) = 1 -\frac{ \sum_{m \in Metrics}^{} levenshtein \left( coding_{A,m}\text{, coding}_{B,m} \right) }{|Metrics| \cdot L_{B}} \\
 	\text{with } L_{B} \geq L_{A}
 \end{multline}
 
@@ -652,7 +705,7 @@ Therefore, to compute a maximum similarity between two metrics, we use a sliding
 That means, we take the shortest coding sequence (CA) and check how it fits best on the longer coding sequence (CB).
 
 
-\begin{lstlisting}
+\begin{lstlisting}[caption={Pseudo code of the maxSimilarity() function}]
 float maxSimilarity(CA, CB) {
   max = 0
   LA = length(CA)
@@ -681,48 +734,123 @@ Then, the best match between the (disjoint) phases is determined, finally the si
 
 We will discuss the details of each step on the following example; a blue font emphasizes I/O intensive  metrics.
 
-\begin{lstlisting}[language=C,morekeywords={md_file_create,read_bytes}]
-jobA (length: 13)
-md_file_create [0:0:2:2:2:9:3:0:9:1:1:1:0]
-md_file_delete [0:0:0:0:0:0:0:0:0:0:0:0:0]
-md_mod         [0:0:0:0:0:0:0:0:0:0:0:0:0]
-md_other       [0:0:0:0:0:0:0:0:0:0:0:0:0]
-md_read        [0:0:0:0:0:0:0:0:0:0:0:0:0]
-read_bytes     [0:0:0:9:3:0:0:0:0:0:1:0:0]
-read_calls     [0:0:0:0:0:0:0:0:0:0:0:0:0]
-write_bytes    [0:0:0:0:0:0:0:0:0:0:0:0:0]
-write_calls    [0:0:0:0:0:0:0:0:0:0:0:0:0]
-\end{lstlisting}
+%\begin{lstlisting}[language=C,morekeywords={md_file_create,read_bytes}]
+%jobA (length: 13)
+%md_file_create [0:0:2:2:2:9:3:0:9:1:1:1:0]
+%md_file_delete [0:0:0:0:0:0:0:0:0:0:0:0:0]
+%md_mod         [0:0:0:0:0:0:0:0:0:0:0:0:0]
+%md_other       [0:0:0:0:0:0:0:0:0:0:0:0:0]
+%md_read        [0:0:0:0:0:0:0:0:0:0:0:0:0]
+%read_bytes     [0:0:0:9:3:0:0:0:0:0:1:0:0]
+%read_calls     [0:0:0:0:0:0:0:0:0:0:0:0:0]
+%write_bytes    [0:0:0:0:0:0:0:0:0:0:0:0:0]
+%write_calls    [0:0:0:0:0:0:0:0:0:0:0:0:0]
+%\end{lstlisting}
 
-\vspace*{-0.5em}
+%\vspace*{-0.5em}
 
-\begin{lstlisting}[language=C,morekeywords={md_file_create,read_bytes,write_bytes}]
-jobB (length: 15)
-md_file_create [1:0:0:0:0:0:0:0:0:0:0:0:0:0:0]
-md_file_delete [0:0:0:0:0:0:0:0:0:0:0:0:0:0:0]
-md_mod         [0:0:0:0:0:0:0:0:0:0:0:0:0:0:0]
-md_other       [0:0:0:0:0:0:0:0:0:0:0:0:0:0:0]
-md_read        [0:0:0:0:0:0:0:0:0:0:0:0:0:0:0]
-read_bytes     [2:2:2:2:8:2:2:0:0:1:0:0:8:1:1]
-read_calls     [0:0:0:0:0:0:0:0:0:0:0:0:0:0:0]
-write_bytes    [0:0:0:0:0:0:0:0:0:0:0:5:0:0:0]
-write_calls    [0:0:0:0:0:0:0:0:0:0:0:0:0:0:0]
-\end{lstlisting}
+%\begin{lstlisting}[language=C,morekeywords={md_file_create,read_bytes,write_bytes}]
+%jobB (length: 15)
+%md_file_create [1:0:0:0:0:0:0:0:0:0:0:0:0:0:0]
+%md_file_delete [0:0:0:0:0:0:0:0:0:0:0:0:0:0:0]
+%md_mod         [0:0:0:0:0:0:0:0:0:0:0:0:0:0:0]
+%md_other       [0:0:0:0:0:0:0:0:0:0:0:0:0:0:0]
+%md_read        [0:0:0:0:0:0:0:0:0:0:0:0:0:0:0]
+%read_bytes     [2:2:2:2:8:2:2:0:0:1:0:0:8:1:1]
+%read_calls     [0:0:0:0:0:0:0:0:0:0:0:0:0:0:0]
+%write_bytes    [0:0:0:0:0:0:0:0:0:0:0:5:0:0:0]
+%write_calls    [0:0:0:0:0:0:0:0:0:0:0:0:0:0:0]
+%\end{lstlisting}
+
+\begin{listing}
+	\noindent\begin{minipage}{\textwidth}
+		\noindent\begin{minipage}{0.6\textwidth}
+			\begin{lstlisting}[basicstyle=\fontsize{8}{8}\ttfamily]
+			md_file_create [0:0:2:2:2:9:3:0:9:1:1:1:0]
+			md_file_delete [0:0:0:0:0:0:0:0:0:0:0:0:0]
+			md_mod         [0:0:0:0:0:0:0:0:0:0:0:0:0]
+			md_other       [0:0:0:0:0:0:0:0:0:0:0:0:0]
+			md_read        [0:0:0:0:0:0:0:0:0:0:0:0:0]
+			read_bytes     [0:0:0:9:3:0:0:0:0:0:1:0:0]
+			read_calls     [0:0:0:0:0:0:0:0:0:0:0:0:0]
+			write_bytes    [0:0:0:0:0:0:0:0:0:0:0:0:0]
+			write_calls    [0:0:0:0:0:0:0:0:0:0:0:0:0]
+			\end{lstlisting}
+			\vspace{-2em}
+			\subcaption{Job A}
+			\label{lst:sim:pm_quant:job_a}
+		\end{minipage}
+		\noindent\begin{minipage}{0.39\textwidth}
+			\begin{lstlisting}[basicstyle=\fontsize{8}{8}\ttfamily]
+			[[2,2,2,9,3], [9,1,1,1]]
+			[]
+			[]
+			[]
+			[]
+			[[9,3], [1]]
+			[]
+			[]
+			[]
+			\end{lstlisting}
+			\vspace{-2em}
+			\subcaption{IO phases of Job A}
+			\label{lst:sim:pm_quant:phases:job_a}
+		\end{minipage}
+	\end{minipage}
+	\noindent\begin{minipage}{\textwidth}
+		\noindent\begin{minipage}{0.60\textwidth}
+		\begin{lstlisting}[basicstyle=\fontsize{8}{8}\ttfamily]
+		md_file_create [1:0:0:0:0:0:0:0:0:0:0:0:0:0:0]
+		md_file_delete [0:0:0:0:0:0:0:0:0:0:0:0:0:0:0]
+		md_mod         [0:0:0:0:0:0:0:0:0:0:0:0:0:0:0]
+		md_other       [0:0:0:0:0:0:0:0:0:0:0:0:0:0:0]
+		md_read        [0:0:0:0:0:0:0:0:0:0:0:0:0:0:0]
+		read_bytes     [2:2:2:2:8:2:2:0:0:1:0:0:8:1:1]
+		read_calls     [0:0:0:0:0:0:0:0:0:0:0:0:0:0:0]
+		write_bytes    [0:0:0:0:0:0:0:0:0:0:0:5:0:0:0]
+		write_calls    [0:0:0:0:0:0:0:0:0:0:0:0:0:0:0]
+		\end{lstlisting}
+		\vspace{-2em}
+		\subcaption{Job B}
+		\label{lst:sim:pm_quant:job_b}
+		\end{minipage}
+		\noindent\begin{minipage}{0.39\textwidth}
+			\begin{lstlisting}[basicstyle=\fontsize{8}{8}\ttfamily]
+			[[1]]
+			[]
+			[]
+			[]
+			[]
+			[[2,2,2,2,8,2,2], [1], [8,1,1]]
+			[]
+			[[5]]
+			[]
+			\end{lstlisting}
+			\vspace{-2em}
+			\subcaption{IO phases of Job B}
+			\label{lst:sim:pm_quant:phases:job_b}
+		\end{minipage}
+	\end{minipage}
+	\caption{The similarity between these two jobs is 73 percent}
+	\label{lst:sim:pm_quant}
+\end{listing}
+
+
 
 \paragraph{Phase detection}
 According to our I/O phase definition, phases are separated by zeros.
 This definition makes the detection of individual phases to a trivial task.
 Relevant for similarity computation are only metrics that contain at least one non-zero segment.
 In this example, that is md\_file\_create, read\_bytes and write\_bytes metrics:
-\begin{lstlisting}
-job_A_md_file_create : [[2,2,2,9,3], [9,1,1,1]]
-job_A_read_bytes : [[9,3], [1]]
-job_A_write_bytes : []
+%\begin{lstlisting}
+%job_A_md_file_create : [[2,2,2,9,3], [9,1,1,1]]
+%job_A_read_bytes : [[9,3], [1]]
+%job_A_write_bytes : []
 
-job_B_md_file_create : [[1]]
-job_B_read_bytes : [[2,2,2,2,8,2,2], [1], [8,1,1]]
-job_B_write_bytes : [[5]]
-\end{lstlisting}
+%job_B_md_file_create : [[1]]
+%job_B_read_bytes : [[2,2,2,2,8,2,2], [1], [8,1,1]]
+%job_B_write_bytes : [[5]]
+%\end{lstlisting}
 
 \paragraph{Phase matching}
 Now we slide the shorter phase over the longer and compute similarity to the corresponding part such that we can find the best match.
@@ -934,12 +1062,12 @@ As the examples in \Cref{tab:ml_examples} show, observed cluster contains the fo
 }
 \newcommand*\rot{\multicolumn{1}{R{45}{1em}}}% no optional argument here, please!
 
-\begin{table}[b]
+\begin{table}[!bt]
  \centering
  \begin{subtable}{\textwidth}
    \centering
      \begin{tabular}{lln{1}{\rd}|l}
-       \rot{Job-IO-Utilization} & \rot{Job-IO-Problem\_time} & \rot{Job-IO-Balance} & \rot{Binary coding}                     \\
+       \rot{Job-IO-Utilization} & \rot{Job-IO-Problem-Time} & \rot{Job-IO-Balance} & \rot{Binary coding}                     \\
        \hline
        4                 & 1                   & 0.4375000     & 118                                     \\
        4                 & 1                   & 0.4450206     & 368:368:368:368:368:368:374:368:368:368 \\
@@ -949,7 +1077,7 @@ As the examples in \Cref{tab:ml_examples} show, observed cluster contains the fo
  \end{subtable}
  \begin{subtable}{\textwidth}
    \centering
-     \begin{tabular}{n{1}{\rd} n{1}{\rd} n{1}{\rd} n{1}{\rd} n{1}{\rd} n{1}{\rd}n{1}{\rd}n{1}{\rd}|l}
+     \begin{tabular}{n{1}{\rd}n{1}{\rd}n{1}{\rd}n{1}{\rd}n{1}{\rd}n{1}{\rd}n{1}{\rd}n{1}{\rd}|l}
        \rot{1\_md\_file\_delete} & \rot{1\_md\_mod} & \rot{1\_md\_other} & \rot{1\_md\_read} & \rot{1\_read\_bytes} & \rot{1\_read\_calls} & \rot{1\_write\_bytes} & \rot{1\_write\_calls} & \rot{Binary coding} \\
        \hline
        0.009259259               & 0.01851852       & 0.25000000         & 0.027777778       & 0.00462963           & 0.009259259          & 0.00462963            & 0.03240741            & 340:510:272         \\
@@ -964,8 +1092,6 @@ As the examples in \Cref{tab:ml_examples} show, observed cluster contains the fo
 
 We looked in the Top 10 largest clusters and a random selection of clusters to find the same picture:
 Even with low $\epsilon$ values the algorithms appears to produce polluted clusters, i.e, with samples from other clusters.
-\jk{Warum sim max hier}
-\eb{Das ist Bullshit. EPS ist rightig. Hab korrigiert}
 Like in the example above, we couldn't understand the logic behind the results.
 Probably, the particular random datasets used for training does not represent the specifics of parallel jobs  well enough for proper clustering.
 However, even with a good feature set that works on our test system, it is unlikely that the strategy and trained model will be portable to other systems.
