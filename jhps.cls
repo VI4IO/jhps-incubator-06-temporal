@@ -180,15 +180,20 @@
     %\fbox{ % for debuggin
     \begin{minipage}[t]{\val cm}
       \centering
-      \href{\getdata[\basiceval{\index*4-1}]\Jauthor}{\textcolor{black}{\large \getdata[\basiceval{\index*4-3}]\Jauthor}} \par
+      \def\tmplink{\getdata[\basiceval{\index*4-1}]\Jauthor}
+      \if\tmplink
+      \large \getdata[\basiceval{\index*4-3}]\Jauthor \par
+      \else
+      \href{\tmplink}{\textcolor{black}{\large \getdata[\basiceval{\index*4-3}]\Jauthor}} \par
+      \fi
 
       \smallskip
 
       \getdata[\basiceval{\index*4-2}]\Jauthor \par
 
-      \def\val{\getdata[\basiceval{\index*4}]\Jauthor}
-      \if \val
-      \else \smallskip \Letter~\textit{\val}
+      \def\tmpemail{\getdata[\basiceval{\index*4}]\Jauthor}
+      \if\tmpemail
+      \else \smallskip \Letter~\textit{\tmpemail}
       \fi
       \vspace*{1.5em}
     \end{minipage}
