@@ -613,7 +613,7 @@ This algorithm converts the time series data via binary coding to a string and t
 The Levenshtein based similarity between two jobs is determined using \Cref{eq:sim:bin_all}.
 
 \begin{equation}
-similarity \left( job_{A}\text{, jo}b_{B} \right) =1- \frac{levenshtein \left( coding_{A}\text{, codin}g_{B} \right) }{max \left( length_{A}\text{, lengt}h_{B} \right) } \label{eq:sim:bin_all}
+	\text{similarity}\left(\text{job}_{A},\text{job}_{B} \right) = 1 - \frac{\text{levenshtein}\left(\text{coding}_{A},\text{coding}_{B} \right) }{max \left(\text{length}_{A},\text{length}_{B} \right) } \label{eq:sim:bin_all}
 \end{equation}
 It is the number of Levenshtein operations (changes/deletes/inserts) divided by the length of the longest sequence, and subtracted from the value one.
 
@@ -651,7 +651,7 @@ This allows us to focus on I/O intensive parts of the job.
 The example below shows the reduced codings from the previous example.
 
 \begin{equation}
-similarity \left( job_{A}\text{, jo}b_{B} \right) =1- \frac{levenshtein \left( coding_{A}\text{, codin}g_{B} \right) }{max \left( length_{A}\text{, lengt}h_{B} \right) } \label{eq:sim:bin_aggzeros}
+	\text{similarity} \left(\text{job}_{A},\text{job}_{B} \right) =1- \frac{\text{levenshtein} \left(\text{coding}_{A},\text{coding}_{B} \right) }{max \left(\text{length}_{A},\text{length}_{B} \right) } \label{eq:sim:bin_aggzeros}
 \end{equation}
 
 %\begin{lstlisting}[caption={The similarity between these two jbos is 53 percent.}]
@@ -686,7 +686,7 @@ This algorithm works on the same principle like the BIN algorithms, with the dif
 This adaption allows a comparison of time series where one metrics differs as only one metric string would differ while with binary coding the overall string would be different.
 
 \begin{multline}
-	similarity \left( job_{A}\text{, jo}b_{B} \right) = 1 -\frac{ \sum_{m \in Metrics}^{} levenshtein \left( coding_{A,m}\text{, coding}_{B,m} \right) }{|Metrics| \cdot L_{B}} \\
+	\text{similarity}\left(\text{job}_{A},\text{job}_{B} \right) = 1 -\frac{ \sum_{m \in Metrics}^{} \text{levenshtein} \left(\text{coding}_{A,m},\text{\text{coding}}_{B,m} \right) }{|\text{Metrics}| \cdot L_{B}} \\
 	\text{with } L_{B} \geq L_{A}
 \end{multline}
 
@@ -696,7 +696,7 @@ It works with hexadecimal codings at metric level and basically computes the rel
 Assume jobB is larger or equal than jobA, the job similarity between two jobs can be computed using \Cref{eq:hexn}.
 
 \begin{multline}
-similarity \left( job_{A}\text{, jo}b_{B} \right) = 1-\frac{ \sum _{m \in Metric}^{}maxSimilarity \left( job_{A,m}\text{, jo}b_{B,m} \right) }{L_{B}}\\
+	\text{similarity}\left(\text{job}_{A},\text{job}_{B} \right) = 1-\frac{ \sum _{m \in Metric}^{}\text{maxSimilarity} \left(\text{job}_{A,m},\text{job}_{B,m} \right) }{L_{B}}\\
 \text{with }L_{B} \geq L_{A} \label{eq:hexn}
 \end{multline}
 
@@ -724,7 +724,7 @@ The \texttt{sliceSimilarity()} in \Cref{eq:slicesim} function computes similarit
 This function maps the difference between performance levels of the same segments (values between 0 and 16) to a relative value between 0 and 1.
 
 \begin{equation}
-sliceSimilarity \left( S_{A},S_{B} \right) =\frac{ \sum _{i=1}^{L_{}}16 - \vert S_{A,i}-S_{B,i} \vert }{\text{16 L}_{}}\text{, with }L=L_{B}=L_{A} \label{eq:slicesim}
+	\text{sliceSimilarity}\left(S_{A},S_{B}\right) = \frac{ \sum _{i=1}^{L_{}}16 - \vert S_{A,i}-S_{B,i} \vert }{\text{16 L}_{}}\text{, with }L=L_{B}=L_{A} \label{eq:slicesim}
 \end{equation}
 
 \subsubsection{PM\_QUANT}
@@ -967,10 +967,9 @@ Next, the similarity for coding with different lengths must be adjusted.
 Similarity between two jobs is the sum of matches divided by the sum of lengths of the longer phases.
 In this example, we get a similarity of 17$\%$:
 
-\begin{align}
-	similarity &= \frac{\sum_{m,i}{\text{match}_{m,i}}}{\sum_{m,i}{\text{length}_{m,i}}} = \frac{3.56}{21} \approx 0.17\\
-	&, \text{with } m \in \text{Metrics}, i \in \text{Phases of } m
-\end{align}
+\begin{equation}
+	\text{similarity}(\text{job}_A, \text{job}_B) = \frac{\sum_{m,i}{\text{match}_{m,i}}}{\sum_{m,i}{\text{length}_{m,i}}} = \frac{3.56}{21} \approx 0.17, \text{ with } m \in \text{Metrics}, i \in \text{Phases of } m
+\end{equation}
 
 
 \subsection{Assessment}
