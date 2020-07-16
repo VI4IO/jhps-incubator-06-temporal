@@ -1276,6 +1276,10 @@ For the presentation of the clusters, we provide a description of particular obs
 At the end, we include an illustration which describes the segment length distribution of jobs in the cluster that indicates how much the algorithm groups across different job runtime.
 
 \subsubsection{Algorithm characteristics}
+The SIM value selection strategy can vary from use case to use case.
+As criteria we choose a SIM value that creates a moderate number of clusters (around 50\% of job phenotypes) and keeps its generalization capabilities (the number of clusters with more than 1 job is considerable).
+For the BIN algorithms we chose a SIM of 0.7, and the HEX algorithm SIM of 0.9.
+
 \FloatBarrier
 \paragraph{BIN\_ALL}
 For the BIN algorithms, we show the statistics of the largest clusters as well in \Cref{tab:bin:largest_clusters} as there is an important aspect.
@@ -1350,7 +1354,7 @@ The following general characteristic observations are made:
 	\begin{subfigure}{\textwidth}
 		\centering
 		\includegraphics[width=4.61in]{image20.png}
-		\caption{Length distribution of the jobs.}
+		\caption{Length distribution in the cluster.}
 		\label{cluster:bin_all:length}
 	\end{subfigure}
 	\caption{BIN algorithm: Information of the selected cluster (SIM=0.7).}
