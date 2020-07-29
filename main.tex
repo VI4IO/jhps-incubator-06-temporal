@@ -26,6 +26,11 @@
 \usepackage{newfloat}
 \usepackage{subcaption}
 \usepackage{placeins}
+\usepackage{etoolbox}
+
+
+\AtBeginEnvironment{tabular}{\scriptsize}
+\AtBeginEnvironment{tabularx}{\scriptsize}
 
 \crefname{codecount}{Code}{Codes}
 
@@ -498,12 +503,12 @@ Finally, we use the distance functions to compute similarity between the segment
 \begin{table}
   \centering
   \begin{tabularx}{\textwidth}{lllX}
-    Distance              & Domain      & Formula                         & Description                                                                                    \\ 
-    \midrule
-    Euclidean             & $a, b \in \mathbb{R}^n$     & $\sqrt{(\sum_i^n (a_i - b_i))}$ & The Euclidean distance between two vectors.                                                    \\ 
-    Levenshtein           & Time Series & $\text{lev}(a, b)$                  & Number of operation (inserts, deletes, and changes) requires to convert one coding in another. \\ 
-  Normalized Difference & $0 \le a, b \le 15$  & $\frac{|a - b|}{16}$    & A change from level 2 to level 6 on a 16 level system would be (6 - 2) / 16 = 0.25.            \\ 
-  Relative Change       & $a, b \in \mathbb{R}^+$      & $\frac{\min(a,b)}{\max(a,b)}$   & A change from level 2 to level 6 system would be 2/6 = 0.66.                                   \\ 
+    Distance              & Formula                                       & Domain                  & Description                                                                                    \\ 
+    \midrule                                                                                        
+    Euclidean             & $d_{\text{e}} =\sqrt{(\sum_i^n (a_i - b_i))}$ & $a, b \in \mathbb{R}^n$ & The Euclidean distance between two vectors.                                                    \\ 
+    Levenshtein           & $d_{\text{lev}} = \text{lev}(a, b)$           & $a, b \in$ TS           & Number of operation (inserts, deletes, and changes) requires to convert one coding in another. \\ 
+    Normalized Difference & $d_{\text{nd}} = \frac{|a - b|}{16}$          & $0 \le a, b \le 15$     & A change from level 2 to level 6 on a 16 level system would be (6 - 2) / 16 = 0.25.            \\ 
+    Relative Change       & $d_{\text{rc}} = \frac{\min(a,b)}{\max(a,b)}$ & $a, b \in \mathbb{R}^+$ & A change from level 2 to level 6 system would be 2/6 = 0.66.                                   \\ 
   \end{tabularx}
   \caption{Distance functions used to compute similarities.}
   \label{tab:sim_funcs}
@@ -511,12 +516,12 @@ Finally, we use the distance functions to compute similarity between the segment
 
 \begin{table}
   \centering
-  \begin{tabularx}{\textwidth}{lX}
-    Operation         & Description \\
-    \midrule
-    Time Series Aligment & Insert zero-segments in the beginning or/and at the end of shortest time series. \\
-    I/O Phase Alighment & Insert zero-segments in the beginning, between I/O phases, or/and at the end of time series. \\
-  \end{tabularx}
+    \begin{tabularx}{\textwidth}{lX}
+      Operation         & Description \\
+      \midrule
+      Time Series Aligment & Insert zero-segments in the beginning or/and at the end of shortest time series. \\
+      I/O Phase Alighment & Insert zero-segments in the beginning, between I/O phases, or/and at the end of time series. \\
+    \end{tabularx}
   \caption{Length adjustment strategies.}
   \label{tab:matching_strategies}
 \end{table}
