@@ -80,15 +80,15 @@ This work utilizes machine learning techniques to cluster and classify parallel 
 Our contribution is the qualitative and quantitative evaluation of different I/O characterizations and similarity measurements and the development of a suitable clustering algorithm.
 
 In the evaluation, we explore I/O characteristics from monitoring data of one million parallel jobs and cluster them into groups of similar jobs.
-Therefore, the time series of various IO statistics is converted into features using different similarity metrics that customize the classification.
+Therefore, the time series of various I/O statistics is converted into features using different similarity metrics that customize the classification.
 
 When using general-purpose clustering techniques, suboptimal results are obtained.
-Additionally, we extract phases of IO activity from jobs.
+Additionally, we extract phases of I/O activity from jobs.
 Finally, we simplify the grouping algorithm in favor of performance.
 We discuss the impact of these changes on the clustering quality.
 \end{abstract}
 
-\textbf{Keywords: }IO fingerprinting, performance analysis, monitoring
+\textbf{Keywords: }I/O fingerprinting, performance analysis, monitoring
 
 \section{Introduction}
 Scientific large-scale applications of different domains have different needs for I/O and, thus, exhibit a variety of access patterns on storage.
@@ -117,8 +117,8 @@ However, recording the data isn't enough, the obtained data must be processed bu
 Hence a semi-automatic approach is required to reduce the number of jobs to investigate.
 
 In a previous paper, we proposed a semi-automatic way to find relevant jobs by computing relevant job characteristics from time series of job behavior.
-Basically, support staff could then focus on those IO-intense jobs that express certain metrics the most.
-Here, we extend the approach by grouping similar jobs based on profiles and IO-phases in order to simplify the investigation effort.
+Basically, support staff could then focus on those I/O-intense jobs that express certain metrics the most.
+Here, we extend the approach by grouping similar jobs based on profiles and I/O-phases in order to simplify the investigation effort.
 
 In different disciplines, machine learning methods have proven to be powerful tools to extract new information from large data sets.
 Therefore, we explore clustering strategies on monitoring data, to reveal hidden information.
@@ -149,12 +149,12 @@ In this paper, we take up the idea of I/O categorization from the previous work,
 Understanding of the following work requires an understanding of data format, that is formed by segmentation and categorization of raw monitoring data.
 
 \paragraph{Raw monitoring data.}
-The monitoring system captures periodically IO metrics on all client nodes, and sends them to a central database.
+The monitoring system captures periodically I/O metrics on all client nodes, and sends them to a central database.
 \Cref{fig:generic_example} illustrates the structure of the raw monitoring data using an example.
 In the example, data is captured on two nodes, on two file systems, for two metrics, and at nine time points $t_i$, resulting in 4-dimensional data (Node $\times$ File System $\times$ Metric $\times$ Time).
 The sizes of the node and the time dimensions are variable by nature.
 The other dimensions may be fixed for particular HPC systems, but we assumed they to be variable, to make the approach portable to other systems. 
-Actually, on Mistral data is gathered every five seconds, for two Lustre file system, and for nine IO metrics~\footnote{A difference to previously utilized job statistics is that this time Lustre proc files on Mistral doesn't offer Object Storage Client (osc) counters, since a major upgrade of Lustre file system from version 2.7 to 2.11.
+Actually, on Mistral data is gathered every five seconds, for two Lustre file system, and for nine I/O metrics~\footnote{A difference to previously utilized job statistics is that this time Lustre proc files on Mistral doesn't offer Object Storage Client (osc) counters, since a major upgrade of Lustre file system from version 2.7 to 2.11.
 Thus, instead of 13 metrics, this time our data contains only 9 metrics.}.
 Five of them (md\_read, md\_mod, md\_file\_create, md\_file\_delete, md\_other) capture metadata activities and the remaining four (read\_bytes, read\_calls, write\_bytes, write\_calls) capture data access.
 
@@ -167,14 +167,14 @@ Five of them (md\_read, md\_mod, md\_file\_create, md\_file\_delete, md\_other) 
 
 \paragraph{Segmentation.}
 %The raw data is segmented and categorized:
-We split the time series of each IO metric into equal-sized time intervals (segments) and computes a mean performance for each segment.
-This stage preserves the performance units (e.g., Op/s, MiB/s) for each IO metric.
+We split the time series of each I/O metric into equal-sized time intervals (segments) and computes a mean performance for each segment.
+This stage preserves the performance units (e.g., Op/s, MiB/s) for each I/O metric.
 The example in \Cref{fig:generic_example} creates segments out of three successive time points just for illustration purposes.
 Depending on aggregation function, segments can be created of metrics (green boxes), of file systems (yellow boxes), of nodes (red boxes), or even over all dimensions (blue box).
 Actually, the real raw monitoring data is converted to 10 minutes segments, which we found is a good trade-off to represent the temporal behavior of the application while it reduces the size of the time series.
 
 \paragraph{Categorization.}
-Next, to get rid of the units, and to allow calculations between different IO metrics, we introduced a categorization pre-processing step that takes into account the performance of the underlying HPC system and assigns a unitless ordered category to each metric segment.
+Next, to get rid of the units, and to allow calculations between different I/O metrics, we introduced a categorization pre-processing step that takes into account the performance of the underlying HPC system and assigns a unitless ordered category to each metric segment.
 We use a three category system, which contains the LowIO=0, HighIO=1 and CriticalIO=4 categories.
 The category split points are based on the histogram of the obtained values, for any metrics, a segment with a value up to the 99\%-Quantile it is considered to be LowIO, the 99.9\%-Quantile indicates HighIO~(see \cite{iocats2020}).
 This node-level data can then be used to compute job-statistics by aggregating across dimensions such as time, file systems, and nodes.
@@ -216,11 +216,11 @@ For example, in the figure, we can see one phase for md\_file\_create, and two p
 When looking at categorization at the metric level, i.e., after reduction of the nodes and file system dimensions, we can observe that many jobs exhibit I/O phases.
 
 \section{Similarity Between Jobs}
-The raw monitoring data of a job in our environment at DKRZ, we obtain a time series of 9 metrics per node, each metrics sampled at five seconds intervals.
+The raw monitoring data of a job in our environment at DKRZ, we obtain a time series of nine metrics per node, each metrics sampled at five seconds intervals.
 When comparing the time series of such metrics between two jobs, the key question is how do we define the similarity between multiple time series.
 By applying dimensionality reduction techniques such as PCR, we can reduce the complexity and potentially obtain a similar representation for, e.g., two time series, but cannot make relevant distinctions between them.
 
-First, we need to discuss the similarity of IO patterns from the user perspective.
+First, we need to discuss the similarity of I/O patterns from the user perspective.
 In \Cref{fig:typ_io:all}, we illustrate the time series of two metrics for three different jobs.
 The figures show the typical behavior of parallel applications, computation is interrupted by regular I/O phases -- by phase, we mean a consecutive segment of time in which  certain behavior is exhibited, i.e., the statistics are similarly.
 
@@ -232,7 +232,7 @@ Identification of I/O phases shows that a substantial number of jobs has several
 From the user support side, we might be interested in grouping similar suboptimal jobs and aim to provide one recipe to optimize all that exhibit such a behavior.
 Similarly, we might be interested to optimize the pattern for a single I/O phase.
 We may be interested to ignore computation time and focus on I/O phases only.
-Regardless of the segment of the time series we look at, we naively would consider an IO pattern to be identical if the time series for all metrics of one job is identical to those of another job.
+Regardless of the segment of the time series we look at, we naively would consider an I/O pattern to be identical if the time series for all metrics of one job is identical to those of another job.
 Unfortunately, the obtained measurements vary due to the nature of parallel applications and the environment of the data center they are executed.
 In practice, different jobs show a different runtime, and even when re-running the same job, the obtained time series varies.
 
@@ -291,7 +291,7 @@ Roughly speaking, there are three basic steps: data pre-processing including cod
 We call one of such a combination a \textit{clustering stack}.
 The pre-processing converts the dynamic-sized monitoring data which depends on the number of captured metrics, allocated nodes, and application runtime into a suitable representation for the clustering algorithm.
 Then the clustering is applied.
-Finally, the clustering result needs to be assessed, i.e., how suitable is this strategy for our IO statistics and use cases?
+Finally, the clustering result needs to be assessed, i.e., how suitable is this strategy for our I/O statistics and use cases?
 
 \subsection{Overview}
 
@@ -315,7 +315,7 @@ On the high-level, the following strategies for data reduction could be consider
 		A drawback of this simplification is that any temporal pattern is lost.
 	\item \textbf{Segment statistics} compute for each segment a fixed statistics, such as the mean value across all nodes.
 		This basically preserves the time series and depends on the job-length.
-	\item \textbf{Phase statistics} computes high-level statistics by analyzing the temporal behavior of IO phases further, e.g., compute the average length of IO segments with CriticalIO.
+	\item \textbf{Phase statistics} computes high-level statistics by analyzing the temporal behavior of I/O phases further, e.g., compute the average length of I/O segments with CriticalIO.
 		This approach is independent of the job length but requires identifying phases and determining meaningful job metrics.
 \end{itemize}
 
@@ -467,7 +467,7 @@ Note, that the job length does not change, only the sequence length.
 \paragraph*{Hexadecimal coding}
 
 This coding preserves monitoring data for each metric and each segment.
-As the name suggests, the value of a segment is converted into a hexadecimal number to allow creation of a string representing the IO behavior.
+As the name suggests, the value of a segment is converted into a hexadecimal number to allow creation of a string representing the I/O behavior.
 The numbers are obtained in two steps.
 Firstly, the dimension reduction aggregates the file system and the node dimensions and computes a mean value for each metric and segment, which lies in the interval [0,4].
 Secondly, the mean values are quantized into 16 levels -- 0 represents the interval [0,0.25), 1 [0.5,0.75), $ \ldots $ , [3.75,4].
@@ -613,12 +613,12 @@ The 4d time series can be transformed into the required fixed size input format 
 In the preprocessing step, the MinMaxScaler scales the features to values between 0 and 1 using MinMax normalization.
 Therefore, the highest distance between two points can be at most \(\epsilon_\text{max} = d^{1/d}\), where d is the dimension of the dataset.
 
-We explored two job profiles: IO-metric and I/O-duration.
-The \textbf{IO-metric job profile} utilizes three features, Job-I/O-Balance, Job-I/O-Utilization, and Job-I/O-Problem-Time (as defined in \cite{iocats2020}).
+We explored two job profiles: I/O-metric and I/O-duration.
+The \textbf{I/O-metric job profile} utilizes three features, Job-I/O-Balance, Job-I/O-Utilization, and Job-I/O-Problem-Time (as defined in \cite{iocats2020}).
 After the data pre-processing, we obtain a set of 3-dimensional data points with a domain between 0 and 1.
 The maximum distance between any two jobs ($\epsilon_{max}$) is 1.44.
 
-The \textbf{IO-duration job profile} contains the fraction of runtime, a job spent doing the individual I/O categories leading to 27 columns.
+The \textbf{I/O-duration job profile} contains the fraction of runtime, a job spent doing the individual I/O categories leading to 27 columns.
 The columns are named according to the following scheme: metric\_category, e.g, bytes\_read\_0 or md\_file\_delete\_4.
 The first part is the one of the nine metric names and the second part is the category number (LowIO=0, HighIO=1 and CriticalIO=4).
 These columns are used for machine learning as input features.
@@ -830,7 +830,7 @@ We will discuss the details of each step on the following example; a blue font e
 			[]
 			\end{lstlisting}
 			\vspace{-2em}
-			\subcaption{IO phases of Job A}
+			\subcaption{I/O phases of Job A}
 			\label{lst:sim:pm_quant:phases:job_a}
 		\end{minipage}
 	\end{minipage}
@@ -864,7 +864,7 @@ We will discuss the details of each step on the following example; a blue font e
 			[]
 			\end{lstlisting}
 			\vspace{-2em}
-			\subcaption{IO phases of Job B}
+			\subcaption{I/O phases of Job B}
 			\label{lst:sim:pm_quant:phases:job_b}
 		\end{minipage}
 	\end{minipage}
@@ -1076,7 +1076,7 @@ The metrics (md\_bytes, md\_mod, and md\_file\_delete) have the longest tail; so
 
 
 \subsection{Limitations of the ML Algorithms}
-This section contains data statistics, and the clustering results in \Cref{fig:datasets_clustering_results} for applying the ML algorithm (hierarchical clustering + decision tree) but using the two different job profiles (IO-Metric and IO-Duration).
+This section contains data statistics, and the clustering results in \Cref{fig:datasets_clustering_results} for applying the ML algorithm (hierarchical clustering + decision tree) but using the two different job profiles (I/O-Metric and I/O-Duration).
 Due to lack of tools, we determine cluster quality on a small scale.
 
 \subsubsection{Implementation}
@@ -1086,18 +1086,18 @@ In particular we use the agglomerative clustering algorithm, decision trees, and
 
 \subsubsection{Results}
 We conducted several experiments with different $\epsilon$ values between 0 and $\epsilon_{max}$.
-The Top 20 largest clusters and total number of clusters is visualized in \Cref{fig:datasets_clustering_results:io_metric} and \Cref{fig:datasets_clustering_results:io_duration} for IO-metric and IO-duration job-profiles, respectively.
+The Top 20 largest clusters and total number of clusters is visualized in \Cref{fig:datasets_clustering_results:io_metric} and \Cref{fig:datasets_clustering_results:io_duration} for I/O-metric and I/O-duration job-profiles, respectively.
 
 \begin{figure}
  \begin{subfigure}[t]{0.45\textwidth}
 	\includegraphics[width=\textwidth]{image12.png}
-	\caption{IO-metric}
+	\caption{I/O-metric}
 	\label{fig:datasets_clustering_results:io_metric}
  \end{subfigure}
  \hfill
 	\begin{subfigure}[t]{0.45\textwidth}
 	\includegraphics[width=\textwidth]{image10.png}
-	\caption{IO-duration}
+	\caption{I/O-duration}
 	\label{fig:datasets_clustering_results:io_duration}
  \end{subfigure}
 
@@ -1111,9 +1111,9 @@ The Top 20 largest clusters and total number of clusters is visualized in \Cref{
 %  SIM: je groesser, desto praeziser ist Clustering.
 %}
 
-We can see that IO-duration generated two very large clusters regardless of $\epsilon$.
-From Cluster\,3 of IO-duration, the number of jobs inside looks then similar as for IO-metric.
-In IO-metric, we can see that with increasing $\epsilon$, the number of jobs per cluster increase (as expected).
+We can see that I/O-duration generated two very large clusters regardless of $\epsilon$.
+From Cluster\,3 of I/O-duration, the number of jobs inside looks then similar as for I/O-metric.
+In I/O-metric, we can see that with increasing $\epsilon$, the number of jobs per cluster increase (as expected).
 
 %\jk{Kann es sein, dass EPS=0.3 bei beiden eben nicht das gleiche Verhältnis ist, ich meine $\epsilon_{max}$ ist ja unterschiedlich wenn ich 3 Metriken oder 18 habe?}
 %\eb{Oh ja, das hat mich auch beschaeftigt. Aber bei einer Parameter exploration ist es irrelevant, weil man systematische diverse Parameter durchgeht, ohne nach Optimum zu streben.}
@@ -1143,7 +1143,7 @@ As the examples in \Cref{tab:ml_examples} show, observed cluster contains the fo
        4                        & 1                         & 0.4450206            & [368:368:368:368:368:368:374:368:368:368] \\ 
        4                        & 1                         & 0.4583333            & [496:496]                                 \\ 
      \end{tabular}
-   \caption{IO-metrics job profiles}
+   \caption{I/O-metrics job profiles}
  \end{subtable}
  \begin{subtable}{\textwidth}
    \centering
@@ -1154,7 +1154,7 @@ As the examples in \Cref{tab:ml_examples} show, observed cluster contains the fo
        0.012578616               & 0.01257862       & 0.24528302         & 0.006289308       & 0.00617284           & 0.006172840          & 0.01257862            & 0.01257862            & [510:0:0]           \\ 
        0.016666667               & 0.01666667       & 0.25000000         & 0.016666667       & 0.00000000           & 0.000000000          & 0.00000000            & 0.01666667            & [14:280]            \\ 
      \end{tabular}
-   \caption{IO-duration job profiles}
+   \caption{I/O-duration job profiles}
  \end{subtable}
  \caption{Jobs found in the same cluster with their profiles coding ($\epsilon = 0.03$). Columns containing zeros only are omitted.}
  \label{tab:ml_examples}
@@ -1323,7 +1323,7 @@ Since each segment is 10 min long, the runtime of jobs with 49 segments is about
 The other jobs must be special allocations.
 
 By inspecting individual jobs in \Cref{cluster:bin_all:top_jobs}, we can see that the centroid has 4 segments $\neq 0$ and the jobs are mostly empty.
-As the similarity of 70\% considers empty segments as well, jobs with few IO segments are found in this cluster.
+As the similarity of 70\% considers empty segments as well, jobs with few I/O segments are found in this cluster.
 
 The following general characteristic observations are made:
 \begin{enumerate}
@@ -1466,7 +1466,7 @@ We observe that even with a high SIM value some jobs have a different I/O behavi
 The reason is for the Levenshtein distance the distance between value 1 and 2 is the same as for 1 and 8; however, we would consider the two jobs closer together.
 
 Information related to the selected cluster is provided in \Cref{cluster:hex_lev}.
-In the selected cluster, there is mostly one segment of IO activity.
+In the selected cluster, there is mostly one segment of I/O activity.
 
 \begin{cluster}
 	\begin{subtable}{\textwidth}
@@ -1501,7 +1501,7 @@ In the selected cluster, there is mostly one segment of IO activity.
 				0:0:0:0:0:0:1:1:1 & 0:...:0           & 0:0:0:0:0:0:1:0:0 & 0:...:0           & 75       \\
 			\end{tabular}
 		\end{tiny}
-		\caption{Centroid and Top 5 job phenotypes. The metrics that have no IO activity are not included in the table.}
+		\caption{Centroid and Top 5 job phenotypes. The metrics that have no I/O activity are not included in the table.}
 		\label{cluster:hex_lev:top_jobs}
 	\end{subtable}
 	\medskip
@@ -1614,7 +1614,7 @@ Information related to the selected cluster is shown in \Cref{cluster:pm_quant}.
 The first thing to mention are the high generalization capabilities of the algorithm, i.e., that many jobs are mapped to a relatively low number of types.
 The next typical property is shown in \Cref{cluster:pm_quant:length}, where we can see that almost the full range of job lengths is represented in the cluster.
 This happens, because the PM ignores zero segments.
-The aggregation of zero segments is important as most jobs have few IO phases, in contrast to BIN\_AGGZEROS, it works more efficient.
+The aggregation of zero segments is important as most jobs have few I/O phases, in contrast to BIN\_AGGZEROS, it works more efficient.
 For example, for PM, the job phenotypes in \Cref{cluster:pm_quant:top_jobs} in the row one and two are 100$\%$ similar.
 The centroid and the jobs contain quite similar I/O patterns.
 
@@ -2018,14 +2018,14 @@ For this reason, we found that the Levenshtein distance is generally not suitabl
 
 \medskip
 
-The current version of the PM algorithm ignores non-IO parts (sequences of zeros) of the monitoring data, and  handles segment sequences like [0,0,0,0,1] and [1] equally:
+The current version of the PM algorithm ignores non-I/O parts (sequences of zeros) of the monitoring data, and  handles segment sequences like [0,0,0,0,1] and [1] equally:
 \begin{lstlisting}
 job1_metric1 : [0,0,0,0,1]
 job1_metric1 : [1]
 \end{lstlisting}
 
 These sequences would produce different average I/O loads on the storage.
-Intuitively, we would judge these jobs have different I/O behaviour as the ratio between computational and IO load is different.
+Intuitively, we would judge these jobs have different I/O behaviour as the ratio between computational and I/O load is different.
 
 One could argue that the phase definition was chosen incorrectly.
 Currently, phases are defined for each metric individually, without consideration of the overall behavior on  other metrics.
@@ -2039,10 +2039,10 @@ job2_metric2 : [1:0]
 
 Currently, the algorithm recognizes the I/O patterns to be 100$\%$ similar.
 Alternatively, one could say that running two metrics at the same time is another I/O pattern, as running them shifted, because on a storage system the jobs would produce different I/O loads.
-For jobs with many IO phases, this situation is less likely but for shorter jobs, it may happen.
+For jobs with many I/O phases, this situation is less likely but for shorter jobs, it may happen.
 The benefit of ignoring these aspects is simplicity; this clustering reduces the number of clusters and  results are easier to understand.
 
-\paragraph{Characterization of IO.}
+\paragraph{Characterization of I/O.}
 The main questions for a user that applies a clustering algorithm remain: how to define similarity.
 Depending on the use case, the relevant I/O-behavior and characteristics involved in job comparison must be defined to allow identification of jobs depending on temporal behavior.
 In our case, we discussed similarity based on profiles and time series data.
@@ -2052,7 +2052,7 @@ To answer these questions, a discussion with the community about the use cases a
 
 \section{Conclusion}
 
-In this work, we described various approaches to cluster 1 million jobs based on their IO behavior.
+In this work, we described various approaches to cluster 1 million jobs based on their I/O behavior.
 Clustering of jobs is important for data-center support staff to focus their effort on relevant jobs.
 Therefore, we pre-processed the periodically gathered node metrics by converting this fine-grained resolution into 10-minute segments using various pre-processing stacks.
 Our contribution is the systematic evaluation and discussion of various approaches for the clustering.
@@ -2065,13 +2065,13 @@ The classification algorithm is trained by the potential erroneous output of the
 Even if a better solution would found there is no guarantee that the generated model could be applied on another system.
 
 In the evaluation, we investigated the quantiative and qualitative behavior of different algorithms.
-The investigation of clusters shows that, particularly clusters with little IO activity are noisy and do not meet our expectation.
+The investigation of clusters shows that, particularly clusters with little I/O activity are noisy and do not meet our expectation.
 Depending on the similarity chosen by the user, there are many different clusters with phenotypes of jobs found.
 Thus, exceeding the ability for manual inspection and manual labeling.
 
 Our analysis shows that considering the relative I/O performance and I/O phases improves the clustering.
 The integration of the awareness of I/O performance produces better, but still not sophisticated results.
-Therefore, we found that the Levenshtein distance is generally not suitable for similarity of IO behavior of jobs.
+Therefore, we found that the Levenshtein distance is generally not suitable for similarity of I/O behavior of jobs.
 
 Absolute coding aggregates three dimensions (Metric, Nodes, and FileSystems) resulting in a nine times shorter coding sequence than hexadecimal coding, which aggregates only two dimensions (Nodes, and FileSystems).
 Using hexadecimal coding is more precise than binary coding because hexadecimal coding sequences longer.
@@ -2089,7 +2089,7 @@ We defined the cluster relevance that aids data center employees to select jobs 
 \subsection{Future Work}
 To address the issue with the large number of clusters we will research three additional functions: 1) filter irrelevant clusters, 2) sort clusters by a criteria, and 3) automatic labeling.
 
-We intend to conduct a survey and discussion with users to answer the question what similarity of IO jobs means.
+We intend to conduct a survey and discussion with users to answer the question what similarity of I/O jobs means.
 We will extend relevance to cover node count as well to represent the actual costs of running a job better.
 
 We see a high potential in the new clustering algorithms to apply them on the fly to jobs of interest.
