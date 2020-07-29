@@ -330,20 +330,15 @@ By reducing along all dimension, you obtain basically a job profile (as discusse
 	\centering
 	\begin{tabularx}{\textwidth}{llX}
 		Dimension       & Operation                                    &  Description                                                       \\
-		\hline
+		\midrule
 		Node            & Reduce by mean()                             &  Aggregate all nodes by mean() function                            \\
 		                & Reduce by sum()                              &  Aggregate all nodes by sum() function                             \\
-		\hline
 		File System     & Reduce by mean()                             &  Aggregate all file systems by mean() function                     \\
 		                &
 		Reduce by sum() & Aggregate all file systems by sum() function \\
-		\hline
 		Metric          & Reduce by sum()                              &  Aggregate all nine metrics by sum()                               \\
-		\hline
 		Time            &                                              &  Convert segments to coding formats \\
-		\hline
     All     & Reduce by mean()    &  Reduces time series to a fixed set of values                      \\
-		\hline
 	\end{tabularx}
 	\caption{Dimension reduction strategies for the original 4D-data.}
 	\label{tab:reduction_techniques}
@@ -362,7 +357,8 @@ The operations are summarized in \Cref{tab:coding_ops}.
  \centering
  \begin{tabularx}{\textwidth}{lX}
 	 Operation &  Description \\
-	 \hline	 Binarization & Segments are mapped to 9-bit numbers (v), where each position (i) represents a metric.
+	 \midrule
+	 Binarization & Segments are mapped to 9-bit numbers (v), where each position (i) represents a metric.
 The bits are set by the following function:
 	 \vbox{
 		\begin{equation}
@@ -372,15 +368,11 @@ The bits are set by the following function:
 			\end{cases}, i \in [\text{enumerated metrics}]
 		\end{equation}
 	 } \\
-	 \hline
 	 Hex-Quantization & Quantize segments to 16 levels.\\
-	 \hline
 	 Zeros aggregation & Merge all consecutive zero segments.\\
-	 \hline
 	 Phase extraction &  Extract continuous sequences of non-zero segments.
 \par - Split time series at zero segments in sub time series (I/O phases) and remove zero segments.
 \par - Preserve order of I/O phases.\\
-	 \hline
  \end{tabularx}
  \caption{Coding operations.}
  \label{tab:coding_ops}
@@ -489,30 +481,44 @@ The example below shows hexadecimal coding for a job containing 6 segments.
 Determining the resemblance between two jobs is the main task of this work.
 Clustering algorithms need a distance metrics to allow organizing them together.
 There are various variants, a selection is listed in \Cref{tab:sim_funcs}.
-The Manhatten distance for two vectors is defines as $\sum_i |a_i - b_i|$ and can naturally only be applied to vectors of the same length.
-The Levensthein distance is the number of modifications (inserts, deletes, changes) of individual characters that need to be made to transform one string to another.
-To create a flexible similarity function, we combine the Manhatten distance with a sliding window or phase detection to allow it to determine a distance between two vectors of different length.
+The Eucledian distance for two vectors can naturally only be applied to vectors of the same length.
+The Levenshtein distance is the number of modifications (inserts, deletes, changes) of individual characters that need to be made to transform one string to another.
+The Normalized Difference and Relative Change distances are applied to compute distance between two single values.
+To make them work on time series we introduce additional operations.
+The first operation aligns the time series lengths by inserting zero-segments at different positions.
+We investigate alignment strategies described in \Cref{tab:matching_strategies}.
+Time Series Alignment can insert zero-segments at the beginning, and at the end of the shortest time series.
+I/O Phase Alignment can insert zero-segmens at the beginning, between I/O phases, or/and at the end of both time series.
+Both operations strives for the highest possible similarity.
+Finally, we use the distance functions to compute similarity between the segments and compute the mean.
+
+%sliding window or/and phase detection
+%To create performance-aware similarity functions, we combine the normalized difference or relative change distances in combination with sliding window or/and phase detection.
+
+\begin{table}
+  \centering
+  \begin{tabularx}{\textwidth}{lllX}
+    Distance              & Domain      & Formula                         & Description                                                                                    \\ 
+    \midrule
+    Euclidean             & $a, b \in \mathbb{R}^n$     & $\sqrt{(\sum_i^n (a_i - b_i))}$ & The Euclidean distance between two vectors.                                                    \\ 
+    Levenshtein           & Time Series & $\text{lev}(a, b)$                  & Number of operation (inserts, deletes, and changes) requires to convert one coding in another. \\ 
+  Normalized Difference & $0 \le a, b \le 15$  & $\frac{|a - b|}{16}$    & A change from level 2 to level 6 on a 16 level system would be (6 - 2) / 16 = 0.25.            \\ 
+  Relative Change       & $a, b \in \mathbb{R}^+$      & $\frac{\min(a,b)}{\max(a,b)}$   & A change from level 2 to level 6 system would be 2/6 = 0.66.                                   \\ 
+  \end{tabularx}
+  \caption{Distance functions used to compute similarities.}
+  \label{tab:sim_funcs}
+\end{table}
 
 \begin{table}
   \centering
   \begin{tabularx}{\textwidth}{lX}
-    Distance & Description \\
-    \hline
-    Manhatten & The Manhatten distance between the vectors.\\
-    \hline
-    Levenshtein &  Number of operation (inserts, deletes, and changes) requires to convert one coding in another \\
-    \hline
-    \hline
-    \multicolumn{2}{l}{Options for Manhatten} \\
-    \hline
-    Sliding window &  - Find maximum similarity between two codings \par
-            - Slide shorter coding over a longer one an compute similarity of the corresponding parts \\
-    \hline
-    Phase &  - Find best I/O phases combination of two jobs with a maximum similarity \par - Depends on phase extraction from data pre-processing and sliding window similarity \par - Preserve the order of the phases \\
-    \hline
+    Operation         & Description \\
+    \midrule
+    Time Series Aligment & Insert zero-segments in the beginning or/and at the end of shortest time series. \\
+    I/O Phase Alighment & Insert zero-segments in the beginning, between I/O phases, or/and at the end of time series. \\
   \end{tabularx}
-  \caption{Similarity functions and strategies}
-  \label{tab:sim_funcs}
+  \caption{Length adjustment strategies.}
+  \label{tab:matching_strategies}
 \end{table}
 
 \subsubsection{Clustering}
@@ -533,18 +539,13 @@ They are described in the following:
   \centering
   \begin{tabularx}{\textwidth}{lX}
     Algorithm & Description \\
-    \hline
+    \midrule
     k-means & Runs a random initialization, then refines the clusters until the clusters don't change any more.\\
-    \hline
     Density clustering &  Group nearby elements recursively together as long as they are ($\epsilon$) close together.\\
-    \hline
     Agglomerative &  Hierarchically cluster data into groups of elements that belong closer together.\\
-    \hline
     \textbf{ClusteringTree} &  Create a hierarchical clustering for subset of data to train a decision tree, then apply the decision tree on the full dataset.\\
-    \hline
     \textbf{SimplifiedDensity} &  Combines ideas from k-means with density clustering.
 The simplified clustering algorithms add a job to a cluster if similarity to the cluster centroid is equal or larger than the user defined value.\\
-    \hline
   \end{tabularx}
   \caption{Selection of clustering algorithms}
   \label{tab:clustering_algorithms}
@@ -631,6 +632,7 @@ So we have to deal with 18 features; $\epsilon_{max}$ is 1.17.
 \paragraph{Clustering algorithm}
 We apply agglomerative clustering.
 \jk{Könnte noch bissl unklar sein}
+
 The algorithm uses Euclidean distance as a similarity measure, i.e., if the component wise distance between two job vectors is shorter than the defined distance ($\epsilon$), then these jobs belong to the same cluster.
 
 We found that the size of our datasets is the first obstacle to the suitable clustering algorithms.
@@ -980,14 +982,14 @@ The example below shows the pairs of I/O phases and their matches.
 \centering
 \begin{tabular}{lllrr}
 	Metric           & I/O Phase A                 & I/O Phase B                 & Match     & Length \\ 
-	\hline
+	\midrule
 	md\_file\_create & \lstinline|[-:-:-:-:-]|     & \lstinline|[2:2:2:9:3]|     & 0         & 5      \\ 
 	                 & \lstinline|[-:1:-:-]|       & \lstinline|[9:1:1:1]|       & 1         & 4      \\ 
 	read\_bytes      & \lstinline|[2:2:2:2:8:2:2]| & \lstinline|[-:-:-:-:9:3:-]| & 8/9 + 2/3 & 7      \\ 
 	                 & \lstinline|[1]|             & \lstinline|[1]|             & 1         & 1      \\ 
 	                 & \lstinline|[8:1:1]|         & \lstinline|[-:-:-]|         & 0         & 3      \\ 
 	write\_bytes     & \lstinline|[5]|             & \lstinline|[-]|             & 0         & 1      \\ 
-	\hline
+	\midrule
 	Sum              &                             &                             & 3.56      & 21     \\ 
 \end{tabular}
 \caption{Best combination of I/O phases, that achieves highest possible similarity.}
@@ -1048,7 +1050,7 @@ Interestingly, it affects around 14$\%$ of jobs.
   \centering
   \begin{tabular}{ll}
     Algorithm & Number of I/O intensive jobs \\
-    \hline
+    \midrule
     BIN\_$\ast$, PM\_FLOAT, HEX\_NATIVE &  583.000 \\
     HEX\_LEV, PM\_QUANT &  444.000 \\
   \end{tabular}
@@ -1138,7 +1140,7 @@ As the examples in \Cref{tab:ml_examples} show, observed cluster contains the fo
    \centering
      \begin{tabular}{lln{1}{\rd}|l}
        \rot{Job-IO-Utilization} & \rot{Job-IO-Problem-Time} & \rot{Job-IO-Balance} & \rot{Binary coding}                       \\ 
-       \hline
+       \midrule
        4                        & 1                         & 0.4375000            & [118]                                     \\ 
        4                        & 1                         & 0.4450206            & [368:368:368:368:368:368:374:368:368:368] \\ 
        4                        & 1                         & 0.4583333            & [496:496]                                 \\ 
@@ -1149,7 +1151,7 @@ As the examples in \Cref{tab:ml_examples} show, observed cluster contains the fo
    \centering
      \begin{tabular}{n{1}{\rd}n{1}{\rd}n{1}{\rd}n{1}{\rd}n{1}{\rd}n{1}{\rd}n{1}{\rd}n{1}{\rd}|l}
        \rot{1\_md\_file\_delete} & \rot{1\_md\_mod} & \rot{1\_md\_other} & \rot{1\_md\_read} & \rot{1\_read\_bytes} & \rot{1\_read\_calls} & \rot{1\_write\_bytes} & \rot{1\_write\_calls} & \rot{Binary coding} \\ 
-       \hline
+       \midrule
        0.009259259               & 0.01851852       & 0.25000000         & 0.027777778       & 0.00462963           & 0.009259259          & 0.00462963            & 0.03240741            & [340:510:272]       \\ 
        0.012578616               & 0.01257862       & 0.24528302         & 0.006289308       & 0.00617284           & 0.006172840          & 0.01257862            & 0.01257862            & [510:0:0]           \\ 
        0.016666667               & 0.01666667       & 0.25000000         & 0.016666667       & 0.00000000           & 0.000000000          & 0.00000000            & 0.01666667            & [14:280]            \\ 
@@ -1335,7 +1337,7 @@ The following general characteristic observations are made:
 	\centering
 	\begin{tabular}{ll}
 		Coding sequence & Cluster size \\
-		\hline
+		\midrule
 		$[511]$ & 37,272 \\
 		$[32]$  & 14,536 \\
 		$[272]$ & 11,338 \\
@@ -1364,12 +1366,12 @@ The following general characteristic observations are made:
 			\begin{tabular}{l|r}
 				\rowcolor{tblhead}
 				Binary coding of the centroid                                                                    &  Type     \\ 
-				\hline
+				\midrule
 				0:0:0:0:0:0:294:0:0:0:0:32:0:0:0:0:0:0:0:0:0:0:0:32:0:0:0:0:0:0:0:0:0:0:0:32:0:0:0:0:0:0:0:0:0:0 &  centroid \\ 
 				\multicolumn{2}{l}{}                                                                             \\ 
 				\rowcolor{tblhead}
 				Binary coding of jobs in the cluster                                                             &  Count    \\ 
-				\hline
+				\midrule
 				0:0:0:0:0:0:359:96:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0   &  95       \\ 
 				0:0:0:0:0:0:295:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0    &  62       \\ 
 				0:0:0:0:0:0:0:0:0:0:0:0:4:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0  &  47       \\ 
@@ -1423,10 +1425,10 @@ The following is characteristic for this algorithm:
 			\begin{tabular}{l|r}
 				\rowcolor{tblhead}
 				Binary coding of the centroid                                                                         &  Type     \\
-				\hline
+				\midrule
 				272:272:272:272:272:278:286:272:272:272:272:272:272:272:272:272:272:272:272            &  centroid \\
 				\multicolumn{2}{l}{}                                                                   \\
-				\hline
+				\midrule
 				\rowcolor{tblhead}
 				Binary coding of jobs in the cluster                                                                          &  Count    \\
 				272:272:272:272:272:278:286:272:272:272:272:272:272:272:272:272:272:272:272            &  528      \\
@@ -1488,12 +1490,12 @@ In the selected cluster, there is mostly one segment of IO activity.
 				\multicolumn{4}{l|}{Hexadecimal coding} & \\
 				\rowcolor{tblhead}
 				md\_file\_create  & md\_file\_delete  & md\_mod           & read\_calls       & Type     \\
-				\hline
+				\midrule
 				0:...:0           & 0:0:0:1:0:0:0:0:0 & 0:...:0           & 0:...:0           & centroid \\
 				\multicolumn{5}{l}{}\\
 				\rowcolor{tblhead}
 				md\_file\_create  & md\_file\_delete  & md\_mod           & read\_calls       & Count    \\
-				\hline
+				\midrule
 				0:...:0           & 0:0:0:0:0:0:1:0:0 & 0:...:0           & 0:...:0           & 606      \\
 				0:...:0           & 0:0:0:0:0:0:0:0:1 & 0:...:0           & 0:...:0           & 562      \\
 				0:...:0           & 0:...:0           & 0:...:0           & 0:0:0:0:0:0:1:0:0 & 429      \\
@@ -1581,12 +1583,12 @@ In the selected cluster, jobs with a length of 4 have mostly 1 the activity of o
 				\multicolumn{3}{l|}{Hexadecimal coding} &            \\
 				\rowcolor{tblhead}
 				md\_file\_delete     &  md\_mod   & md\_other & Type     \\
-				\hline
+				\midrule
 				0:\dots:0            &  0:0:1:0   & 0:0:1:0   & centroid \\
 				\multicolumn{4}{l}{} \\
 				\rowcolor{tblhead}
 				md\_file\_delete     &  md\_mod   & md\_other & Count    \\
-				\hline
+				\midrule
 				0:\dots:0            &  0:\dots:0 & 0:0:1:0   & 5,010    \\
 				0:\dots:0            &  0:\dots:0 & 0:0:2:0   & 1,963    \\
 				0:0:1:0              &  0:\dots:0 & 0:\dots:0 & 1,099    \\
@@ -1644,12 +1646,12 @@ General cluster characteristics:
 			 \multicolumn{2}{l|}{Hexadecimal coding} &              \\
 			 \rowcolor{tblhead}
 			 md\_file\_delete     &  md\_mod     & Type     \\
-			 \hline
+			 \midrule
 			 4:0:0:0:0:0          &  4:0:0:0:0:0 & centroid \\
 			 \multicolumn{3}{l}{} \\
 			 \rowcolor{tblhead}
 			 md\_file\_delete     &  md\_mod     & Count    \\
-			 \hline
+			 \midrule
 			 4                    &  4           & 2329     \\
 			 4:0:0:0:0:0          &  4:0:0:0:0:0 & 1773     \\
 			 4:0                  &  4:0         & 224      \\
@@ -1716,13 +1718,13 @@ We find that the identified jobs in the cluster are sufficiently related.
 			\begin{tabular}{l|r}
 				\rowcolor{tblhead}
 				Binary coding                                                                                          &  Type     \\
-				\hline
+				\midrule
 				192:192:192:192:192:192:196:192:192:192:192:192:192:192:192:192:192:192:192:192:192:192:64:64:64:64:64 &  job      \\
 				192:192:192:192:192:192:192:192:192:192:192:454:230:192:192:192:192:192:192:192:192:192:192:192        &  centroid \\
 				\multicolumn{2}{l}{}                                                                                   \\
 				\rowcolor{tblhead}
 				Binary coding                                                                                          &  Count    \\
-				\hline
+				\midrule
 				192:192:192:192:192:454:198:192:192:192:192:192:192:192:192:192:192:192:192:192:192:192:192:192        &  5        \\
 				192:192:192:192:192:192:192:192:192:192:192:454:230:192:192:192:192:192:192:192:192:192:192:192        &  3        \\
 				192:192:192:192:192:454:230:192:192:192:192:192:192:192:192:192:192:192:192:192:192:192:192:192        &  3        \\
@@ -1774,13 +1776,13 @@ Compared to BIN, the cluster is smaller but the jobs have a more similar ending.
 			\begin{tabular}{l|r}
 				\rowcolor{tblhead}
 				Binary coding                                                                                             &  Type     \\
-				\hline
+				\midrule
 				192:192:192:192:192:192:196:192:192:192:192:192:192:192:192:192:192:192:192:192:192:192:64:64:64:64:64    &  job      \\
 				511:238:192:510:192:224:228:192:192:192:192:192:192:192:192:192:192:192:192:192:192:64:64:64:64:64        &  centroid \\
 				\multicolumn{2}{l}{}                                                                                      \\
 				\rowcolor{tblhead}
 				Binary coding                                                                                             &  Count    \\
-				\hline
+				\midrule
 				0:224:192:192:192:192:228:192:192:192:192:192:192:192:192:192:192:192:192:192:192:64:64:64:64:64          &  1        \\
 				192:192:192:192:192:192:196:192:192:192:192:192:192:192:192:192:192:192:192:192:192:192:64:64:64:64:64    &  1        \\
 				192:192:193:196:192:192:192:192:192:192:192:192:192:192:192:192:192:192:192:192:64:64:64:64               &  1        \\
@@ -1832,12 +1834,12 @@ While sum() is better for visualization, the mean value allows us to build simpl
 				\multicolumn{2}{l|}{Hexadecimal coding} & \\
 				\rowcolor{tblhead}
 				md\_other                                           &  read\_calls                                           & Type     \\ 
-				\hline
+				\midrule
 				0:\dots:0                                           &  3:3:8:8:8:5:6:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8 & job      \\ 
 				0:\dots:0                                           &  8:8:8:8:8:2:6:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8 & centroid \\ 
 				\multicolumn{3}{l}{}                                \\ 
 				\rowcolor{tblhead}      md\_other                   &  read\_calls                                           & Count    \\ 
-				\hline
+				\midrule
 				0:\dots:0                                           &  0:0:0:0:0:0:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8   & 4        \\ 
 				0:\dots:0                                           &  8:8:8:8:8:2:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8   & 4        \\ 
 				0:0:0:4:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0 &  0:0:0:0:0:0:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8   & 4        \\ 
@@ -1883,13 +1885,13 @@ Again, the jobs look similar, however, the increase in performance and drop in s
 				Hexadecimal coding & \\
 				\rowcolor{tblhead}
 				read\_calls                                           & Type     \\
-				\hline
+				\midrule
 				3:3:8:8:8:5:6:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8 & job      \\
 				8:8:8:8:8:2:4:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8 & centroid \\
 				\multicolumn{2}{l}{}\\
 				\rowcolor{tblhead}
 				read\_calls                                           & Count    \\
-				\hline
+				\midrule
 				8:8:8:8:8:3:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8 & 3        \\
 				8:8:8:8:8:5:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8 & 2        \\
 				3:3:8:8:8:5:6:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8 & 1        \\
@@ -1935,13 +1937,13 @@ Even with a smaller SIM value, the jobs appear related while they cover a variet
 				Hexadecimal coding & \\
 				\rowcolor{tblhead}
 				read\_calls                                           & Type     \\
-				\hline
+				\midrule
 				3:3:8:8:8:5:6:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8 & job      \\
 				8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8   & centroid \\
 				\multicolumn{2}{l}{}\\
 				\rowcolor{tblhead}
 				read\_calls                                           & Count    \\
-				\hline
+				\midrule
 				8:8:8:8:8:2:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8   & 4        \\
 				8:8:8:8:8:3:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8 & 3        \\
 				7:7:7:7:7:2:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8   & 2        \\
