@@ -132,9 +132,10 @@ Finally, in Section 5 we summarize the results.
 
 
 \section{Preliminary Work}
+% Mistral + Monitoring system overview
 The German Climate Computing Center (DKRZ) maintains a monitoring system that gathers various statistics from the Mistral HPC system.
 Mistral has 3,340 compute nodes, 24 login nodes, and two Lustre file systems (lustre01 and lustre02) that provide a capacity of 52 Petabyte.
-The monitoring system is made up of open source components such as Grafana, OpenTSDB, and Elasticsearch but also includes a lightweight self-developed data collector that captures continuously node statistics - we decided to implement an own collector when analyzing the overhead of existing approaches.
+The monitoring system is made up of open source components such as Grafana, OpenTSDB, and Elasticsearchtrebut also includes a lightweight self-developed data collector that captures continuously node statistics - we decided to implement an own collector when analyzing the overhead of existing approaches.
 Additionally, the monitoring system obtains various job meta-information from the Slurm workload manager and injects selected log files.
 
 Our motivation for automatic analysis of parallel jobs is the monitoring situation at DKRZ.
@@ -145,16 +146,45 @@ While this approach helps to find individual jobs, it doesn't provide a global o
 For example, a discovery of a large group of I/O-intensive and bursty applications would suggest attaching a burst buffer to the storage, to improve application runtimes.
 In this paper, we take up the idea of I/O categorization from the previous work, where we partition job runtime into equal size segments and map them into three categories (LowIO, HighIO, and CriticalIO), and continue our work to obtain a global overview.
 
-A difference to previously utilized job statistics is that this time Lustre proc files on Mistral doesn't offer Object Storage Client (osc) counters, since a major upgrade of Lustre file system from version 2.7 to 2.11.
-Thus, instead of 13 metrics, this time our data contains only 9 metrics.
-
 Understanding of the following work requires an understanding of data format, that is formed by segmentation and categorization of raw monitoring data.
-Segmentation is a pre-processing step that splits data into equal-sized segments and computes a mean performance for each segment.
-This stage preserves the performance units (e.g., Op/s, MiB/s) for each metric.
-As further calculations that involve different metrics is difficult for different metrics, we introduced a categorization\textbf{ pre-processing} step that takes into account the performance of the underlying HPC system and assigns an ordered category to each segment.
-It takes the mean performance that was calculated in the previous step, and assigns one of the three categories (LowIO=0, HighIO=1 and CriticalIO=4).
+
+\paragraph{Raw monitoring data.}
+The monitoring system captures periodically IO metrics on all client nodes, and sends them to a central database.
+\Cref{fig:generic_example} illustrates the structure of the raw monitoring data using an example.
+In the example, data is captured on two nodes, on two file systems, for two metrics, and at nine time points $t_i$, resulting in 4-dimensional data (Node $\times$ File System $\times$ Metric $\times$ Time).
+The sizes of the node and the time dimensions are variable by nature.
+The other dimensions may be fixed for particular HPC systems, but we assumed they to be variable, to make the approach portable to other systems. 
+Actually, on Mistral data is gathered every five seconds, for two Lustre file system, and for nine IO metrics~\footnote{A difference to previously utilized job statistics is that this time Lustre proc files on Mistral doesn't offer Object Storage Client (osc) counters, since a major upgrade of Lustre file system from version 2.7 to 2.11.
+Thus, instead of 13 metrics, this time our data contains only 9 metrics.}.
+Five of them (md\_read, md\_mod, md\_file\_create, md\_file\_delete, md\_other) capture metadata activities and the remaining four (read\_bytes, read\_calls, write\_bytes, write\_calls) capture data access.
+
+\begin{figure}[bt]
+ \centering
+ \includegraphics[width=0.9\textwidth]{assets/stats3.png}
+ \caption{An example of 4-dimensional raw monitoring data (Node $\times$ File System $\times$ Metric $\times$ Time) and different levels of segmentation (colored boxes).}%
+ \label{fig:generic_example}
+\end{figure}
+
+\paragraph{Segmentation.}
+%The raw data is segmented and categorized:
+We split the time series of each IO metric into equal-sized time intervals (segments) and computes a mean performance for each segment.
+This stage preserves the performance units (e.g., Op/s, MiB/s) for each IO metric.
+The example in \Cref{fig:generic_example} creates segments out of three successive time points just for illustration purposes.
+Depending on aggregation function, segments can be created of metrics (green boxes), of file systems (yellow boxes), of nodes (red boxes), or even over all dimensions (blue box).
+Actually, the real raw monitoring data is converted to 10 minutes segments, which we found is a good trade-off to represent the temporal behavior of the application while it reduces the size of the time series.
+
+\paragraph{Categorization.}
+Next, to get rid of the units, and to allow calculations between different IO metrics, we introduced a categorization pre-processing step that takes into account the performance of the underlying HPC system and assigns a unitless ordered category to each metric segment.
+We use a three category system, which contains the LowIO=0, HighIO=1 and CriticalIO=4 categories.
 The category split points are based on the histogram of the obtained values, for any metrics, a segment with a value up to the 99\%-Quantile it is considered to be LowIO, the 99.9\%-Quantile indicates HighIO~(see \cite{iocats2020}).
-This node-level data can then be used to compute job-statistics by aggregating across time, file systems, and nodes.
+This node-level data can then be used to compute job-statistics by aggregating across dimensions such as time, file systems, and nodes.
+
+%Segmentation is a pre-processing step that splits data into equal-sized segments and computes a mean performance for each segment.
+%This stage preserves the performance units (e.g., Op/s, MiB/s) for each metric.
+%As further calculations that involve different metrics is difficult for different metrics, we introduced a categorization\textbf{ pre-processing} step that takes into account the performance of the underlying HPC system and assigns an ordered category to each segment.
+%It takes the mean performance that was calculated in the previous step, and assigns one of the three categories (LowIO=0, HighIO=1 and CriticalIO=4).
+%The category split points are based on the histogram of the obtained values, for any metrics, a segment with a value up to the 99\%-Quantile it is considered to be LowIO, the 99.9\%-Quantile indicates HighIO~(see \cite{iocats2020}).
+%This node-level data can then be used to compute job-statistics by aggregating across time, file systems, and nodes.
 
 In summary, this data representation has the following key advantages for data analysis.
 The ordered categories make the calculations between different metrics feasible, which is not possible with raw data.
