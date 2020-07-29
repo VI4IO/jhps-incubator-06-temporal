@@ -153,8 +153,7 @@ The monitoring system captures periodically IO metrics on all client nodes, and 
 \Cref{fig:generic_example} illustrates the structure of the raw monitoring data using an example.
 In the example, data is captured on two nodes, on two file systems, for two metrics, and at nine time points $t_i$, resulting in 4-dimensional data (Node $\times$ File System $\times$ Metric $\times$ Time).
 The sizes of the node and the time dimensions are variable by nature.
-The other dimensions may be fixed for particular HPC systems, but we assumed they to be variable, to make the approach portable to other systems.
-
+The other dimensions may be fixed for particular HPC systems, but we assumed they to be variable, to make the approach portable to other systems. 
 Actually, on Mistral data is gathered every five seconds, for two Lustre file system, and for nine IO metrics~\footnote{A difference to previously utilized job statistics is that this time Lustre proc files on Mistral doesn't offer Object Storage Client (osc) counters, since a major upgrade of Lustre file system from version 2.7 to 2.11.
 Thus, instead of 13 metrics, this time our data contains only 9 metrics.}.
 Five of them (md\_read, md\_mod, md\_file\_create, md\_file\_delete, md\_other) capture metadata activities and the remaining four (read\_bytes, read\_calls, write\_bytes, write\_calls) capture data access.
@@ -592,6 +591,7 @@ During our research, we explored various combinations out of the possible combin
 \end{figure}
 
 
+
 The operation stack which we describe in this article is visualized in \Cref{fig:clustering_stacks}.
 In brief, the algorithms are as follows:
 \begin{itemize}
@@ -871,6 +871,7 @@ We will discuss the details of each step on the following example; a blue font e
 	\caption{Hexadecimal codings of two jobs and their I/O phases.}
 	\label{lst:sim:pm_quant}
 \end{listing}
+
 
 
 \paragraph{Phase detection}
@@ -1155,8 +1156,7 @@ As the examples in \Cref{tab:ml_examples} show, observed cluster contains the fo
      \end{tabular}
    \caption{IO-duration job profiles}
  \end{subtable}
- \caption{Jobs found in the same cluster with their profiles coding ($\epsilon = 0.03$).
-Columns containing zeros only are omitted.}
+ \caption{Jobs found in the same cluster with their profiles coding ($\epsilon = 0.03$). Columns containing zeros only are omitted.}
  \label{tab:ml_examples}
 \end{table}
 
@@ -1501,8 +1501,7 @@ In the selected cluster, there is mostly one segment of IO activity.
 				0:0:0:0:0:0:1:1:1 & 0:...:0           & 0:0:0:0:0:0:1:0:0 & 0:...:0           & 75       \\
 			\end{tabular}
 		\end{tiny}
-		\caption{Centroid and Top 5 job phenotypes.
-The metrics that have no IO activity are not included in the table.}
+		\caption{Centroid and Top 5 job phenotypes. The metrics that have no IO activity are not included in the table.}
 		\label{cluster:hex_lev:top_jobs}
 	\end{subtable}
 	\medskip
