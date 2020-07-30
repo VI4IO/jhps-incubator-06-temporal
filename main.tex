@@ -373,7 +373,7 @@ The bits are set by the following function:
 			\end{cases}, i \in [\text{enumerated metrics}]
 		\end{equation}
 	 } \\
-	 Hex-Quantization & Quantize segments to 16 levels.\\
+	 Hex-Quantization & Quantize segments to Non-IO + 16 I/O levels.\\
 	 Zeros aggregation & Merge all consecutive zero segments.\\
 	 Phase extraction &  Extract continuous sequences of non-zero segments.
 \par - Split time series at zero segments in sub time series (I/O phases) and remove zero segments.
@@ -467,7 +467,7 @@ This coding preserves monitoring data for each metric and each segment.
 As the name suggests, the value of a segment is converted into a hexadecimal number to allow creation of a string representing the IO behavior.
 The numbers are obtained in two steps.
 Firstly, the dimension reduction aggregates the file system and the node dimensions and computes a mean value for each metric and segment, which lies in the interval [0,4].
-Secondly, the mean values are quantized into 16 levels -- 0 represents the interval [0,0.25), 1 [0.5,0.75), $ \ldots $ , [3.75,4].
+Secondly, the mean values are quantized into Non-I/O + 16 I/O levels -- 0 (Non-I/0) represents the interval [0,0.125), 1 [0.375,0.625), 2 [0.625,0.825) $ \ldots $ , f [3.875,4].
 The example below shows hexadecimal coding for a job containing 6 segments.
 
 \begin{lstlisting}[caption={Hexadecimal coding of a six segments long job.}]
@@ -492,9 +492,9 @@ The Normalized Difference and Relative Change distances are applied to compute d
 To make them work on time series we introduce additional operations.
 The first operation aligns the time series lengths by inserting zero-segments at different positions.
 We investigate alignment strategies described in \Cref{tab:matching_strategies}.
-Time Series Alignment can insert zero-segments at the beginning, and at the end of the shortest time series.
-I/O Phase Alignment can insert zero-segmens at the beginning, between I/O phases, or/and at the end of both time series.
-Both operations strives for the highest possible similarity.
+Time Series Adjustment can remove segments at the beginning, or/and at the end of the longest job.
+I/O Phase Alignment can insert zero-segmens at the beginning, between, or/and at the end of I/O phases of both jobs.
+Both operations create equal sized time series and with highest possible similarity.
 Finally, we use the distance functions to compute similarity between the segments and compute the mean.
 
 %sliding window or/and phase detection
@@ -504,9 +504,9 @@ Finally, we use the distance functions to compute similarity between the segment
   \centering
   \begin{tabularx}{\textwidth}{lllX}
     Distance              & Formula                                       & Domain                  & Description                                                                                    \\ 
-    \midrule                                                                                        
+    \midrule
     Euclidean             & $d_{\text{e}} =\sqrt{(\sum_i^n (a_i - b_i))}$ & $a, b \in \mathbb{R}^n$ & The Euclidean distance between two vectors.                                                    \\ 
-    Levenshtein           & $d_{\text{lev}} = \text{lev}(a, b)$           & $a, b \in$ TS           & Number of operation (inserts, deletes, and changes) requires to convert one coding in another. \\ 
+    Levenshtein           & $d_{\text{lev}} = \text{lev}(a, b)$           & $a, b \in$ Time Series  & Number of operation (inserts, deletes, and changes) requires to convert one coding in another. \\ 
     Normalized Difference & $d_{\text{nd}} = \frac{|a - b|}{16}$          & $0 \le a, b \le 15$     & A change from level 2 to level 6 on a 16 level system would be (6 - 2) / 16 = 0.25.            \\ 
     Relative Change       & $d_{\text{rc}} = \frac{\min(a,b)}{\max(a,b)}$ & $a, b \in \mathbb{R}^+$ & A change from level 2 to level 6 system would be 2/6 = 0.66.                                   \\ 
   \end{tabularx}
@@ -519,8 +519,8 @@ Finally, we use the distance functions to compute similarity between the segment
     \begin{tabularx}{\textwidth}{lX}
       Operation         & Description \\
       \midrule
-      Time Series Aligment & Insert zero-segments in the beginning or/and at the end of shortest time series. \\
-      I/O Phase Alighment & Insert zero-segments in the beginning, between I/O phases, or/and at the end of time series. \\
+      Time Series Adjustment & Remove zero-segments at the beginning or/and at the end of the longest time series.          \\ 
+      I/O Phase Alighment    & Insert zero-segments at the beginning, between I/O phases, or/and at the end of time series. \\ 
     \end{tabularx}
   \caption{Length adjustment strategies.}
   \label{tab:matching_strategies}
@@ -591,7 +591,7 @@ During our research, we explored various combinations out of the possible combin
 
 \begin{figure}
   \centering
-  \includegraphics[width=4.61in,height=2.38in]{clustering_stack.png}
+  \includegraphics[width=1\textwidth]{clustering_stack.png}
   \caption{Algorithms and their actual operation stacks.}
   \label{fig:clustering_stacks}
 \end{figure}
@@ -736,7 +736,7 @@ This adaption allows a comparison of time series where one metrics differs as on
 
 \subsubsection{HEX\_NATIVE}
 This algorithm computes a performance-aware similarity between two jobs.
-It works with hexadecimal codings at metric level and basically computes the relative similarity using the Manhatten distance.
+It works with hexadecimal codings at metric level and utilizes the Normalized Difference distance for similarity computation.
 Assume jobB is larger or equal than jobA, the job similarity between two jobs can be computed using \Cref{eq:hexn}.
 
 \begin{multline}
@@ -755,7 +755,8 @@ float maxSimilarity(CA, CB) {
   LA = length(CA)
   LB = length(CB)
   for pos in 0..(LB-LA) { // LB-LA is the boundary, as stated: LB > LA
-    sim = sliceSimilarity(CA, substr(str=CB, start=pos, len=LA))
+    SB = substr(str=CB, start=pos, len=LA)
+    sim = sliceSimilarity(CA, SB)
     if sim > max {
       max = sim
     }
@@ -767,8 +768,11 @@ float maxSimilarity(CA, CB) {
 The \texttt{sliceSimilarity()} in \Cref{eq:slicesim} function computes similarity between two codings of the same length.
 This function maps the difference between performance levels of the same segments (values between 0 and 16) to a relative value between 0 and 1.
 
+%\begin{equation}
+ %\text{sliceSimilarity}\left(S_{A},S_{B}\right) = \frac{ \sum _{i=1}^{L_{}}16 - \vert S_{A,i}-S_{B,i} \vert }{\text{16 L}_{}}\text{, with }L=L_{B}=L_{A} \label{eq:slicesim_backup}
+%\end{equation}
 \begin{equation}
-	\text{sliceSimilarity}\left(S_{A},S_{B}\right) = \frac{ \sum _{i=1}^{L_{}}16 - \vert S_{A,i}-S_{B,i} \vert }{\text{16 L}_{}}\text{, with }L=L_{B}=L_{A} \label{eq:slicesim}
+  \text{sliceSimilarity}\left(C_{A},S_{B}\right) = \frac{1}{L}\sum_{i=1}^{L} \left(1 - \frac{\vert C_{A,i}-S_{B,i} \vert }{16}\right)\text{, with }L=L_{S_B}=L_{A} \label{eq:slicesim}
 \end{equation}
 
 \subsubsection{PM\_QUANT}
@@ -1044,8 +1048,8 @@ For that reason, we detect zero-jobs early and remove them from the dataset; the
 %Therefore, this step wouldn't be necessary.
 
 The number of zero-jobs is different for hexadecimal and absolute mode codings.
-The reason is the quantization to HEX coding which computes mean performance values for all segments and then quantizes them into 16 levels.
-Hereby, some segments can be quantized to zeros, if the mean value is lower than 0.25.
+The reason is the quantization to HEX coding which computes mean performance values for all segments and then quantizes them into Non-IO + 16 levels.
+Hereby, some segments can be quantized to zeros, if the mean value is lower than 0.125.
 Therefore, it may happen that some jobs fall into the zero-job category, if all segments are quantized to zeros.
 It can not happen in BIN coding, because it preserves all active segments.
 Interestingly, it affects around 14$\%$ of jobs.
