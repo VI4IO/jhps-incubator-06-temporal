@@ -277,16 +277,44 @@ For these reasons, we decided to explore a variety of alternative options for di
 
 
 \section{Related work}
-There are many tracing and profiling tools that are able to record I/O information~\cite{TFAPIKBBCF19}; we will discuss a selection of them in more detail in the following.Most of them focus on individual jobs, and only a few of them apply machine learning for data analysis, in particular across jobs.As the purpose of applications is computation and, thus, I/O is just a byproduct, applications often spend less than 10\% time with I/O.The issue of performance profiles is that they remove the temporal dimension and make it difficult to identify relevant I/O phases.The Ellexus tools\footnote{\url{https://www.ellexus.com/products/}} include Breeze, a user-friendly offline I/O profiling software, an automatic I/O report generator Healthcheck, and command line tool Mistral which purpose is to report on and resolve I/O performance issues when running complex Linux applications on high performance compute clusters.Mistral is a small program that allows you to monitor application I/O patterns in real time, and log undesirable behaviour using rules defined in a configuration file called a contract.
-Darshan~\cite{carns2011understanding-toc,hpcdarshan} is an open source I/O characterization tool for post-mortem analysis of HPC applications' I/O behavior.Its primary objective is to capture concise but useful information with minimal overhead.Darshan accomplishes this by eschewing end-to-end tracing in favor of compact statistics such as elapsed time, access sizes, access patterns, and file names for each file opened by an application.These statistics are captured in a bounded amount of memory per process as the application executes.When the application shuts down, it is reduced, compressed, and stored in a unified log file.%Utilities included with Darshan can then be used to analyze, visualize, and summarize the Darshan log information.Because of Darshan's low overhead, it is suitable for system-wide deployment on large-scale systems.In this deployment model, Darshan can be used not just to investigate the I/O behavior of individual applications but also to capture a broad view of system workloads for use by facility operators and I/O researchers.
+There are many tracing and profiling tools that are able to record I/O information~\cite{TFAPIKBBCF19}; we will discuss a selection of them in more detail in the following.
+Most of them focus on individual jobs, and only a few of them apply machine learning for data analysis, in particular across jobs.
+As the purpose of applications is computation and, thus, I/O is just a byproduct, applications often spend less than 10\% time with I/O.
+The issue of performance profiles is that they remove the temporal dimension and make it difficult to identify relevant I/O phases.
+The Ellexus tools\footnote{\url{https://www.ellexus.com/products/}} include Breeze, a user-friendly offline I/O profiling software, an automatic I/O report generator Healthcheck, and command line tool Mistral which purpose is to report on and resolve I/O performance issues when running complex Linux applications on high performance compute clusters.
+Mistral is a small program that allows you to monitor application I/O patterns in real time, and log undesirable behaviour using rules defined in a configuration file called a contract.
+
+Darshan~\cite{carns2011understanding-toc,hpcdarshan} is an open source I/O characterization tool for post-mortem analysis of HPC applications' I/O behavior.
+Its primary objective is to capture concise but useful information with minimal overhead.
+Darshan accomplishes this by eschewing end-to-end tracing in favor of compact statistics such as elapsed time, access sizes, access patterns, and file names for each file opened by an application.
+These statistics are captured in a bounded amount of memory per process as the application executes.
+When the application shuts down, it is reduced, compressed, and stored in a unified log file.
+%Utilities included with Darshan can then be used to analyze, visualize, and summarize the Darshan log information.
+Because of Darshan's low overhead, it is suitable for system-wide deployment on large-scale systems.
+In this deployment model, Darshan can be used not just to investigate the I/O behavior of individual applications but also to capture a broad view of system workloads for use by facility operators and I/O researchers.
+
 
 There are approaches that monitor record storage behavior and aim to identify inefficient applications in a cluster.
 TOKIO~\cite{lockwood2018tokio} integrates logs from various sources to allow an analysis of data.
 It allows finding certain inefficient access patterns in the data.
-The LASSi tool~\cite{DBLP:journals/corr/abs-1906-03884} was developed for detecting, the so called, victim and aggressor applications.An aggressor can steal I/O resources from the victim and negatively affect its runtime.To identify such applications, LASSi calculates metrics from Lustre job-stats and information from the job scheduler.One metric category shows file system load and another category describes applications I/O behavior.The correlation of these metrics can help to identify applications that cause the file system to slow down.In the LASSi workflow this is a manual step, where a support team is involved in the identification of applications during file system slow down.Manual steps are disadvantageous when processing large amounts of data and must be avoided in unsupervised I/O behavior identification.LASSi's indicates that the main target group are system maintainers.Understanding LASSi reports may be challenging for ordinary HPC users, who do not have knowledge about the underlying storage system.
+
+The LASSi tool~\cite{DBLP:journals/corr/abs-1906-03884} was developed for detecting, the so called, victim and aggressor applications.
+An aggressor can steal I/O resources from the victim and negatively affect its runtime.
+To identify such applications, LASSi calculates metrics from Lustre job-stats and information from the job scheduler.
+One metric category shows file system load and another category describes applications I/O behavior.
+The correlation of these metrics can help to identify applications that cause the file system to slow down.
+In the LASSi workflow this is a manual step, where a support team is involved in the identification of applications during file system slow down.
+Manual steps are disadvantageous when processing large amounts of data and must be avoided in unsupervised I/O behavior identification.
+LASSi's indicates that the main target group are system maintainers.
+Understanding LASSi reports may be challenging for ordinary HPC users, who do not have knowledge about the underlying storage system.
+
 
 In~\cite{TUISVPKB19}, the authors utilized probes to detect file system slow-down.A probing tool measures file system response times by periodically sending metadata and read/write requests.An increase of response times correlates to the overloading of the file system.This approach allows the calculation of a slow-down factor identification of the slow-down time period.This approach is able to detect a file system slow-down, but cannot detect the jobs that cause the slow-down.
 The Nextgenio monitoring system~\cite{nextgenio2016}, has four main collectors.The first two, the PBS and ALPS tools, collect job scheduling information.The proprietary Cray I/O monitoring tool exploits Lustre I/O counters to capture file system usage on OSTs of all OSSs and allocated compute nodes.The MAP component provides information about cpu, memory and network usage.Then all the collected data is clustered for the analysis of system usage and performance evaluation.In contrast to existing approaches, our approach focuses on the analysis of job data and investigates clustering strategy to group similar jobs.
+
+HiperJOBVIZ~\cite{hiperjobviz2019} is a visual analytic tool for visualizing the resource allocations of data centers for jobs, users, and usage statistics.
+It provides an overview of the current resource usage and a detailed view of the resource usage via multi-dimensional representation of health metrics.
+TimeRadar~\footnote{\url{https://idatavisualizationlab.github.io/HPCC/TimeRadar}} is a part of the tool, which summaries the resource usage via radar charts, creating a kind of comprehensible profile for different user groups.
 
 \section{Methodology}
 
@@ -375,8 +403,8 @@ The bits are set by the following function:
 		\end{equation}
 	 } \\
 	 Hex-Quantization & Quantize segments to Non-IO + 16 I/O levels.\\
-	 Zeros aggregation & Merge all consecutive zero segments.\\
-	 Phase extraction &  Extract continuous sequences of non-zero segments.
+	 Zeros-Aggregation & Merge all consecutive zero segments.\\
+	 Phase-Extraction &  Extract continuous sequences of non-zero segments.
 \par - Split time series at zero segments in sub time series (I/O phases) and remove zero segments.
 \par - Preserve order of I/O phases.\\
  \end{tabularx}
@@ -726,7 +754,7 @@ This algorithm works on the same principle like the BIN algorithms, with the dif
 This adaption allows a comparison of time series where one metrics differs as only one metric string would differ while with binary coding the overall string would be different.
 
 \begin{equation}
-  \text{similarity}\left(\text{job}_{A},\text{job}_{B} \right) = 1 - \frac{ \sum_{m \in Metrics}^{} \text{levenshtein} \left(\text{job}_{A,m},\text{\text{job}}_{B,m} \right) }{|\text{Metrics}| \cdot |job_{B}|} 
+	\text{similarity}\left(\text{job}_{A},\text{job}_{B} \right) = 1 - \frac{ \sum_{m \in Metrics}^{} \text{levenshtein} \left(\text{job}_{A,m},\text{\text{job}}_{B,m} \right) }{|\text{Metrics}| \cdot \max(|job_A|, |job_{B}|)} 
 \end{equation}
 
 \subsubsection{HEX\_NATIVE}
@@ -734,7 +762,7 @@ This algorithm computes a performance-aware similarity between two jobs.
 It works with with a selection of I/O intensive metrics from hexadecimal codings ($\text{Metrics}_{\text{IO}}$) and utilizes the Normalized-Difference distance for similarity computation.
 %It utilizes only the I/O intensive metrics, denoted by $\text{Metrics}_{\text{IO}}$.
 %This set contains those metrics where at least one job contains at least one non-zero segment in this metric.
-Assume there two jobs, $job_A$ and $job_B$.
+Assume there are two jobs, $job_A$ and $job_B$.
 I/O intensive metrics are those, which have either in $job_A$ or in $job_B$ at least one non-zero segment.
 Further, assume $job_B$ is larger or equal than $job_A$.
 Then the job similarity between the two jobs can be computed using \Cref{eq:hexn}.
@@ -748,9 +776,8 @@ Then the job similarity between the two jobs can be computed using \Cref{eq:hexn
   \label{eq:hexn}
 \end{equation}
 
-The metric codings $job_{B,m}$ and $job_{A,m}$ of different jobs can have different lengths.
-To compute similarity, we trim the most irrelevant segments of the longer time series.
-We determine them by the sliding window approach, with the goal to maximize similarity between two metrics.
+The algorithm assumes that the metric codings $job_{B,m}$ and $job_{A,m}$ can be of different lengths.
+Therefore, to compute similarity, it trims the most irrelevant segments of the longer time series, which are determined by the sliding window approach, with the goal to find maximum similarity between two metrics.
 That means, we take the shortest coding sequence (CA) and check how it fits best on the longer coding sequence (CB).
 The best fitted slice is denoted as (SB).
 
@@ -921,11 +948,10 @@ According to this algorithm, the jobs are similar to 73\%.
 
 
 \subsubsection{PM\_QUANT}
-The phase-matching quantization algorithm allows us to cluster variable length words.
+The phase-matching quantization algorithm allows us to cluster variable length jobs.
 First, using a hexadecimal coding, phases of consecutive I/O segments are detected and extracted.
 Then, the best match between the (disjoint) phases is determined, finally the similarity is computed.
-
-We will discuss the details of each step on the following example; a blue font emphasizes I/O intensive  metrics.
+We will discuss the details of each step on the following example.
 
 %\begin{lstlisting}[language=C,morekeywords={md_file_create,read_bytes}]
 %jobA (length: 13)
@@ -1188,16 +1214,6 @@ For clustering of job profiles, we use the agglomerative clustering algorithm, d
 For clustering of binary and hexadecimal codings we use a clustering algorithm implemented in Rust 1.42.0, and run it on a single core.
 
 
-\section{Algorithm parameters}
-\subsection{ML}
-We explored our discussed job profiles: IO-metric and IO-duration.
-For both datasets we explore $\epsilon \in [0.03, 0.06, 0.09, 0.1, 0.2, 0.3]$.
-
-\subsection{BIN/HEX/PM}
-In the experiments with BIN*, HEX* and PM* algorithms, we cluster jobs varing the similarity parameter SIM $\in [0.1, 0.3, 0.5, 0.7, 0.9, 0.95, 0.99]$.
-Additionaly, we capture clustering progress each time after clustering 10,000 jobs.
-
-
 \section{Evaluation}
 \subsection{Description of Our Data Set}
 This section describes the job data extracted from Mistral, originally we gathered 1\,million jobs from a period of 203 days.
@@ -1244,6 +1260,16 @@ The metrics (md\_bytes, md\_mod, and md\_file\_delete) have the longest tail; so
   \caption{I/O phases statistics.}
   \label{fig:phases_stats}
 \end{figure}
+
+
+\subsection{Algorithm parameters}
+\subsubsection{ML}
+We explored our discussed job profiles: IO-metric and IO-duration.
+For both datasets we explore $\epsilon \in [0.03, 0.06, 0.09, 0.1, 0.2, 0.3]$.
+
+\subsubsection{BIN/HEX/PM}
+In the experiments with BIN*, HEX* and PM* algorithms, we cluster jobs varing the similarity parameter SIM $\in [0.1, 0.3, 0.5, 0.7, 0.9, 0.95, 0.99]$.
+Additionaly, we capture clustering progress each time after clustering 10,000 jobs.
 
 
 \subsection{Limitations of the ML Algorithms}
