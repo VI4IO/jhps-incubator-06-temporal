@@ -62,7 +62,7 @@
 \begin{document}
 
 \JHPSissue{0}   % keep 0 until the issue is assigned
-\JHPSkeywords{XX, TODO}   % add 2-5 keywords
+\JHPSkeywords{IO fingerprinting, performance analysis, monitoring}
 
   % Author macro takes Name, Institution, Optional Link to the person, Optional Email
 \JHPSauthor{Eugen Betke}{DKRZ\\Hamburg, Germany}{}{betke@dkrz.de}
@@ -488,17 +488,14 @@ Clustering algorithms need a distance metrics to allow organizing them together.
 There are various variants, a selection is listed in \Cref{tab:sim_funcs}.
 The Eucledian distance for two vectors can naturally only be applied to vectors of the same length.
 The Levenshtein distance is the number of modifications (inserts, deletes, changes) of individual characters that need to be made to transform one string to another.
-The Normalized Difference and Relative Change distances are applied to compute distance between two single values.
-To make them work on time series we introduce additional operations.
-The first operation aligns the time series lengths by inserting zero-segments at different positions.
-We investigate alignment strategies described in \Cref{tab:matching_strategies}.
-Time Series Adjustment can remove segments at the beginning, or/and at the end of the longest job.
-I/O Phase Alignment can insert zero-segmens at the beginning, between, or/and at the end of I/O phases of both jobs.
-Both operations create equal sized time series and with highest possible similarity.
-Finally, we use the distance functions to compute similarity between the segments and compute the mean.
-
-%sliding window or/and phase detection
-%To create performance-aware similarity functions, we combine the normalized difference or relative change distances in combination with sliding window or/and phase detection.
+It can also by applied on other data types such as vector and time series.
+The Normalized-Difference and Relative-Change distances work with single values, and can not be applied directly on time series.
+To make them work with time series we use the following approach.
+Firstly, we introduce in \Cref{tab:matching_strategies} two additional operations that transform time series to the same length.
+The first operation, Trimming, can remove segments at the beginning, or/and at the end of the longer job.
+The second operation, Zeros-Insertions, can insert zero-segmens at the beginning, between, or/and at the end of I/O phases of both jobs.
+Both operations create equal sized time series with highest possible similarity.
+Finally, we use a Normalized-Difference-based or Relative-Change-based similarity functions to compute similarity between segments, and obtain the overall similarity by computing the mean.
 
 \begin{table}
   \centering
@@ -507,8 +504,8 @@ Finally, we use the distance functions to compute similarity between the segment
     \midrule
     Euclidean             & $d_{\text{e}} =\sqrt{(\sum_i^n (a_i - b_i))}$ & $a, b \in \mathbb{R}^n$ & The Euclidean distance between two vectors.                                                    \\ 
     Levenshtein           & $d_{\text{lev}} = \text{lev}(a, b)$           & $a, b \in$ Time Series  & Number of operation (inserts, deletes, and changes) requires to convert one coding in another. \\ 
-    Normalized Difference & $d_{\text{nd}} = \frac{|a - b|}{16}$          & $0 \le a, b \le 15$     & A change from level 2 to level 6 on a 16 level system would be (6 - 2) / 16 = 0.25.            \\ 
-    Relative Change       & $d_{\text{rc}} = \frac{\min(a,b)}{\max(a,b)}$ & $a, b \in \mathbb{R}^+$ & A change from level 2 to level 6 system would be 2/6 = 0.66.                                   \\ 
+    Normalized-Difference & $d_{\text{nd}} = \frac{|a - b|}{16}$          & $0 \le a, b \le 16$     & A change from level 2 to level 6 on a 16 level system would be (6 - 2) / 16 = 0.25.            \\ 
+    Relative-Change       & $d_{\text{rc}} = \frac{\min(a,b)}{\max(a,b)}$ & $a, b \in \mathbb{R}^+$ & A change from level 2 to level 6 system would be 2/6 = 0.66.                                   \\ 
   \end{tabularx}
   \caption{Distance functions used to compute similarities.}
   \label{tab:sim_funcs}
@@ -517,12 +514,12 @@ Finally, we use the distance functions to compute similarity between the segment
 \begin{table}
   \centering
     \begin{tabularx}{\textwidth}{lX}
-      Operation         & Description \\
+      Operation       & Description                                                                                  \\ 
       \midrule
-      Time Series Adjustment & Remove zero-segments at the beginning or/and at the end of the longest time series.          \\ 
-      I/O Phase Alighment    & Insert zero-segments at the beginning, between I/O phases, or/and at the end of time series. \\ 
+      Trimming        & Remove segments at the beginning or/and at the end of the longest time series. \\ 
+      Zeros-Insertion & Insert zero-segments at the beginning, between I/O phases, or/and at the end of time series. \\ 
     \end{tabularx}
-  \caption{Length adjustment strategies.}
+    \caption{Length adjustment strategies create time series with the same length, and with maximized similarity.}
   \label{tab:matching_strategies}
 \end{table}
 
@@ -536,7 +533,7 @@ Agglomerative strategies group similar elements together to form a hierarchy of 
 Unfortunately, their complexity is quadratic at least.
 To handle millions of jobs, an algorithm must be performant.
 
-We developed two strategies that address the performance issue and the other limitations, the ClusteringTree algorithm and the SimplifiedDensity algorithm.
+We developed two strategies that address the performance issue and the other limitations, the Clustering-Tree algorithm and the SimplifiedDensity algorithm.
 These algorithms are able to handle the large number of jobs but aim to preserve the core ideas of k-means/density algorithms.
 They are described in the following:
 
@@ -548,14 +545,14 @@ They are described in the following:
     k-means & Runs a random initialization, then refines the clusters until the clusters don't change any more.\\
     Density clustering &  Group nearby elements recursively together as long as they are ($\epsilon$) close together.\\
     Agglomerative &  Hierarchically cluster data into groups of elements that belong closer together.\\
-    \textbf{ClusteringTree} &  Create a hierarchical clustering for subset of data to train a decision tree, then apply the decision tree on the full dataset.\\
-    \textbf{SimplifiedDensity} &  Combines ideas from k-means with density clustering.
+    \textbf{Clustering-Tree} &  Create a hierarchical clustering for subset of data to train a decision tree, then apply the decision tree on the full dataset.\\
+    \textbf{Simplified-Density} &  Combines ideas from k-means with density clustering.
 The simplified clustering algorithms add a job to a cluster if similarity to the cluster centroid is equal or larger than the user defined value.\\
   \end{tabularx}
   \caption{Selection of clustering algorithms}
   \label{tab:clustering_algorithms}
 \end{table}
-\paragraph{ClusteringTree algorithm}
+\paragraph{Clustering-Tree algorithm}
 This algorithm involves three steps:
 
 \begin{enumerate}
@@ -566,7 +563,7 @@ This algorithm involves three steps:
 
 Since the number of clusters on leaf-level depends on their similarity, this strategy should determine a number of suitable clusters that mimics the job distribution in the training set.
 
-\paragraph{SimplifiedDensity algorithm}
+\paragraph{Simplified-Density algorithm}
 
 The algorithm forms clusters around centroids.
 These are job codings that form clusters by attracting similar jobs.
@@ -589,14 +586,12 @@ There are various combinations of the different strategies possible.
 For simplicity, we refer to one clustering stack just as algorithm.
 During our research, we explored various combinations out of the possible combinations but we found that these do not perform well and are not interesting to discuss.
 
-\begin{figure}
+\begin{figure}[bt]
   \centering
   \includegraphics[width=1\textwidth]{clustering_stack.png}
   \caption{Algorithms and their actual operation stacks.}
   \label{fig:clustering_stacks}
 \end{figure}
-
-
 
 The operation stack which we describe in this article is visualized in \Cref{fig:clustering_stacks}.
 In brief, the algorithms are as follows:
@@ -616,7 +611,7 @@ This section describes the evaluated algorithms in detail.
 
 To apply existing clustering algorithms, first, a job-profile is created in the pre-processing.
 The 4d time series can be transformed into the required fixed size input format accepted by the general-purpose ML clustering algorithms.
-In the preprocessing step, the MinMaxScaler scales the features to values between 0 and 1 using MinMax normalization.
+In the pre-processing step, the MinMaxScaler scales the features to values between 0 and 1 using MinMax normalization.
 Therefore, the highest distance between two points can be at most \(\epsilon_\text{max} = d^{1/d}\), where d is the dimension of the dataset.
 
 We explored two job profiles: IO-metric and I/O-duration.
@@ -635,13 +630,13 @@ So we have to deal with 18 features; $\epsilon_{max}$ is 1.17.
 %\eb{Das ist die maximale Distance zwischen zwei Punkten in einem 18-dimensionalen Raum: 18**(1/18) = 1.1741872530996615}
 
 \paragraph{Clustering algorithm}
-We apply agglomerative clustering.
-\jk{Könnte noch bissl unklar sein}
-
-The algorithm uses Euclidean distance as a similarity measure, i.e., if the component wise distance between two job vectors is shorter than the defined distance ($\epsilon$), then these jobs belong to the same cluster.
-
+%We apply agglomerative clustering.
+%\jk{Könnte noch bissl unklar sein}
 We found that the size of our datasets is the first obstacle to the suitable clustering algorithms.
-For example, the scaling behavior of the agglomerative clustering algorithm that is used in this work can handle around 10,000 jobs in a reasonable amount of time as the complexity is \(N^{2}\).
+For example, the scaling behavior of the agglomerative clustering algorithm that is used in this work can handle around 10,000 jobs in a reasonable amount of time as the complexity is $O(N^{2})$.
+
+
+The agglomerative clustering algorithm uses Euclidean distance as a similarity measure, i.e., if the component wise distance between two job vectors is shorter than the defined distance ($\epsilon$), then these jobs belong to the same cluster.
 
 Therefore, to be able to cluster 1,000,000 samples, we created a variant of the algorithm by utilizing a decision tree.
 This workaround involves three steps:
@@ -729,20 +724,26 @@ The example below shows the reduced codings from the previous example.
 This algorithm works on the same principle like the BIN algorithms, with the difference that it applies a hexadecimal coding and then computes the mean similarity across all metrics using Levenshtein.
 This adaption allows a comparison of time series where one metrics differs as only one metric string would differ while with binary coding the overall string would be different.
 
-\begin{multline}
-	\text{similarity}\left(\text{job}_{A},\text{job}_{B} \right) = 1 -\frac{ \sum_{m \in Metrics}^{} \text{levenshtein} \left(\text{coding}_{A,m},\text{\text{coding}}_{B,m} \right) }{|\text{Metrics}| \cdot L_{B}} \\
-	\text{with } L_{B} \geq L_{A}
-\end{multline}
+\begin{equation}
+  \text{similarity}\left(\text{job}_{A},\text{job}_{B} \right) = 1 - \frac{ \sum_{m \in Metrics}^{} \text{levenshtein} \left(\text{coding}_{A,m},\text{\text{coding}}_{B,m} \right) }{|\text{Metrics}| \cdot \text{length}_{B}} 
+\end{equation}
 
 \subsubsection{HEX\_NATIVE}
 This algorithm computes a performance-aware similarity between two jobs.
-It works with hexadecimal codings at metric level and utilizes the Normalized Difference distance for similarity computation.
+It works with hexadecimal codings at metric level and utilizes the Normalized-Difference distance for similarity computation.
+It utilizes only the I/O intensive metrics, denoted by $\text{Metrics}_{\text{IO}}$.
+This set contains those metrics where at least one job contains at least one non-zero segment in this metric.
 Assume jobB is larger or equal than jobA, the job similarity between two jobs can be computed using \Cref{eq:hexn}.
 
-\begin{multline}
-	\text{similarity}\left(\text{job}_{A},\text{job}_{B} \right) = 1-\frac{ \sum _{m \in Metric}^{}\text{maxSimilarity} \left(\text{job}_{A,m},\text{job}_{B,m} \right) }{L_{B}}\\
-\text{with }L_{B} \geq L_{A} \label{eq:hexn}
-\end{multline}
+%\begin{multline}
+%  \text{similarity}\left(\text{job}_{A},\text{job}_{B} \right) = \frac{1}{|M_{IO}|} \sum_{m \in M_{IO}}^{} {\text{maxSimilarity} \left( \text{job}_{A,m}, \text{job}_{B,m} \right)}
+%  \text{ , with }L_{B} \geq L_{A} \label{eq:hexn}
+%\end{multline}
+\begin{equation}
+  \text{similarity}\left(\text{job}_{A},\text{job}_{B} \right) = \frac{ \sum_{m \in \text{Metrics}_{\text{IO}}}^{} {\text{maxSimilarity} \left( \text{job}_{A,m}, \text{job}_{B,m} \right)}}{|\text{Metrics}_{\text{IO}}|}
+  \label{eq:hexn}
+\end{equation}
+
 
 The metric coding sequences $job_{B,m}$ and $job_{A,m}$ of different jobs can have different lengths.
 Therefore, to compute a maximum similarity between two metrics, we use a sliding window approach.
@@ -768,12 +769,149 @@ float maxSimilarity(CA, CB) {
 The \texttt{sliceSimilarity()} in \Cref{eq:slicesim} function computes similarity between two codings of the same length.
 This function maps the difference between performance levels of the same segments (values between 0 and 16) to a relative value between 0 and 1.
 
-%\begin{equation}
- %\text{sliceSimilarity}\left(S_{A},S_{B}\right) = \frac{ \sum _{i=1}^{L_{}}16 - \vert S_{A,i}-S_{B,i} \vert }{\text{16 L}_{}}\text{, with }L=L_{B}=L_{A} \label{eq:slicesim_backup}
-%\end{equation}
 \begin{equation}
-  \text{sliceSimilarity}\left(C_{A},S_{B}\right) = \frac{1}{L}\sum_{i=1}^{L} \left(1 - \frac{\vert C_{A,i}-S_{B,i} \vert }{16}\right)\text{, with }L=L_{S_B}=L_{A} \label{eq:slicesim}
+  \text{sliceSimilarity}\left(C_{A},S_{B}\right) = \frac{1}{L_B}\sum_{i=1}^{L_A} \left(1 - \frac{\vert C_{A,i}-S_{B,i} \vert }{16}\right)\text{, with }L_{B} \geq L_{A} \label{eq:slicesim}
 \end{equation}
+
+The following example computes the similarity of two jobs.
+
+\begin{listing}
+	\noindent\begin{minipage}{\textwidth}
+		\noindent\begin{minipage}{0.6\textwidth}
+			\begin{lstlisting}[basicstyle=\fontsize{8}{8}\ttfamily]
+			md_file_create [0:0:0:0]
+			md_file_delete [0:0:0:0]
+			md_mod         [0:0:0:0]
+			md_other       [0:0:0:0]
+			md_read        [1:1:0:0]
+			read_bytes     [1:1:2:2]
+			read_calls     [0:0:0:0]
+			write_bytes    [0:0:0:0]
+			write_calls    [0:0:0:0]
+			\end{lstlisting}
+			\vspace{-2em}
+			\subcaption{Coding of Job A}
+			\label{lst:hex_hative:job_a}
+		\end{minipage}
+		\noindent\begin{minipage}{0.39\textwidth}
+			\begin{lstlisting}[basicstyle=\fontsize{8}{8}\ttfamily]
+			[]
+			[]
+			[]
+			[]
+			[1:1:0:0]
+			[1:1:2:2]
+			[]
+			[0:0:0:0]
+			[]
+			\end{lstlisting}
+			\vspace{-2em}
+			\subcaption{Metrics of Job A}
+			\label{lst:sim:hex_native:job_a:mio}
+		\end{minipage}
+	\end{minipage}
+
+	\noindent\begin{minipage}{\textwidth}
+		\noindent\begin{minipage}{0.60\textwidth}
+		\begin{lstlisting}[basicstyle=\fontsize{8}{8}\ttfamily]
+		md_file_create [0:0:0:0:0]
+		md_file_delete [0:0:0:0:0]
+		md_mod         [0:0:0:0:0]
+		md_other       [0:0:0:0:0]
+		md_read        [5:5:0:0:0]
+		read_bytes     [1:1:1:2:2]
+		read_calls     [0:0:0:0:0]
+		write_bytes    [0:0:4:8:0]
+		write_calls    [0:0:0:0:0]
+		\end{lstlisting}
+		\vspace{-2em}
+		\subcaption{Coding of Job B}
+		\label{lst:sim:hex_native:job_b}
+		\end{minipage}
+		\noindent\begin{minipage}{0.39\textwidth}
+			\begin{lstlisting}[basicstyle=\fontsize{8}{8}\ttfamily]
+			[]
+			[]
+			[]
+			[]
+			[5:5:0:0]
+			[1:1:2:2]
+			[]
+			[0:0:4:8]
+			[]
+			\end{lstlisting}
+			\vspace{-2em}
+			\subcaption{Trimmed metrics of Job B}
+			\label{lst:sim:hex_native:job_b:mio}
+		\end{minipage}
+	\end{minipage}
+	\caption{Hexadecimal codings of two jobs and I/O intensive metrics.}
+	\label{lst:sim:hex_native}
+\end{listing}
+
+%1 5 -> 0.75
+%1 5 -> 0.75
+%0 0 -> 1
+%0 0 -> 1
+%Sum 3.5
+%SliceSimilarity 0.7
+%1 5 -> 0.75
+%1 0 -> 0.9375
+%0 0 -> 1
+%0 0 -> 1
+%Sum 3.6875
+%SliceSimilarity 0.7375
+%Final SliceSimilarity 0.7375
+%1 1 -> 1
+%1 1 -> 1
+%2 1 -> 0.9375
+%2 2 -> 1
+%Sum 3.9375
+%SliceSimilarity 0.7875
+%1 1 -> 1
+%1 1 -> 1
+%2 2 -> 1
+%2 2 -> 1
+%Sum 4
+%SliceSimilarity 0.8
+%Final SliceSimilarity 0.8
+%0 0 -> 1
+%0 0 -> 1
+%0 4 -> 0.75
+%0 8 -> 0.5
+%Sum 3.25
+%SliceSimilarity 0.65
+%0 0 -> 1
+%0 4 -> 0.75
+%0 8 -> 0.5
+%0 0 -> 1
+%Sum 3.25
+%SliceSimilarity 0.65
+%Final SliceSimilarity 0.65
+%sim 0.7291667
+
+%\begin{lstlisting}
+%sliceSimilarity([1:1:0:0], [5:5:0:0]) = ((1-(5-1)/16) + (1-(5-1)/16) + (1-(0-0)/16) + (1-(0-0)/16)) / 5
+%sliceSimilarity([1:1:2:2] [1:1:2:2]) = ((1-(1-1)/16) + (1-(1-1)/16) + (1-(2-2)/16) + (1-(2-2)/16)) / 5
+%sliceSimilarity([0:0:0:0] [0:1:4:0]) = ((1-(0-0)/16) + (1-(4-0)/16) + (1-(8-0)/16) + (1-(0-0)/16)) / 5
+%\end{lstlisting}
+
+\begin{table}
+\centering
+\begin{tabular}{lllrr}
+  Metric       & $C_A$                 & $S_B$                 & SliceSimilarity($C_A$, $S_B$) \\ 
+  \midrule
+  md\_read     & \lstinline|[1:1:0:0]| & \lstinline|[5:0:0:0]| & 0.7375                        \\ 
+  read\_bytes  & \lstinline|[1:1:2:2]| & \lstinline|[1:1:2:2]| & 0.8                           \\ 
+  write\_bytes & \lstinline|[0:0:0:0]| & \lstinline|[0:1:4:0]| & 0.65                          \\ 
+  \midrule
+  Mean         &                       &                       & 0.73                          \\ 
+\end{tabular}
+\caption{Best combination of I/O phases, that achieves highest possible similarity.}
+\label{tab:hex_native:compute_sim}
+\end{table}
+
+
 
 \subsubsection{PM\_QUANT}
 The phase-matching quantization algorithm allows us to cluster variable length words.
@@ -1036,10 +1174,25 @@ In the same cluster, we expect the sequences to be similar.
 If not, the clustering algorithm is not effective.
 
 
+\section{Test environment}
+For the performance tests, we allocate a compute node on Mistral supercomputer.
+It is equipped with 2x Intel\textsuperscript\textregistered\@ Xeon\textsuperscript\textregistered\@ CPU E5 2680 v3 @ 2.50GHz, 64GB DDR4 RAM\@.
+For clustering of job profiles, we use the agglomerative clustering algorithm, decision trees, and the MinMaxScaler from the scikit-learn 0.22.1 library and python 3.8.0.
+For clustering of binary and hexadecimal codings we use a clustering algorithm implemented in Rust 1.42.0, and run it on a single core.
+
+
+\section{Algorithm parameters}
+\subsection{ML}
+We explored our discussed job profiles: IO-metric and IO-duration.
+For both datasets we explore $\epsilon \in [0.03, 0.06, 0.09, 0.1, 0.2, 0.3]$.
+
+\subsection{BIN/HEX/PM}
+In the experiments with BIN*, HEX* and PM* algorithms, we cluster jobs varing the similarity parameter SIM $\in [0.1, 0.3, 0.5, 0.7, 0.9, 0.95, 0.99]$.
+Additionaly, we capture clustering progress each time after clustering 10,000 jobs.
+
+
 \section{Evaluation}
-
 \subsection{Description of Our Data Set}
-
 This section describes the job data extracted from Mistral, originally we gathered 1\,million jobs from a period of 203 days.
 Mostly jobs are allowed to run up to 8-hours, leading to time series with up to 48 segments.
 From the perspective of this work, analysis of non-I/O-intensive jobs (jobs with zero in all segments) is irrelevant, these jobs can be grouped into one class easily.
@@ -1182,11 +1335,11 @@ Therefore, we conclude that this adapted version of hierarchical clustering base
 This section contains data statistics, clustering progress, and clustering results when applying the five customized algorithms (BIN\_ALL, BIN\_AGGZEROS, HEX\_LEV, HEX\_NATIVE, PM\_QUANT).
 %Due to lack of tools, we determine cluster quality on a small scale.
 
-\subsubsection{Implementation}
-For the performance tests we allocate a compute node on Mistral supercomputer.
-It is equipped with 2x Intel(R) Xeon(R) CPU E5-2680 v3 @ 2.50GHz, 64GB DDR4 RAM.
-The clustering algorithms are implemented in Rust and run on a single core.
-They are applied on pre-computed codings datasets, so that the clustering runtimes do not include the creation of the codings.
+%\subsubsection{Implementation}
+%For the performance tests we allocate a compute node on Mistral supercomputer.
+%It is equipped with 2x Intel(R) Xeon(R) CPU E5-2680 v3 @ 2.50GHz, 64GB DDR4 RAM.
+%The clustering algorithms are implemented in Rust and run on a single core.
+%They are applied on pre-computed codings datasets, so that the clustering runtimes do not include the creation of the codings.
 
 \subsubsection{Impact of the User-Defined Similarity}
 In the introduced algorithms, the user-defined similarity (SIM) that the jobs in a cluster must fullfill to the cluster centroid controls the cluster formation.
