@@ -129,15 +129,18 @@ Here, we extend the approach by grouping similar jobs based on profiles and IO-p
 In different disciplines, machine learning methods have proven to be powerful tools to extract new information from large data sets.
 Therefore, we explore clustering strategies on monitoring data, to reveal hidden information.
 
-This paper is organized as follows: Section 2 outlines the preliminary work and provides background knowledge that is important to understand the next sections.
-In Section 3, we discuss the key problem we are dealing with.
-In Section 4, we introduce\ alternative approaches for the clustering, as different goals for the analysis require different distance metrics, we discuss the variety of approaches.
+This paper is organized as follows: \Cref{sec:preliminary_work} outlines the preliminary work and provides background knowledge that is important to understand the next sections.
+In \Cref{sec:job_similarity}, we discuss the key problem we are dealing with and introduce related work in \Cref{sec:rel_work}.
+In \Cref{sec:methodology}, we introduce\ alternative approaches for the clustering, as different goals for the analysis require different distance metrics, we discuss the variety of approaches.
 We start with a simple solution and increase complexity.
-The results and discussion are attached to the methodology of each solution as subsections.
-Finally, in Section 5 we summarize the results.
+For the most complex algorithms we provide a step by step example.
+%The results and discussion are attached to the methodology of each solution as subsections.
+Then, after a brief description of the test environment in \Cref{sec:test_environment} we discuss the clustering results of introduced algorithms in \Cref{sec:evaluation}.
+The discussion includes a use case study of an I/O intensive job.
+Finally, in \Cref{sec:conclusion} we summarize the results.
 
-
-\section{Preliminary Work}
+\section{Preliminary Work}%
+\label{sec:preliminary_work}
 % Mistral + Monitoring system overview
 The German Climate Computing Center (DKRZ) maintains a monitoring system that gathers various statistics from the Mistral HPC system.
 Mistral has 3,340 compute nodes, 24 login nodes, and two Lustre file systems (lustre01 and lustre02) that provide a capacity of 52 Petabyte.
@@ -221,7 +224,9 @@ For example, in the figure, we can see one phase for md\_file\_create, and two p
 
 When looking at categorization at the metric level, i.e., after reduction of the nodes and file system dimensions, we can observe that many jobs exhibit I/O phases.
 
-\section{Similarity Between Jobs}
+\section{Similarity Between Jobs}%
+\label{sec:job_similarity}
+
 The raw monitoring data of a job in our environment at DKRZ, we obtain a time series of 9 metrics per node, each metrics sampled at five seconds intervals.
 When comparing the time series of such metrics between two jobs, the key question is how do we define the similarity between multiple time series.
 By applying dimensionality reduction techniques such as PCR, we can reduce the complexity and potentially obtain a similar representation for, e.g., two time series, but cannot make relevant distinctions between them.
@@ -276,7 +281,8 @@ Whether or not the timeline is similar when executing an application with a diff
 For these reasons, we decided to explore a variety of alternative options for distance metrics and pre-processing and assess their suitability.
 
 
-\section{Related Work}
+\section{Related Work}%
+\label{sec:rel_work}
 There are many tracing and profiling tools that are able to record I/O information~\cite{TFAPIKBBCF19}; we will discuss a selection of them in more detail in the following.
 Most of them focus on individual jobs, and only a few of them apply machine learning for data analysis, in particular across jobs.
 As the purpose of applications is computation and, thus, I/O is just a byproduct, applications often spend less than 10\% time with I/O.
@@ -316,7 +322,8 @@ HiperJOBVIZ~\cite{hiperjobviz2019} is a visual analytic tool for visualizing the
 It provides an overview of the current resource usage and a detailed view of the resource usage via multi-dimensional representation of health metrics.
 TimeRadar~\footnote{\url{https://idatavisualizationlab.github.io/HPCC/TimeRadar}} is a part of the tool, which summaries the resource usage via radar charts, creating a kind of comprehensible profile for different user groups.
 
-\section{Methodology}
+\section{Methodology}%
+\label{sec:methodology}
 
 The goal of this article is to research the impact of clustering strategies on a large number of jobs.
 Generally, machine learning algorithms expect a fixed number of features, therefore, the time series of statistics that is retrieved on the node-level needs to be pre-processed.
@@ -387,7 +394,7 @@ the first extracts I/O phases -- a phase is a consecutive non-zero series of seg
 the second merges all consecutive zero segments into one segment, i.e., removes compute phases in the statistics.
 The operations are summarized in \Cref{tab:coding_ops}.
 
-\begin{table}
+\begin{table}[t]
  \centering
  \begin{tabularx}{\textwidth}{lX}
 	 Operation &  Description \\
@@ -1207,14 +1214,16 @@ In the same cluster, we expect the sequences to be similar.
 If not, the clustering algorithm is not effective.
 
 
-\section{Test Environment}
+\section{Test Environment}%
+\label{sec:test_environment}
 For the performance tests, we allocate a compute node on Mistral supercomputer.
 It is equipped with 2x Intel\textsuperscript\textregistered\@ Xeon\textsuperscript\textregistered\@ CPU E5 2680 v3 @ 2.50GHz, 64GB DDR4 RAM\@.
 For clustering of job profiles, we use the agglomerative clustering algorithm, decision trees, and the MinMaxScaler from the scikit-learn 0.22.1 library and python 3.8.0.
 For clustering of binary and hexadecimal codings we use a clustering algorithm implemented in Rust 1.42.0, and run it on a single core.
 
 
-\section{Evaluation}
+\section{Evaluation}%
+\label{sec:evaluation}
 \subsection{Description of Our Data Set}
 This section describes the job data extracted from Mistral, originally we gathered 1\,million jobs from a period of 203 days.
 Mostly jobs are allowed to run up to 8-hours, leading to time series with up to 48 segments.
@@ -1262,7 +1271,7 @@ The metrics (md\_bytes, md\_mod, and md\_file\_delete) have the longest tail; so
 \end{figure}
 
 
-\subsection{Algorithm parameters}
+\subsection{Explored Algorithm Parameters}
 \subsubsection{ML}
 We explored our discussed job profiles: IO-metric and IO-duration.
 For both datasets we explore $\epsilon \in [0.03, 0.06, 0.09, 0.1, 0.2, 0.3]$.
@@ -2247,7 +2256,8 @@ We explored various variants for the handling of fluctuation in the time series 
 To answer these questions, a discussion with the community about the use cases and a study of more use cases is necessary.
 
 
-\section{Conclusion}
+\section{Conclusion}%
+\label{sec:conclusion}
 
 In this work, we described various approaches to cluster 1 million jobs based on their IO behavior.
 Clustering of jobs is important for data-center support staff to focus their effort on relevant jobs.
