@@ -180,12 +180,12 @@ We split the time series of each I/O metric into equal-sized time intervals (seg
 This stage preserves the performance units (e.g., Op/s, MiB/s) for each I/O metric.
 The example in \Cref{fig:generic_example} creates segments out of three successive time points just for illustration purposes.
 Depending on aggregation function, segments can be created of metrics (green boxes), of file systems (yellow boxes), of nodes (red boxes), or even over all dimensions (blue box).
-Actually, the real raw monitoring data is converted to 10 minutes segments, which we found is a good trade-off to represent the temporal behavior of the application while it reduces the size of the time series.
+Actually, the real raw monitoring data is converted to ten minutes segments, which we found is a good trade-off to represent the temporal behavior of the application while it reduces the size of the time series.
 
 \paragraph{Categorization.}
 Next, to get rid of the units, and to allow calculations between different I/O metrics, we introduced a categorization pre-processing step that takes into account the performance of the underlying HPC system and assigns a unitless ordered category to each metric segment.
 We use a three category system, which contains the LowIO=0, HighIO=1 and CriticalIO=4 categories.
-The category split points are based on the histogram of the obtained values, for any metrics, a segment with a value up to the 99\%-Quantile it is considered to be LowIO, the 99.9\%-Quantile indicates HighIO~(see \cite{iocats2020}).
+The category split points are based on the histogram of the obtained values, for any metrics, a segment with a value up to the 99\%-Quantile it is considered to be LowIO, larger than the 99.9\%-Quantile indicates CriticalIO, and between HighIO~(see \cite{iocats2020}).
 This node-level data can then be used to compute job-statistics by aggregating across dimensions such as time, file systems, and nodes.
 
 %Segmentation is a pre-processing step that splits data into equal-sized segments and computes a mean performance for each segment.
@@ -227,7 +227,7 @@ When looking at categorization at the metric level, i.e., after reduction of the
 \section{Similarity Between Jobs}%
 \label{sec:job_similarity}
 
-The raw monitoring data of a job in our environment at DKRZ, we obtain a time series of 9 metrics per node, each metrics sampled at five seconds intervals.
+The raw monitoring data of a job in our environment at DKRZ, we obtain a time series of nine metrics per node, each metrics sampled at five seconds intervals.
 When comparing the time series of such metrics between two jobs, the key question is how do we define the similarity between multiple time series.
 By applying dimensionality reduction techniques such as PCR, we can reduce the complexity and potentially obtain a similar representation for, e.g., two time series, but cannot make relevant distinctions between them.
 
@@ -316,7 +316,7 @@ Understanding LASSi reports may be challenging for ordinary HPC users, who do no
 
 
 In~\cite{TUISVPKB19}, the authors utilized probes to detect file system slow-down.A probing tool measures file system response times by periodically sending metadata and read/write requests.An increase of response times correlates to the overloading of the file system.This approach allows the calculation of a slow-down factor identification of the slow-down time period.This approach is able to detect a file system slow-down, but cannot detect the jobs that cause the slow-down.
-The Nextgenio monitoring system~\cite{nextgenio2016}, has four main collectors.The first two, the PBS and ALPS tools, collect job scheduling information.The proprietary Cray I/O monitoring tool exploits Lustre I/O counters to capture file system usage on OSTs of all OSSs and allocated compute nodes.The MAP component provides information about cpu, memory and network usage.Then all the collected data is clustered for the analysis of system usage and performance evaluation.In contrast to existing approaches, our approach focuses on the analysis of job data and investigates clustering strategy to group similar jobs.
+The Nextgenio monitoring system~\cite{nextgenio2016}, has four main collectors.The first two, the PBS and ALPS tools, collect job scheduling information.The proprietary Cray I/O monitoring tool exploits Lustre I/O counters to capture file system usage on OSTs of all OSSs and allocated compute nodes.The MAP component provides information about CPU, memory and network usage.Then all the collected data is clustered for the analysis of system usage and performance evaluation.In contrast to existing approaches, our approach focuses on the analysis of job data and investigates clustering strategy to group similar jobs.
 
 HiperJOBVIZ~\cite{hiperjobviz2019} is a visual analytic tool for visualizing the resource allocations of data centers for jobs, users, and usage statistics.
 It provides an overview of the current resource usage and a detailed view of the resource usage via multi-dimensional representation of health metrics.
@@ -345,10 +345,10 @@ The 4-dimensional data from our monitoring system is too fine-grained for mass a
 to be able to analyze millions of jobs, we must apply some data reduction technique.
 The result of the data-preprocessing is a coding of the initial time series data into one or multiple vectors.
 
-We first convert the time series into segments of 10 minutes which we found previously is a good trade-off to represent the temporal behavior of the application while it reduces the size of the time series.
-Hence, for a job and for each of our 9 client-side recorded metrics, we obtain a coarse-grained time series.
+We first convert the time series into segments of ten minutes which we found previously is a good trade-off to represent the temporal behavior of the application while it reduces the size of the time series.
+Hence, for a job and for each of our nine client-side recorded metrics, we obtain a coarse-grained time series.
 To simplify the interpretation of results and the choice distance metrics, it is beneficial to have the same unit for all features which is why we use our category classification which creates a unitless order.
-For example, when reduced by node, file system, and across metrics, a point may represent the mean value across all time series for the job for the 10 minute interval.
+For example, when reduced by node, file system, and across metrics, a point may represent the mean value across all time series for the job for the ten minute interval.
 
 On the high-level, the following strategies for data reduction could be considered:
 \begin{itemize}
@@ -363,23 +363,23 @@ On the high-level, the following strategies for data reduction could be consider
 We decided to distinguish the different dimensions of a job (Node, File System, Metric, and Time) defining how the aggregation is performed.
 Not reducing data in the dimension would mean that the result would depend on e.g., the number of nodes of a job, which makes the analysis difficult.
 For one dimension, you could compute various statistics, we decided to use mean or sum.
-Any data reduction is performed in this order: fist Node, File System, and last by Metric, thus, a time series of encoded segments remain.
+Any data reduction is performed in this order: first File System, Node, and last by Metric, thus, a time series of encoded segments remain.
 The time series of segments can be reduced differently in each dimension; alternatives that we apply in this paper are listed in \Cref{tab:reduction_techniques}.
 By reducing along all dimension, you obtain basically a job profile (as discussed above).
 
 \begin{table}
 	\centering
 	\begin{tabularx}{\textwidth}{llX}
-		Dimension       & Operation                                    &  Description                                                       \\
+		Dimension       & Operation                                    &  Description                                   \\ 
 		\midrule
-		Node            & Reduce by mean()                             &  Aggregate all nodes by mean() function                            \\
-		                & Reduce by sum()                              &  Aggregate all nodes by sum() function                             \\
-		File System     & Reduce by mean()                             &  Aggregate all file systems by mean() function                     \\
-		                &
-		Reduce by sum() & Aggregate all file systems by sum() function \\
-		Metric          & Reduce by sum()                              &  Aggregate all nine metrics by sum()                               \\
-		Time            &                                              &  Convert segments to coding formats \\
-    All     & Reduce by mean()    &  Reduces time series to a fixed set of values                      \\
+		Node            & Reduce by mean()                             &  Aggregate all nodes by mean() function        \\ 
+		                & Reduce by sum()                              &  Aggregate all nodes by sum() function         \\ 
+		File System     & Reduce by mean()                             &  Aggregate all file systems by mean() function \\ 
+		                & 
+		Reduce by sum() & Aggregate all file systems by sum() function \\ 
+		Metric          & Reduce by sum()                              &  Aggregate all nine metrics by sum()           \\ 
+		Time            &                                              &  Convert segments to coding formats            \\ 
+		All             & Reduce by mean()                             &  Reduces time series to a fixed set of values  \\ 
 	\end{tabularx}
 	\caption{Dimension reduction strategies for the original 4D-data.}
 	\label{tab:reduction_techniques}
@@ -401,6 +401,7 @@ The operations are summarized in \Cref{tab:coding_ops}.
 	 \midrule
 	 Binarization & Segments are mapped to 9-bit numbers (v), where each position (i) represents a metric.
 The bits are set by the following function:
+
 	 \vbox{
 		\begin{equation}
 			v_i =
@@ -421,7 +422,7 @@ The bits are set by the following function:
 
 \paragraph{Binary coding}
 Binary coding represents monitoring data as a sequence of numbers, where each number represents the overall file system usage.
-The number is computed based on the 9 metrics found in the segment, e.g., if a phase is read and write intensive it is encoded as one type of behavior.
+The number is computed based on the nine metrics found in the segment, e.g., if a phase is read and write intensive it is encoded as one type of behavior.
 In this approach, each conceivable combination of activities has an unique number.
 
 The approach maps the three categories to the following two states: The LowIO category is mapped to the non-active (0) state, and HighIO and CriticalIO categories are mapped to the active (1) state.
@@ -503,7 +504,7 @@ This coding preserves monitoring data for each metric and each segment.
 As the name suggests, the value of a segment is converted into a hexadecimal number to allow creation of a string representing the I/O behavior.
 The numbers are obtained in two steps.
 Firstly, the dimension reduction aggregates the file system and the node dimensions and computes a mean value for each metric and segment, which lies in the interval [0,4].
-Secondly, the mean values are quantized into Non-I/O + 16 I/O levels -- 0 (Non-I/0) represents the interval [0,0.125), 1 [0.375,0.625), 2 [0.625,0.825) $ \ldots $ , f [3.875,4].
+Secondly, the mean values are quantized into NonIO + 16 I/O levels -- 0 (NonI0) represents the interval [0,0.125), 1 [0.375,0.625), 2 [0.625,0.825) $ \ldots $ , f [3.875,4].
 The example below shows hexadecimal coding for a job containing 6 segments.
 
 \begin{lstlisting}[caption={Hexadecimal coding of a six segments long job.}]
@@ -622,7 +623,7 @@ There are various combinations of the different strategies possible.
 For simplicity, we refer to one clustering stack just as algorithm.
 During our research, we explored various combinations out of the possible combinations but we found that these do not perform well and are not interesting to discuss.
 
-\begin{figure}[bt]
+\begin{figure}[ht]
   \centering
   \includegraphics[width=1\textwidth]{clustering_stack.png}
   \caption{Algorithms and their actual operation stacks.}
@@ -630,15 +631,32 @@ During our research, we explored various combinations out of the possible combin
 \end{figure}
 
 The operation stack which we describe in this article is visualized in \Cref{fig:clustering_stacks}.
-In brief, the algorithms are as follows:
-\begin{itemize}
- \item (ML) uses a set of \textbf{traditional machine learning} techniques on job profiles.
- \item (BIN\_ALL) uses \textbf{Levenshtein} distance on \textbf{binary codings.}
- \item (BIN\_AGGZEROS) is like BIN\_ALL, but with \textbf{zero aggregation} of contiguous zero segments.
- \item (HEX\_LEV) uses \textbf{hexadecimal coding} and \textbf{Levenshtein} distance.
- \item (HEX\_NATIVE) is like HEX\_LEV, but uses a \textbf{performance-aware} similarity function.
- \item (PM\_QUANT) is like HEX\_NATIVE, but uses a \textbf{phase-aware} similarity function.
-\end{itemize}
+In brief, the algorithms can be characterized like in \Cref{tab:alg_character}.
+
+\begin{table}[ht]
+  \begin{tabularx}{\textwidth}{lX}
+    Algorithm & Characterization \\
+    \midrule
+    ML            & a set of \textbf{traditional machine learning} techniques on job profiles.                                                        \\ 
+    BIN\_ALL      & \textbf{Levenshtein} distance applied on \textbf{binary codings.}                                                                 \\ 
+    BIN\_AGGZEROS & \textbf{Levenshtein} distance applied on \textbf{binary codings}, but with \textbf{zero aggregation} of contiguous zero segments. \\ 
+    HEX\_LEV      & \textbf{Levenshtein} distance applied on \textbf{hexadecimal coding}.                                                             \\ 
+    HEX\_NATIVE   & a \textbf{performance-aware} algorithm.                                                                                           \\ 
+    PM\_QUANT     & a \textbf{performance-aware} and \textbf{I/O phase-aware} algorithm.                                                              \\ 
+  \end{tabularx}
+  \caption{Algorithm characterization}
+  \label{tab:alg_character}
+\end{table}
+
+%\begin{itemize}
+% \item (ML): a set of \textbf{traditional machine learning} techniques on job profiles.
+% \item (BIN\_ALL): \textbf{Levenshtein} distance applied on \textbf{binary codings.}
+% \item (BIN\_AGGZEROS):  \textbf{Levenshtein} distance applied on \textbf{binary codings}, but with \textbf{zero aggregation} of contiguous zero segments.
+% \item (HEX\_LEV): \textbf{Levenshtein} distance applied on \textbf{hexadecimal coding}.
+% \item (HEX\_NATIVE): a \textbf{performance-aware} algorithm.
+% \item (PM\_QUANT): a \textbf{performance-aware} and \textbf{I/O phase-aware} algorithm.
+%\end{itemize}
+
 
 \subsection{Algorithms}
 This section describes the evaluated algorithms in detail.
@@ -662,15 +680,11 @@ These columns are used for machine learning as input features.
 There is a constraint for each metric (metric\_0 + metric\_1 + metric\_4 = 1), that makes 9 features redundant, because they can be computed from the other features.
 So we have to deal with 18 features; $\epsilon_{max}$ is 1.17.
 
-%\jk{Warum ist das hier 1.17, checke ich nicht}
-%\eb{Das ist die maximale Distance zwischen zwei Punkten in einem 18-dimensionalen Raum: 18**(1/18) = 1.1741872530996615}
-
 \paragraph{Clustering algorithm}
 %We apply agglomerative clustering.
 %\jk{Könnte noch bissl unklar sein}
 We found that the size of our datasets is the first obstacle to the suitable clustering algorithms.
 For example, the scaling behavior of the agglomerative clustering algorithm that is used in this work can handle around 10,000 jobs in a reasonable amount of time as the complexity is $O(N^{2})$.
-
 
 The agglomerative clustering algorithm uses Euclidean distance as a similarity measure, i.e., if the component wise distance between two job vectors is shorter than the defined distance ($\epsilon$), then these jobs belong to the same cluster.
 
@@ -805,14 +819,16 @@ float maxSimilarity(CA, CB) {
 \end{lstlisting}
 
 The \texttt{sliceSimilarity()} in \Cref{eq:slicesim} function computes similarity between two codings of the same length.
+It iterates over all positions of the coding $C_A$ and slice $S_B$, computes segment similarities, and the sum.
+Lastly, it normalizes the sum by the length of $job_B$.
 This function maps the differences between performance levels of the same segments (values between 0 and 16) to a relative value between 0 and 1.
 
 \begin{equation}
-  \text{sliceSimilarity}\left(C_{A},S_{B}\right) = \frac{1}{|job_B|}\sum_{i=1}^{|job_A|} \left(1 - \frac{\vert C_{A,i}-S_{B,i} \vert }{16}\right)\text{, with }|job_{B}| \geq |job_{A}| \label{eq:slicesim}
+	\text{sliceSimilarity}\left(C_{A},S_{B}\right) = \frac{1}{|job_B|}\sum_{\text{pos}=1}^{|job_A|} \left(1 - \frac{\vert C_{A,\text{pos}}-S_{B,\text{pos}} \vert }{16}\right)\text{, with }|job_{B}| \geq |job_{A}| \label{eq:slicesim}
 \end{equation}
 
-The similarity computation is illustrated on the example in \Cref{lst:sim:hex_native}.
-First, in we determine and trim the I/O intensive metrics in \Cref{lst:sim:hex_native:job_a:mio,lst:sim:hex_native:job_b:mio}.
+In \Cref{lst:sim:hex_native} we apply the approach to compute similarity between two jobs.
+First, we determine and trim the I/O intensive metrics in \Cref{lst:sim:hex_native:job_a:mio,lst:sim:hex_native:job_b:mio}.
 Then we use the \Cref{eq:slicesim} to computed individual metrics similarities, and finally, we compute the mean in \Cref{tab:hex_native:compute_sim}.
 According to this algorithm, the jobs are similar to 73\%.
 
@@ -931,11 +947,6 @@ According to this algorithm, the jobs are similar to 73\%.
 %Final SliceSimilarity 0.65
 %sim 0.7291667
 
-%\begin{lstlisting}
-%sliceSimilarity([1:1:0:0], [5:5:0:0]) = ((1-(5-1)/16) + (1-(5-1)/16) + (1-(0-0)/16) + (1-(0-0)/16)) / 5
-%sliceSimilarity([1:1:2:2] [1:1:2:2]) = ((1-(1-1)/16) + (1-(1-1)/16) + (1-(2-2)/16) + (1-(2-2)/16)) / 5
-%sliceSimilarity([0:0:0:0] [0:1:4:0]) = ((1-(0-0)/16) + (1-(4-0)/16) + (1-(8-0)/16) + (1-(0-0)/16)) / 5
-%\end{lstlisting}
 
 \begin{table}
 \centering
@@ -946,12 +957,11 @@ According to this algorithm, the jobs are similar to 73\%.
   read\_bytes  & \lstinline|[1:1:2:2]| & \lstinline|[1:1:2:2]| & 0.8                           \\ 
   write\_bytes & \lstinline|[0:0:0:0]| & \lstinline|[0:1:4:0]| & 0.65                          \\ 
   \midrule
-  Mean         &                       &                       & 0.73                          \\ 
+  Mean         &                       &                       & $\approx$0.73                          \\ 
 \end{tabular}
 \caption{Best combination of I/O phases, that achieves highest possible similarity.}
 \label{tab:hex_native:compute_sim}
 \end{table}
-
 
 
 \subsubsection{PM\_QUANT}
@@ -960,33 +970,6 @@ First, using a hexadecimal coding, phases of consecutive I/O segments are detect
 Then, the best match between the (disjoint) phases is determined, finally the similarity is computed.
 We will discuss the details of each step on the following example.
 
-%\begin{lstlisting}[language=C,morekeywords={md_file_create,read_bytes}]
-%jobA (length: 13)
-%md_file_create [0:0:2:2:2:9:3:0:9:1:1:1:0]
-%md_file_delete [0:0:0:0:0:0:0:0:0:0:0:0:0]
-%md_mod         [0:0:0:0:0:0:0:0:0:0:0:0:0]
-%md_other       [0:0:0:0:0:0:0:0:0:0:0:0:0]
-%md_read        [0:0:0:0:0:0:0:0:0:0:0:0:0]
-%read_bytes     [0:0:0:9:3:0:0:0:0:0:1:0:0]
-%read_calls     [0:0:0:0:0:0:0:0:0:0:0:0:0]
-%write_bytes    [0:0:0:0:0:0:0:0:0:0:0:0:0]
-%write_calls    [0:0:0:0:0:0:0:0:0:0:0:0:0]
-%\end{lstlisting}
-
-%\vspace*{-0.5em}
-
-%\begin{lstlisting}[language=C,morekeywords={md_file_create,read_bytes,write_bytes}]
-%jobB (length: 15)
-%md_file_create [1:0:0:0:0:0:0:0:0:0:0:0:0:0:0]
-%md_file_delete [0:0:0:0:0:0:0:0:0:0:0:0:0:0:0]
-%md_mod         [0:0:0:0:0:0:0:0:0:0:0:0:0:0:0]
-%md_other       [0:0:0:0:0:0:0:0:0:0:0:0:0:0:0]
-%md_read        [0:0:0:0:0:0:0:0:0:0:0:0:0:0:0]
-%read_bytes     [2:2:2:2:8:2:2:0:0:1:0:0:8:1:1]
-%read_calls     [0:0:0:0:0:0:0:0:0:0:0:0:0:0:0]
-%write_bytes    [0:0:0:0:0:0:0:0:0:0:0:5:0:0:0]
-%write_calls    [0:0:0:0:0:0:0:0:0:0:0:0:0:0:0]
-%\end{lstlisting}
 
 \begin{listing}
 	\noindent\begin{minipage}{\textwidth}
@@ -1182,12 +1165,6 @@ The example below shows the pairs of I/O phases and their matches.
 \caption{Best combination of I/O phases, that achieves highest possible similarity.}
 \end{table}
 
-%\jk{Wollten wir nicht noch durch max = 16 teilen}
-%\eb{Das wollten wir bei HEV\_NATIVE machen und das machen wir auch (siehe Section davor).
-%Das hier ist etwas komplett anderes.
-%Das ist ein Zwischenschritt fuer die Berechnung der Aehnlichkeit zwischen zwei Jobs.
-%Im naechsten Paragraphen wird sie auch berechnet.}
-
 \paragraph{Similarity}
 Next, the similarity for coding with different lengths must be adjusted.
 Similarity between two jobs is the sum of matches divided by the sum of lengths of the longer phases.
@@ -1218,7 +1195,7 @@ If not, the clustering algorithm is not effective.
 \label{sec:test_environment}
 For the performance tests, we allocate a compute node on Mistral supercomputer.
 It is equipped with 2x Intel\textsuperscript\textregistered\@ Xeon\textsuperscript\textregistered\@ CPU E5 2680 v3 @ 2.50GHz, 64GB DDR4 RAM\@.
-For clustering of job profiles, we use the agglomerative clustering algorithm, decision trees, and the MinMaxScaler from the scikit-learn 0.22.1 library and python 3.8.0.
+For clustering of job profiles, we use the agglomerative clustering algorithm, decision trees, and the MinMaxScaler from the Scikit-Learn 0.22.1 library and Python 3.8.0.
 For clustering of binary and hexadecimal codings we use a clustering algorithm implemented in Rust 1.42.0, and run it on a single core.
 
 
@@ -1232,7 +1209,7 @@ For that reason, we detect zero-jobs early and remove them from the dataset; the
 %Note that PM ignores such jobs by design.
 %Therefore, this step wouldn't be necessary.
 
-The number of zero-jobs is different for hexadecimal and absolute mode codings.
+The number of zero-jobs is different for hexadecimal and binary mode codings.
 The reason is the quantization to HEX coding which computes mean performance values for all segments and then quantizes them into NonIO + 16 levels.
 Hereby, some segments can be quantized to zeros, if the mean value is lower than 0.125.
 Therefore, it may happen that some jobs fall into the zero-job category, if all segments are quantized to zeros.
@@ -1272,22 +1249,22 @@ The metrics (md\_bytes, md\_mod, and md\_file\_delete) have the longest tail; so
 
 
 \subsection{Explored Algorithm Parameters}
-\subsubsection{ML}
+\paragraph{ML}
 We explored our discussed job profiles: IO-metric and IO-duration.
 For both datasets we explore $\epsilon \in [0.03, 0.06, 0.09, 0.1, 0.2, 0.3]$.
 
-\subsubsection{BIN/HEX/PM}
-In the experiments with BIN*, HEX* and PM* algorithms, we cluster jobs varing the similarity parameter SIM $\in [0.1, 0.3, 0.5, 0.7, 0.9, 0.95, 0.99]$.
-Additionaly, we capture clustering progress each time after clustering 10,000 jobs.
+\paragraph{BIN/HEX/PM}
+In the experiments with BIN*, HEX* and PM* algorithms, we cluster jobs varying the similarity parameter SIM $\in [0.1, 0.3, 0.5, 0.7, 0.9, 0.95, 0.99]$.
+Additionally, we capture clustering progress each time after clustering 10,000 jobs.
 
 
 \subsection{Limitations of the ML Algorithms}
 This section contains data statistics, and the clustering results in \Cref{fig:datasets_clustering_results} for applying the ML algorithm (hierarchical clustering + decision tree) but using the two different job profiles (IO-Metric and IO-Duration).
 Due to lack of tools, we determine cluster quality on a small scale.
 
-\subsubsection{Implementation}
-The data is analyzed using Python3.8.0.
-In particular we use the agglomerative clustering algorithm, decision trees, and the MinMaxScaler from the scikit-learn 0.22.1 library.
+%\subsubsection{Implementation}
+%The data is analyzed using Python3.8.0.
+%In particular we use the agglomerative clustering algorithm, decision trees, and the MinMaxScaler from the scikit-learn 0.22.1 library.
 
 
 \subsubsection{Results}
@@ -1311,18 +1288,9 @@ The Top 20 largest clusters and total number of clusters is visualized in \Cref{
  \label{fig:datasets_clustering_results}
 \end{figure}
 
-%\jk{Können wir EPS im Bild durch SIM ersetzen, dann ist das einheitlich.}
-%\eb{Keine Ahnung, ob das eine gute Idee ist, weil die Parameter unterschiedlich sind:
-%  EPS: je kleiner,  desto praeziser Clustering,
-%  SIM: je groesser, desto praeziser ist Clustering.
-%}
-
 We can see that IO-duration generated two very large clusters regardless of $\epsilon$.
 From Cluster\,3 of IO-duration, the number of jobs inside looks then similar as for IO-metric.
 In IO-metric, we can see that with increasing $\epsilon$, the number of jobs per cluster increase (as expected).
-
-%\jk{Kann es sein, dass EPS=0.3 bei beiden eben nicht das gleiche Verhältnis ist, ich meine $\epsilon_{max}$ ist ja unterschiedlich wenn ich 3 Metriken oder 18 habe?}
-%\eb{Oh ja, das hat mich auch beschaeftigt. Aber bei einer Parameter exploration ist es irrelevant, weil man systematische diverse Parameter durchgeht, ohne nach Optimum zu streben.}
 
 A look inside clusters reveals chaotic clustering results.
 For both datasets and for all $\epsilon$ values we could find many coding sequences in a cluster that we wouldn't locate together.
@@ -1473,7 +1441,7 @@ Note that the relevance could include the number of occupied nodes as well to ef
 In this analysis, we just looked at our definition of weighted relevance.
 
 \begin{equation}
-\text{Relevance} = \text{ClusterSize} \cdot \text{MeanJobLenght}
+\text{Relevance} = \text{ClusterSize} \cdot \text{MeanJobLength}
 \label{eq:rel}
 \end{equation}
 
@@ -1484,14 +1452,6 @@ For a small SIM value, the first few clusters contain a large quantity of shorte
 However, due to our definition of the relevance metrics, we can observe that smaller clusters with longer jobs are often considered more relevant.
 This can be as extreme as a cluster with average length of $>40$ segments is ranked next to one with average length of $1$ segment.
 We believe that clustering by relevance (potentially extended by the occupied node number) is useful for support staff to identify optimization potential.
-
-
-%\begin{figure}
-%  \centering
-%  \includegraphics[width=2.5in,height=0.12in]{image16.png}
-%  \caption{Equation}
-%  \label{fig:equation}
-%\end{figure}
 
 \begin{figure}
   \centering
@@ -1506,9 +1466,8 @@ We believe that clustering by relevance (potentially extended by the occupied no
 The analysis so far does not mean that the quality of the clusters is acceptable.
 After manual exploration of selected clusters, we noticed some show a SIM-value independent characteristics.
 To explain them, for each algorithm we investigate one cluster of these in detail.
-% we provide an overview of the top clusters and then => wird nicht gemacht außer bei BIN
 
-For the presentation of the clusters, we provide a description of particular observations followed by a table containing statistics, then the codings for centroid and most frequent unique jobs in the cluster -- we call such a a unique representation a \textit{job phenotype}.
+For the presentation of the clusters, we provide a description of particular observations followed by a table containing statistics, then the codings for centroid and most frequent unique jobs in the cluster -- we call such a unique representation a \textit{job phenotype}.
 At the end, we include an illustration which describes the segment length distribution of jobs in the cluster that indicates how much the algorithm groups across different job runtime.
 
 \subsubsection{Algorithm characteristics}
@@ -1525,7 +1484,7 @@ In each cluster, all jobs have the identical coding; these short running jobs ar
 Therefore, the selected cluster for inspection is further down in the Top 5, information is shown in \Cref{cluster:bin_all}.
 There are about 3300 different types of unique jobs, it contains jobs with a length between 41 and 60.
 Most jobs in the cluster are shorter than 49 segments, because the main Mistral partitions can allocate jobs for at most 8 hours, and that is the majority of jobs.
-Since each segment is 10 min long, the runtime of jobs with 49 segments is about 8.16 hours.
+Since each segment is ten minutes long, the runtime of jobs with 49 segments is about 8.16 hours.
 The other jobs must be special allocations.
 
 By inspecting individual jobs in \Cref{cluster:bin_all:top_jobs}, we can see that the centroid has 4 segments $\neq 0$ and the jobs are mostly empty.
@@ -2271,7 +2230,7 @@ One problem might be that we apply a combination of a clustering and a classific
 The classification algorithm is trained by the potential erroneous output of the clustering algorithm and it can itself produce erroneous output, which multiples the total error.
 Even if a better solution would found there is no guarantee that the generated model could be applied on another system.
 
-In the evaluation, we investigated the quantiative and qualitative behavior of different algorithms.
+In the evaluation, we investigated the quantitative and qualitative behavior of different algorithms.
 The investigation of clusters shows that, particularly clusters with little I/O activity are noisy and do not meet our expectation.
 Depending on the similarity chosen by the user, there are many different clusters with phenotypes of jobs found.
 Thus, exceeding the ability for manual inspection and manual labeling.
