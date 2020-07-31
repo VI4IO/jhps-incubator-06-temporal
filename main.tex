@@ -276,7 +276,7 @@ Whether or not the timeline is similar when executing an application with a diff
 For these reasons, we decided to explore a variety of alternative options for distance metrics and pre-processing and assess their suitability.
 
 
-\section{Related work}
+\section{Related Work}
 There are many tracing and profiling tools that are able to record I/O information~\cite{TFAPIKBBCF19}; we will discuss a selection of them in more detail in the following.
 Most of them focus on individual jobs, and only a few of them apply machine learning for data analysis, in particular across jobs.
 As the purpose of applications is computation and, thus, I/O is just a byproduct, applications often spend less than 10\% time with I/O.
@@ -1207,7 +1207,7 @@ In the same cluster, we expect the sequences to be similar.
 If not, the clustering algorithm is not effective.
 
 
-\section{Test environment}
+\section{Test Environment}
 For the performance tests, we allocate a compute node on Mistral supercomputer.
 It is equipped with 2x Intel\textsuperscript\textregistered\@ Xeon\textsuperscript\textregistered\@ CPU E5 2680 v3 @ 2.50GHz, 64GB DDR4 RAM\@.
 For clustering of job profiles, we use the agglomerative clustering algorithm, decision trees, and the MinMaxScaler from the scikit-learn 0.22.1 library and python 3.8.0.
