@@ -52,6 +52,7 @@
 
 \crefname{cluster}{Cluster\,Overview}{Cluster\,Overviews}
 \crefname{subcluster}{Sub-Cluster\,Overview}{Sub-Cluster\,Overviews}
+\crefname{sublisting}{Listing}{Listings}
 \setcounter{cluster}{0}
 \setcounter{subcluster}{0}
 
@@ -652,7 +653,7 @@ This algorithm converts the time series data via binary coding to a string and t
 The Levenshtein based similarity between two jobs is determined using \Cref{eq:sim:bin_all}.
 
 \begin{equation}
-	\text{similarity}\left(\text{job}_{A},\text{job}_{B} \right) = 1 - \frac{\text{levenshtein}\left(\text{coding}_{A},\text{coding}_{B} \right) }{max \left(\text{length}_{A},\text{length}_{B} \right) } \label{eq:sim:bin_all}
+	\text{similarity}\left(\text{job}_{A},\text{job}_{B} \right) = 1 - \frac{\text{levenshtein}\left(\text{job}_{A},\text{job}_{B} \right) }{\max \left(|job_{A}|,|job_{B}| \right) } \label{eq:sim:bin_all}
 \end{equation}
 It is the number of Levenshtein operations (changes/deletes/inserts) divided by the length of the longest sequence, and subtracted from the value one.
 
@@ -690,7 +691,7 @@ This allows us to focus on I/O intensive parts of the job.
 The example below shows the reduced codings from the previous example.
 
 \begin{equation}
-	\text{similarity} \left(\text{job}_{A},\text{job}_{B} \right) =1- \frac{\text{levenshtein} \left(\text{coding}_{A},\text{coding}_{B} \right) }{max \left(\text{length}_{A},\text{length}_{B} \right) } \label{eq:sim:bin_aggzeros}
+	\text{similarity} \left(\text{job}_{A},\text{job}_{B} \right) =1- \frac{\text{levenshtein} \left(\text{job}_{A},\text{job}_{B} \right) }{\max \left( |job_{A}|,|job_{B}| \right) } \label{eq:sim:bin_aggzeros}
 \end{equation}
 
 %\begin{lstlisting}[caption={The similarity between these two jbos is 53 percent.}]
@@ -725,15 +726,18 @@ This algorithm works on the same principle like the BIN algorithms, with the dif
 This adaption allows a comparison of time series where one metrics differs as only one metric string would differ while with binary coding the overall string would be different.
 
 \begin{equation}
-  \text{similarity}\left(\text{job}_{A},\text{job}_{B} \right) = 1 - \frac{ \sum_{m \in Metrics}^{} \text{levenshtein} \left(\text{coding}_{A,m},\text{\text{coding}}_{B,m} \right) }{|\text{Metrics}| \cdot \text{length}_{B}} 
+  \text{similarity}\left(\text{job}_{A},\text{job}_{B} \right) = 1 - \frac{ \sum_{m \in Metrics}^{} \text{levenshtein} \left(\text{job}_{A,m},\text{\text{job}}_{B,m} \right) }{|\text{Metrics}| \cdot |job_{B}|} 
 \end{equation}
 
 \subsubsection{HEX\_NATIVE}
 This algorithm computes a performance-aware similarity between two jobs.
-It works with hexadecimal codings at metric level and utilizes the Normalized-Difference distance for similarity computation.
-It utilizes only the I/O intensive metrics, denoted by $\text{Metrics}_{\text{IO}}$.
-This set contains those metrics where at least one job contains at least one non-zero segment in this metric.
-Assume jobB is larger or equal than jobA, the job similarity between two jobs can be computed using \Cref{eq:hexn}.
+It works with with a selection of I/O intensive metrics from hexadecimal codings ($\text{Metrics}_{\text{IO}}$) and utilizes the Normalized-Difference distance for similarity computation.
+%It utilizes only the I/O intensive metrics, denoted by $\text{Metrics}_{\text{IO}}$.
+%This set contains those metrics where at least one job contains at least one non-zero segment in this metric.
+Assume there two jobs, $job_A$ and $job_B$.
+I/O intensive metrics are those, which have either in $job_A$ or in $job_B$ at least one non-zero segment.
+Further, assume $job_B$ is larger or equal than $job_A$.
+Then the job similarity between the two jobs can be computed using \Cref{eq:hexn}.
 
 %\begin{multline}
 %  \text{similarity}\left(\text{job}_{A},\text{job}_{B} \right) = \frac{1}{|M_{IO}|} \sum_{m \in M_{IO}}^{} {\text{maxSimilarity} \left( \text{job}_{A,m}, \text{job}_{B,m} \right)}
@@ -744,11 +748,11 @@ Assume jobB is larger or equal than jobA, the job similarity between two jobs ca
   \label{eq:hexn}
 \end{equation}
 
-
-The metric coding sequences $job_{B,m}$ and $job_{A,m}$ of different jobs can have different lengths.
-Therefore, to compute a maximum similarity between two metrics, we use a sliding window approach.
+The metric codings $job_{B,m}$ and $job_{A,m}$ of different jobs can have different lengths.
+To compute similarity, we trim the most irrelevant segments of the longer time series.
+We determine them by the sliding window approach, with the goal to maximize similarity between two metrics.
 That means, we take the shortest coding sequence (CA) and check how it fits best on the longer coding sequence (CB).
-
+The best fitted slice is denoted as (SB).
 
 \begin{lstlisting}[caption={Pseudo code of the maxSimilarity() function}]
 float maxSimilarity(CA, CB) {
@@ -767,13 +771,16 @@ float maxSimilarity(CA, CB) {
 \end{lstlisting}
 
 The \texttt{sliceSimilarity()} in \Cref{eq:slicesim} function computes similarity between two codings of the same length.
-This function maps the difference between performance levels of the same segments (values between 0 and 16) to a relative value between 0 and 1.
+This function maps the differences between performance levels of the same segments (values between 0 and 16) to a relative value between 0 and 1.
 
 \begin{equation}
-  \text{sliceSimilarity}\left(C_{A},S_{B}\right) = \frac{1}{L_B}\sum_{i=1}^{L_A} \left(1 - \frac{\vert C_{A,i}-S_{B,i} \vert }{16}\right)\text{, with }L_{B} \geq L_{A} \label{eq:slicesim}
+  \text{sliceSimilarity}\left(C_{A},S_{B}\right) = \frac{1}{|job_B|}\sum_{i=1}^{|job_A|} \left(1 - \frac{\vert C_{A,i}-S_{B,i} \vert }{16}\right)\text{, with }|job_{B}| \geq |job_{A}| \label{eq:slicesim}
 \end{equation}
 
-The following example computes the similarity of two jobs.
+The similarity computation is illustrated on the example in \Cref{lst:sim:hex_native}.
+First, in we determine and trim the I/O intensive metrics in \Cref{lst:sim:hex_native:job_a:mio,lst:sim:hex_native:job_b:mio}.
+Then we use the \Cref{eq:slicesim} to computed individual metrics similarities, and finally, we compute the mean in \Cref{tab:hex_native:compute_sim}.
+According to this algorithm, the jobs are similar to 73\%.
 
 \begin{listing}
 	\noindent\begin{minipage}{\textwidth}
@@ -791,7 +798,7 @@ The following example computes the similarity of two jobs.
 			\end{lstlisting}
 			\vspace{-2em}
 			\subcaption{Coding of Job A}
-			\label{lst:hex_hative:job_a}
+			\label{lst:sim:hex_hative:job_a}
 		\end{minipage}
 		\noindent\begin{minipage}{0.39\textwidth}
 			\begin{lstlisting}[basicstyle=\fontsize{8}{8}\ttfamily]
