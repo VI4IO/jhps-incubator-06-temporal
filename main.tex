@@ -402,6 +402,7 @@ By reducing along all dimension, you obtain basically a job profile (as discusse
 
 \subsubsection{Coding}
 
+
 Segmented data contains a numeric floating-point value for each data, which can be too much information for the analysis.
 Therefore, we introduce two condensed data representations called binary and hexadecimal coding.
 Additionally, we introduce two operations on the coding:
@@ -521,6 +522,32 @@ The numbers are obtained in two steps.
 Firstly, the dimension reduction aggregates the file system and the node dimensions and computes a mean value for each metric and segment, which lies in the interval [0,4].
 Secondly, the mean values are quantized into NonIO + 16 I/O levels -- 0 (NonI0) represents the interval [0,0.25), 1 = [0.25,0.625), 2 = [0.625,0.825) $ \ldots $, e = [XX, XX), f = [3.875,4].
 The example below shows hexadecimal coding for a job containing 6 segments.
+
+\begin{table}
+\begin{tabular}{lll}
+Level & Interval      & Interval Size \\ 
+\midrule
+0     & [0,0.125)     & 0.125         \\ 
+1     & [0.125,0.375) & 0.25          \\ 
+2     & [0.375,0.625) & 0.25          \\ 
+3     & [0.625,0.875) & 0.25          \\ 
+4     & [0.875,1.125) & 0.25          \\ 
+5     & [1.125,1.375) & 0.25          \\ 
+6     & [1.375,1.625) & 0.25          \\ 
+7     & [1.625,1.875) & 0.25          \\ 
+8     & [1.875,2.125) & 0.25          \\ 
+9     & [2.125,2.375) & 0.25          \\ 
+10    & [2.375,2.625) & 0.25          \\ 
+11    & [2.625,2.875) & 0.25          \\ 
+12    & [2.875,3.125) & 0.25          \\ 
+13    & [3.125,3.375) & 0.25          \\ 
+14    & [3.375,3.625) & 0.25          \\ 
+15    & [3.625,3.875) & 0.25          \\ 
+16    & [3.875,4]     & 0.125         \\ 
+\end{tabular}
+\caption{Non-unifor quantization intervals}
+\end{table}
+
 
 \begin{lstlisting}[caption={Hexadecimal coding of a six segments long job.}]
 'md_file_create' : [0:0:2:2:2:9]
