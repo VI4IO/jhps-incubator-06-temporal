@@ -227,7 +227,7 @@ When looking at categorization at the metric level, i.e., after reduction of the
 
 The raw monitoring data of a job in our environment at DKRZ, we obtain a time series of nine metrics per node, each metric sampled at five seconds intervals.
 When comparing the time series of such metrics between two jobs, the key question is how do we define the similarity between multiple time series that may even be of different length.
-ML techniques work well to deal with a fixed number of features, e.g., by creating a fixed-size profile for the jobs and applying dimensionality reduction techniques such as PCR, we could reduce the complexity and potentially obtain a similar representation for, e.g., two time series.
+ML techniques work well to deal with a fixed number of features, e.g., by creating a fixed-size profile for the jobs and applying dimension reduction techniques such as PCR, we could reduce the complexity and potentially obtain a similar representation for, e.g., two time series.
 
 To understand which technique we should use, first, we need to discuss the perception of similarity of I/O patterns from the user perspective.
 In \Cref{fig:typ_io:all}, we illustrate the time series of two metrics for three different jobs.
@@ -236,13 +236,13 @@ The figures show the typical behavior of parallel applications, computation is i
 Actually, the shape of I/O phases depends on our definition of I/O phase.
 By applying dimension reduction techniques, I/O phases from different dimensions can be joined together.
 Although several aggregations are possible, in this work we focus on  I/O phases on metrics, i.e, we aggregate nodes and file system dimensions.
-Identification of I/O phases shows that a substantial number of jobs has several of them.
+When investigating the distribution of I/O phases, we observe that jobs (longer than three segments) exhibit  several.
 
 From the user support side, we might be interested in grouping similar suboptimal jobs and aim to provide one recipe to optimize all that exhibit such a behavior.
 Similarly, we might be interested to optimize the pattern for a single I/O phase.
-We may be interested to ignore computation time and focus on I/O phases only.
+Optionally, we may be interested to ignore computation time and focus on I/O phases only.
 Regardless of the segment of the time series we look at, we naively would consider an I/O pattern to be identical if the time series for all metrics of one job is identical to those of another job.
-Unfortunately, the obtained measurements vary due to the nature of parallel applications and the environment of the data center they are executed.
+Unfortunately, the obtained measurements vary due to the nature of parallel applications and the environment of the data center they are executed:
 In practice, different jobs show a different runtime, and even when re-running the same job, the obtained time series varies.
 
 \begin{figure}
@@ -292,8 +292,8 @@ Darshan~\cite{carns2011understanding-toc,hpcdarshan} is an open source I/O chara
 Its primary objective is to capture concise but useful information with minimal overhead.
 Darshan accomplishes this by eschewing end-to-end tracing in favor of compact statistics such as elapsed time, access sizes, access patterns, and file names for each file opened by an application.
 These statistics are captured in a bounded amount of memory per process as the application executes.
-When the application shuts down, it is reduced, compressed, and stored in a unified log file.
-%Utilities included with Darshan can then be used to analyze, visualize, and summarize the Darshan log information.
+When the application shuts down, this data is reduced, compressed, and stored in a unified log file.
+Utilities included with Darshan can then be used to analyze, visualize, and summarize the Darshan log information.
 Because of Darshan's low overhead, it is suitable for system-wide deployment on large-scale systems.
 In this deployment model, Darshan can be used not just to investigate the I/O behavior of individual applications but also to capture a broad view of system workloads for use by facility operators and I/O researchers.
 
@@ -329,19 +329,24 @@ In contrast to existing approaches, our approach focuses on the analysis of job 
 
 HiperJOBVIZ~\cite{hiperjobviz2019} is a visual analytic tool for visualizing the resource allocations of data centers for jobs, users, and usage statistics.
 It provides an overview of the current resource usage and a detailed view of the resource usage via multi-dimensional representation of health metrics.
-TimeRadar~\footnote{\url{https://idatavisualizationlab.github.io/HPCC/TimeRadar}} is a part of the tool, which summaries the resource usage via radar charts, creating a kind of comprehensible profile for different user groups.
+TimeRadar\footnote{\url{https://idatavisualizationlab.github.io/HPCC/TimeRadar}} is a part of the tool, which summaries the resource usage via radar charts, creating a kind of comprehensible profile for different user groups.
+
+Trace analysis tools such as Vampir~\cite{nagel1996vampir} offer clustering strategies to analyze the per-process time series of a single job, in particular to group similar time series and allow users to focus on the exceptional cases that may lead to slowdown of the parallel application.
+In \cite{weber2016structural}, a strategy is developed for determining such a clustering based on execution structure; the paper gives a good introduction for the comparison of two traces as well.
+
+In contrast to existing strategies, we compare a large number of jobs with individual properties.
 
 \section{Methodology}%
 \label{sec:methodology}
 
-The goal of this article is to research the impact of clustering strategies on many jobs.
+The goal of this article is to research the impact of clustering strategies on many jobs from the perspective of a user and data center.
 Generally, machine learning algorithms expect a fixed number of features, therefore, the time series of statistics that is retrieved on the node-level needs to be pre-processed.
 The application of a “specific algorithm” can be understood as a number of successive processing steps on data.
-Roughly speaking, there are three basic steps: data pre-processing including coding, similarity computation, and clustering.
-We call one of such a combination a \textit{clustering stack}.
+Roughly speaking, there are three basic steps: data pre-processing (including coding), similarity computation, and clustering.
+We call one algorithm representing such a combination a \textit{clustering stack}.
 The pre-processing converts the dynamic-sized monitoring data which depends on the number of captured metrics, allocated nodes, and application runtime into a suitable representation for the clustering algorithm.
-Then the clustering is applied.
-Finally, the clustering result needs to be assessed, i.e., how suitable is this strategy for our I/O statistics and use cases?
+Then the clustering is applied using a specific similarity function.
+Finally, the quality of the clustering result is assessed, i.e., how suitable is this strategy for our I/O statistics and use cases?
 
 \subsection{Overview}
 
@@ -361,7 +366,7 @@ For example, when reduced by node, file system, and across metrics, a point may 
 
 On the high-level, the following strategies for data reduction could be considered:
 \begin{itemize}
-	\item \textbf{Job profiles} compute statistics across the whole job by eliminating the temporal component by applying reduction operations such as the arithmetic mean.
+	\item \textbf{Job profiles} compute a fixed set of statistics across the whole job regardless of dynamic factors such as runtime or nodes by applying reduction operations such as the arithmetic mean.
 		A drawback of this simplification is that any temporal pattern is lost.
 	\item \textbf{Segment statistics} compute for each segment a fixed statistics, such as the mean value across all nodes.
 		This basically preserves the time series and depends on the job-length.
@@ -370,9 +375,10 @@ On the high-level, the following strategies for data reduction could be consider
 \end{itemize}
 
 We decided to distinguish the different dimensions of a job (Node, File System, Metric, and Time) defining how the aggregation is performed.
-Not reducing data in the dimension would mean that the result would depend on e.g., the number of nodes of a job, which makes the analysis difficult.
-For one dimension, you could compute various statistics, we decided to use mean or sum.
-Any data reduction is performed in this order: first File System, Node, and last by Metric, thus, a time series of encoded segments remain.
+Not reducing data in the dimension would mean that the result would depend on, e.g., the number of nodes of a job, which makes the comparison of two jobs difficult.
+For one dimension, you could compute various statistics; we decided to use mean or sum.
+Any data reduction is performed in this order across the dimensions: first File System, Node, and last by Metric.
+Thus, a time series of encoded segments remain.
 The time series of segments can be reduced differently in each dimension; alternatives that we apply in this paper are listed in \Cref{tab:reduction_techniques}.
 By reducing along all dimension, you obtain basically a job profile (as discussed above).
 
@@ -401,7 +407,7 @@ Therefore, we introduce two condensed data representations called binary and hex
 Additionally, we introduce two operations on the coding:
 the first extracts I/O phases -- a phase is a consecutive non-zero series of segments;
 the second merges all consecutive zero segments into one segment, i.e., removes compute phases in the statistics.
-The operations are summarized in \Cref{tab:coding_ops}.
+The operations are summarized in \Cref{tab:coding_ops} and described in the following.
 
 \begin{table}[t]
  \centering
@@ -418,7 +424,7 @@ The bits are set by the following function:
 				\text{false if segment}_i = 0\\\text{true otherwise.}
 			\end{cases}, i \in [\text{enumerated metrics}]
 		\end{equation}
-	 } \\
+	 } \\[-1em]
 	 Hex-Quantization & Quantize segments to NonIO + 16 I/O levels.\\
 	 Zeros-Aggregation & Merge all consecutive zero segments.\\
 	 Phase-Extraction &  Extract continuous sequences of non-zero segments.
@@ -431,7 +437,7 @@ The bits are set by the following function:
 
 \paragraph{Binary coding}
 Binary coding represents monitoring data as a sequence of numbers, where each number represents the overall file system usage.
-The number is computed based on the nine metrics found in the segment, e.g., if a phase is read and write intensive it is encoded as one type of behavior.
+The number is computed based on the nine metrics found in the segment, e.g., if a phase is read-intense and write-intense, it is encoded as one type of behavior.
 In this approach, each conceivable combination of activities has a unique number.
 
 The approach maps the three categories to the following two states: The LowIO category is mapped to the non-active (0) state, and HighIO and CriticalIO categories are mapped to the active (1) state.
@@ -499,13 +505,13 @@ After coding each segment, the jobs can be represented as a sequence of numbers,
 The monitoring dataset doesn't provide information about what happens during the zero segments.
 It can be anything, like a job is waiting for resources, or computing something.
 It can also be that the job script cannot start immediately or run on a slow network.
-To catch such jobs, we aggregate multiple consecutive zero segments into one zero segment, thus the coding of the previous job would replace all 0:...:0 sequences just with 0.
+To catch such jobs, we aggregate multiple consecutive zero segments into one zero segment, thus the coding of the previous job would replace all 0:...:0 sequences just with one 0.
 
 \begin{lstlisting}[caption={Binary coding of a 15 segments long job with zero aggregation applied.}]
 [1:5:0:96:96:96:96:96:96:96]
 \end{lstlisting}
 
-Note, that the job length does not change, only the sequence length.
+Note, that the actual job length is kept for analysis purpose, thus, only the length of the encoded sequence changes.
 
 \paragraph*{Hexadecimal coding}
 
@@ -528,13 +534,14 @@ The example below shows hexadecimal coding for a job containing 6 segments.
 'write_calls'    : [0:0:0:0:0:0]
 \end{lstlisting}
 
-\subsubsection{Similarity}
+\subsubsection{Similarity Metrics}
 Determining the resemblance between two jobs is the main task of this work.
 Clustering algorithms need a distance metrics to allow organizing them together.
 There are various variants, a selection is listed in \Cref{tab:sim_funcs}.
 The Eucledian distance for two vectors can naturally only be applied to vectors of the same length.
 The Levenshtein distance is the number of modifications (inserts, deletes, changes) of individual characters that need to be made to transform one string to another.
 It can also by applied on other data types such as vector and time series.
+
 The Normalized-Difference and Relative-Change distances work with single values, and can not be applied directly on time series.
 To make them work with time series we use the following approach.
 Firstly, we introduce in \Cref{tab:matching_strategies} two additional operations that transform time series to the same length.
@@ -553,7 +560,7 @@ Finally, we use a Normalized-Difference-based or Relative-Change-based similarit
     Normalized-Difference & $d_{\text{nd}} = \frac{|a - b|}{16}$          & $0 \le a, b \le 16$     & A change from level 2 to level 6 on a 16 level system would be (6 - 2) / 16 = 0.25.            \\
     Relative-Change       & $d_{\text{rc}} = \frac{\min(a,b)}{\max(a,b)}$ & $a, b \in \mathbb{R}^+$ & A change from level 2 to level 6 system would be 2/6 = 0.66.                                   \\
   \end{tabularx}
-  \caption{Distance functions used to compute similarities.}
+  \caption{Selection of distance metrics that can be used to compute similarities.}
   \label{tab:sim_funcs}
 \end{table}
 
@@ -565,7 +572,7 @@ Finally, we use a Normalized-Difference-based or Relative-Change-based similarit
       Trimming        & Remove segments at the beginning or/and at the end of the longest time series. \\
       Zeros-Insertion & Insert zero-segments at the beginning, between I/O phases, or/and at the end of time series. \\
     \end{tabularx}
-    \caption{Length adjustment strategies create time series with the same length, and with maximized similarity.}
+    \caption{Potential length adjustment strategies create time series with the same length.}
   \label{tab:matching_strategies}
 \end{table}
 
@@ -588,12 +595,12 @@ They are described in the following:
   \begin{tabularx}{\textwidth}{lX}
     Algorithm & Description \\
     \midrule
-    k-means & Runs a random initialization, then refines the clusters until the clusters don't change any more.\\
+    k-means & Runs a random initialization, then refines the clusters until the clusters don't change further.\\
     Density clustering &  Group nearby elements recursively together as long as they are ($\epsilon$) close together.\\
     Agglomerative &  Hierarchically cluster data into groups of elements that belong closer together.\\
     \textbf{Clustering-Tree} &  Create a hierarchical clustering for subset of data to train a decision tree, then apply the decision tree on the full dataset.\\
     \textbf{Simplified-Density} &  Combines ideas from k-means with density clustering.
-The simplified clustering algorithms add a job to a cluster if similarity to the cluster centroid is equal or larger than the user defined value.\\
+The simplified clustering algorithms add a job to a cluster if similarity to the cluster centroid is equal or larger than the user defined similarity (SIM) value.\\
   \end{tabularx}
   \caption{Selection of clustering algorithms}
   \label{tab:clustering_algorithms}
@@ -602,7 +609,7 @@ The simplified clustering algorithms add a job to a cluster if similarity to the
 This algorithm involves three steps:
 
 \begin{enumerate}
- \item Agglomerative clustering of a small dataset, enumerate leaf-level clusters that are similar.
+ \item Agglomerative clustering of a small dataset, enumerate similar leaf-level clusters.
  \item Training of a decision tree model on the small dataset, i.e., the tree should decide in which cluster a job is stored.
  \item Clustering of the large data set using the decision tree.
 \end{enumerate}
@@ -613,7 +620,7 @@ Since the number of clusters on leaf-level depends on their similarity, this str
 
 The algorithm forms clusters around centroids.
 These are job codings that form clusters by attracting similar jobs.
-All jobs in a cluster fulfill only one condition, the similarity (SIM) to the centroid has to be bigger than the user defined minimum, in that sense it is similar to DBSCAN.
+All jobs in a cluster fulfill only one condition, the similarity (SIM) to the centroid has to be bigger than the user defined minimum, in that sense it shares some similarity to DBSCAN.
 It is approximative as the order of jobs matters for the creation of the clusters.
 
 The algorithm can be summarized as follows:
@@ -631,6 +638,8 @@ Hence, the result depends on the processing order of the jobs, though it is dete
 There are various combinations of the different strategies possible.
 For simplicity, we refer to one clustering stack just as algorithm.
 During our research, we explored various combinations out of the possible combinations, but we found that these do not perform well and are not interesting to discuss.
+The operation stack which we describe in this article is visualized in \Cref{fig:clustering_stacks}.
+In brief, the algorithms can be characterized like in \Cref{tab:alg_character}.
 
 \begin{figure}[ht]
   \centering
@@ -639,8 +648,6 @@ During our research, we explored various combinations out of the possible combin
   \label{fig:clustering_stacks}
 \end{figure}
 
-The operation stack which we describe in this article is visualized in \Cref{fig:clustering_stacks}.
-In brief, the algorithms can be characterized like in \Cref{tab:alg_character}.
 
 \begin{table}[ht]
   \begin{tabularx}{\textwidth}{lX}
@@ -650,8 +657,8 @@ In brief, the algorithms can be characterized like in \Cref{tab:alg_character}.
     BIN\_ALL      & \textbf{Levenshtein} distance applied on \textbf{binary codings.}                                                                 \\
     BIN\_AGGZEROS & \textbf{Levenshtein} distance applied on \textbf{binary codings}, but with \textbf{zero aggregation} of contiguous zero segments. \\
     HEX\_LEV      & \textbf{Levenshtein} distance applied on \textbf{hexadecimal coding}.                                                             \\
-    HEX\_NATIVE   & a \textbf{performance-aware} algorithm.                                                                                           \\
-    PM\_QUANT     & a \textbf{performance-aware} and \textbf{I/O phase-aware} algorithm.                                                              \\
+    HEX\_NATIVE   & A \textbf{performance-aware} algorithm operating on hexadecimal coding.                                                                                           \\
+    PM\_QUANT     & A \textbf{performance-aware} and \textbf{I/O phase-aware} algorithm.                                                              \\
   \end{tabularx}
   \caption{Algorithm characterization}
   \label{tab:alg_character}
