@@ -1215,9 +1215,35 @@ Those fields that are not to be changed can be left out.
 }
 
 @inproceedings{fppio2019,
+	author	 = {Eugen Betke and Julian Kunkel},
+	title	 = {{Footprinting Parallel I/O – Machine Learning to Classify Application’s I/O Behavior}},
+	year	 = {2019},
+	month	 = {12},
+	booktitle	 = {{High Performance Computing: ISC High Performance 2019 International Workshops, Frankfurt/Main, Germany, June 16-20, 2019, Revised Selected Papers}},
+	editor	 = {Michèle Weiland and Guido Juckeland and Sadaf Alam and Heike Jagode},
+	publisher	 = {Springer},
+	series	 = {Lecture Notes in Computer Science},
+	number	 = {11887},
+	pages	 = {214--226},
+	conference	 = {HPC IODC workshop, ISC HPC},
+	location	 = {Frankfurt, Germany},
+	isbn	 = {978-3-030-34356-9},
+	issn	 = {1611-3349},
+	doi	 = {https://doi.org/10.1007/978-3-030-34356-9_18},
+	abstract	 = {It is not uncommon to run tens thousands of parallel jobs on large HPC systems. The amount of data collected by monitoring systems on such systems is immense. Checking each job individually by hand, e.g. for identification of high workload or anomaly detection, is hardly feasible. Therefore we are looking for an automated approach, that can do this task.  Many automated approaches are looking at job statistics over the entire job runtime. Information about different activities during the job execution is lost. In our work, for each job, we reduce the collected monitoring data to a sequence of I/O behavior. Then, we convert the sequence to a footprint vector, where each element shows how often this behavior occurs. After that, the footprint dataset is classified to identify applications with similar I/O behavior. Human understandable class interpretation is the only non-automatic step in the workflow.  The contribution of this paper is a data reduction technique for monitoring data and an automated job classification method.},
+	url	 = {https://link.springer.com/chapter/10.1007/978-3-030-34356-9_18},
+}
+
+@inproceedings{itb2020,
 author = {Betke, Eugen AND Kunkel, Julian},
-title = {{Footprinting Parallel I/O -- Machine Learning to Classify Application’s I/O Behavior}},
-year = {2019}
+title = {{The Importance of Temporal Behavior when Classifying Job IO Patterns Using Machine Learning Techniques}},
+year = {2020},
+publisher	 = {Springer},
+series	 = {Lecture Notes in Computer Science},
+conference	 = {HPC IODC workshop, ISC HPC},
+location	 = {Frankfurt, Germany},
+issn	 = {1611-3349},
+howpublished = {To appear}
 }
 
 @article{carns2011understanding-toc,

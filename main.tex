@@ -122,20 +122,20 @@ A widespread method is re-implementation and pre-loading of an I/O interface, wh
 However, recording the data isn't enough, the obtained data must be processed but the manual analysis is infeasible as the number of jobs is large -- Monitoring systems of HPC systems record data of ten thousand jobs each day.
 Hence, a semi-automatic approach is required to reduce the number of jobs to investigate.
 
-In a previous paper, we proposed a semi-automatic way to find relevant jobs by computing relevant job characteristics from time series of job behavior.
-Basically, support staff could then focus on those I/O-intense jobs that express certain metrics the most.
-Here, we extend the approach by grouping similar jobs based on profiles and I/O-phases in order to simplify the investigation effort.
-
 In different disciplines, machine learning methods have proven to be powerful tools to extract new information from large data sets.
 Therefore, we explore clustering strategies on monitoring data, to reveal hidden information.
+
+In our previous paper \cite{iocats2020}, we proposed a semi-automatic way to find relevant jobs by computing relevant job characteristics from time series of job behavior.
+Basically, support staff could then focus on the I/O-intense jobs that express certain metrics the most.
+Here, we extend the approach by grouping similar jobs based on profiles and I/O-phases in order to simplify the investigation effort.
+The paper is a significant extension of our previous work in \cite{itb2020} where we demonstrated the relevance of utilizing temporal (time series) data in the analysis and applied basic machine learning techniques.
 
 This paper is organized as follows: \Cref{sec:preliminary_work} outlines the preliminary work and provides background knowledge that is important to understand the next sections.
 In \Cref{sec:job_similarity}, we discuss the key problem we are dealing with and introduce related work in \Cref{sec:rel_work}.
 In \Cref{sec:methodology}, we introduce\ alternative approaches for the clustering, as different goals for the analysis require different distance metrics, we discuss the variety of approaches.
 We start with a simple solution and increase complexity.
-For the most complex algorithms we provide a step by step example.
-%The results and discussion are attached to the methodology of each solution as subsections.
-Then, after a brief description of the test environment in \Cref{sec:test_environment} we discuss the clustering results of introduced algorithms in \Cref{sec:evaluation}.
+For complex algorithms, we develop examples step by step.
+After a brief description of the test environment in \Cref{sec:test_environment}, we discuss the clustering results of introduced algorithms in \Cref{sec:evaluation}.
 The discussion includes a use case study of an I/O intensive job.
 Finally, in \Cref{sec:conclusion} we summarize the results.
 
@@ -144,16 +144,17 @@ Finally, in \Cref{sec:conclusion} we summarize the results.
 % Mistral + Monitoring system overview
 The German Climate Computing Center (DKRZ) maintains a monitoring system that gathers various statistics from the Mistral HPC system.
 Mistral has 3,340 compute nodes, 24 login nodes, and two Lustre file systems (lustre01 and lustre02) that provide a capacity of 52 Petabyte.
-The monitoring system is made up of open source components such as Grafana, OpenTSDB, and Elasticsearchtrebut also includes a lightweight self-developed data collector that captures continuously node statistics - we decided to implement an own collector when analyzing the overhead of existing approaches.
-Additionally, the monitoring system obtains various job meta-information from the Slurm workload manager and injects selected log files.
+The deployed monitoring system is made up of open source components such as Grafana, OpenTSDB, and Elasticsearch.
+It includes a lightweight self-developed data collector that captures continuously node statistics -- we decided to implement an own lightweight collector since the overhead of existing approaches was much higher.
+Additionally, the system retrieves various job meta-information from the Slurm workload manager and injects selected log files.
 
 Our motivation for automatic analysis of parallel jobs is the monitoring situation at DKRZ.
-Mistral runs around 10.000 jobs a day, which is too much for manual analysis.
+Mistral runs around 10,000 jobs a day, which is too much for manual analysis.
 In our previous work~\cite{iocats2020}, we found a way to identify I/O intensive jobs and jobs with inefficient usage by deriving statistics from the node-level statistics.
 This information can aid the procurement of new HPC systems or support the extension of an existing one.
 While this approach helps to find individual jobs, it doesn't provide a global overview, which might be more important for making decisions at the data center perspective.
 For example, a discovery of a large group of I/O-intensive and bursty applications would suggest attaching a burst buffer to the storage, to improve application runtimes.
-In this paper, we take up the idea of I/O categorization from the previous work, where we partition job runtime into equal size segments and map them into three categories (LowIO, HighIO, and CriticalIO), and continue our work to obtain a global overview.
+In this paper, we take up the idea of I/O categorization from the previous work, where we partition job runtime into equal size segments and map them into three categories (LowIO, HighIO, and CriticalIO), and continue our work to establish a global overview by allowing to classify similar jobs.
 
 Understanding of the following work requires an understanding of data format, that is formed by segmentation and categorization of raw monitoring data.
 
@@ -161,11 +162,13 @@ Understanding of the following work requires an understanding of data format, th
 The monitoring system captures periodically I/O metrics on all client nodes, and sends them to a central database.
 \Cref{fig:generic_example} illustrates the structure of the raw monitoring data using an example.
 In the example, data is captured on two nodes, on two file systems, for two metrics, and at nine time points $t_i$, resulting in 4-dimensional data (Node $\times$ File System $\times$ Metric $\times$ Time).
-The sizes of the node and the time dimensions are variable by nature.
-The other dimensions may be fixed for particular HPC systems, but we assumed they to be variable, to make the approach portable to other systems. 
-Actually, on Mistral data is gathered every five seconds, for two Lustre file system, and for nine I/O metrics~\footnote{A difference to previously utilized job statistics is that this time Lustre proc files on Mistral doesn't offer Object Storage Client (osc) counters, since a major upgrade of Lustre file system from version 2.7 to 2.11.
+The number of nodes and the time dimension are variable by the nature of parallel job execution on a cluster.
+The other dimensions may be fixed for particular HPC systems; here we assume they are variable, to make the approach portable to arbitrary systems.
+On Mistral data is gathered every five seconds, for two Lustre file system, and for nine I/O metrics~\footnote{A difference to previously utilized job statistics is that the Lustre proc files on Mistral doesn't offer Object Storage Client (osc) counters after a major upgrade of Lustre file system from version 2.7 to 2.11.
 Thus, instead of 13 metrics, this time our data contains only 9 metrics.}.
-Five of them (md\_read, md\_mod, md\_file\_create, md\_file\_delete, md\_other) capture metadata activities and the remaining four (read\_bytes, read\_calls, write\_bytes, write\_calls) capture data access.
+Five of them (md\_read, md\_mod, md\_file\_create, md\_file\_delete, md\_other) are aggregates of metadata activities and the remaining four (read\_bytes, read\_calls, write\_bytes, write\_calls) capture data access.
+The md\_read covers metadata read-only operations while md\_mod covers modifying operations and md\_other aggregates rarely used operations such as mknod.
+The creation and deletion of files are very important and not aggregated.
 
 \begin{figure}[bt]
  \centering
@@ -175,37 +178,32 @@ Five of them (md\_read, md\_mod, md\_file\_create, md\_file\_delete, md\_other) 
 \end{figure}
 
 \paragraph{Segmentation.}
-%The raw data is segmented and categorized:
 We split the time series of each I/O metric into equal-sized time intervals (segments) and computes a mean performance for each segment.
 This stage preserves the performance units (e.g., Op/s, MiB/s) for each I/O metric.
 The example in \Cref{fig:generic_example} creates segments out of three successive time points just for illustration purposes.
 Depending on aggregation function, segments can be created of metrics (green boxes), of file systems (yellow boxes), of nodes (red boxes), or even over all dimensions (blue box).
-Actually, the real raw monitoring data is converted to ten minutes segments, which we found is a good trade-off to represent the temporal behavior of the application while it reduces the size of the time series.
+The raw monitoring data is converted into a time series of ten minute segments, which we found is a good trade-off to sufficiently represent the temporal behavior of the application while it reduces the size of the time series.
 
 \paragraph{Categorization.}
-Next, to get rid of the units, and to allow calculations between different I/O metrics, we introduced a categorization pre-processing step that takes into account the performance of the underlying HPC system and assigns a unitless ordered category to each metric segment.
-We use a three category system, which contains the LowIO=0, HighIO=1 and CriticalIO=4 categories.
-The category split points are based on the histogram of the obtained values, for any metrics, a segment with a value up to the 99\%-Quantile it is considered to be LowIO, larger than the 99.9\%-Quantile indicates CriticalIO, and between HighIO~(see \cite{iocats2020}).
+Next, to get rid of specific units of individual metrics, and to allow calculations between different I/O metrics, we introduced a categorization pre-processing step that takes into account the performance of the underlying HPC system and assigns a unitless ordered category to each metric segment.
+For example, how could we compare the metric that reports 10k\,file opens with another metric that reports 100\,MB data was accessed?
+We use three categories, which are the LowIO=0, HighIO=1 and CriticalIO=4 categories.
+The category split points are based on the histogram of the indivudal metrics.
+For any metrics, a segment with a value up to the 99\%-Quantile it is considered to be LowIO, larger than the 99.9\%-Quantile indicates CriticalIO, and between it is HighIO~(see \cite{iocats2020}).
 This node-level data can then be used to compute job-statistics by aggregating across dimensions such as time, file systems, and nodes.
 
-%Segmentation is a pre-processing step that splits data into equal-sized segments and computes a mean performance for each segment.
-%This stage preserves the performance units (e.g., Op/s, MiB/s) for each metric.
-%As further calculations that involve different metrics is difficult for different metrics, we introduced a categorization\textbf{ pre-processing} step that takes into account the performance of the underlying HPC system and assigns an ordered category to each segment.
-%It takes the mean performance that was calculated in the previous step, and assigns one of the three categories (LowIO=0, HighIO=1 and CriticalIO=4).
-%The category split points are based on the histogram of the obtained values, for any metrics, a segment with a value up to the 99\%-Quantile it is considered to be LowIO, the 99.9\%-Quantile indicates HighIO~(see \cite{iocats2020}).
-%This node-level data can then be used to compute job-statistics by aggregating across time, file systems, and nodes.
 
 In summary, this data representation has the following key advantages for data analysis.
 The ordered categories make the calculations between different metrics feasible, which is not possible with raw data.
-Furthermore, the domains are equally scaled and compatible, because the values are between 0 and 4, and a value has a meaning.
+Furthermore, the domains are equally scaled and compatible, because the values are between 0 and 4, and a value has a semantical meaning (low, high, or critical IO).
 Besides, the resulting data representation is much smaller compared to the raw data.
 This allows us to apply compute-intensive algorithms to large datasets.
-Finally, irrelevant data is hidden by the LowIO category and doesn't distract from significant parts of jobs.
+Finally, as we are mostly interested in jobs with relevant IO, segments mapped to the LowIO category don't distract from significant parts of jobs.
 
 In our previous work, we computed three high-level metrics per job that aid users to understand job profiles:
 
 \begin{itemize}
-	\item \textbf{Job-I/O-Balance:} indicates how I/O load is distributed between nodes during job runtime.
+	\item \textbf{Job-I/O-Balance:} indicates how I/O load is distributed between nodes.
 	\item \textbf{Job-I/O-Utilization:} shows the average I/O load during I/O-phases.
 	\item \textbf{Job-I/O-Problem-Time} is the fraction of job runtime that is I/O-intensive; it is approximated by the fractions of segments that are considered I/O intensive.
 \end{itemize}
@@ -228,10 +226,10 @@ When looking at categorization at the metric level, i.e., after reduction of the
 \label{sec:job_similarity}
 
 The raw monitoring data of a job in our environment at DKRZ, we obtain a time series of nine metrics per node, each metric sampled at five seconds intervals.
-When comparing the time series of such metrics between two jobs, the key question is how do we define the similarity between multiple time series.
-By applying dimensionality reduction techniques such as PCR, we can reduce the complexity and potentially obtain a similar representation for, e.g., two time series, but cannot make relevant distinctions between them.
+When comparing the time series of such metrics between two jobs, the key question is how do we define the similarity between multiple time series that may even be of different length.
+ML techniques work well to deal with a fixed number of features, e.g., by creating a fixed-size profile for the jobs and applying dimensionality reduction techniques such as PCR, we could reduce the complexity and potentially obtain a similar representation for, e.g., two time series.
 
-First, we need to discuss the similarity of I/O patterns from the user perspective.
+To understand which technique we should use, first, we need to discuss the perception of similarity of I/O patterns from the user perspective.
 In \Cref{fig:typ_io:all}, we illustrate the time series of two metrics for three different jobs.
 The figures show the typical behavior of parallel applications, computation is interrupted by regular I/O phases -- by phase, we mean a consecutive segment of time in which  certain behavior is exhibited, i.e., the statistics are similarly.
 
@@ -381,16 +379,16 @@ By reducing along all dimension, you obtain basically a job profile (as discusse
 \begin{table}
 	\centering
 	\begin{tabularx}{\textwidth}{llX}
-		Dimension       & Operation                                    &  Description                                   \\ 
+		Dimension       & Operation                                    &  Description                                   \\
 		\midrule
-		Node            & Reduce by mean()                             &  Aggregate all nodes by mean() function        \\ 
-		                & Reduce by sum()                              &  Aggregate all nodes by sum() function         \\ 
-		File System     & Reduce by mean()                             &  Aggregate all file systems by mean() function \\ 
-		                & 
-		Reduce by sum() & Aggregate all file systems by sum() function \\ 
-		Metric          & Reduce by sum()                              &  Aggregate all nine metrics by sum()           \\ 
-		Time            &                                              &  Convert segments to coding formats            \\ 
-		All             & Reduce by mean()                             &  Reduces time series to a fixed set of values  \\ 
+		Node            & Reduce by mean()                             &  Aggregate all nodes by mean() function        \\
+		                & Reduce by sum()                              &  Aggregate all nodes by sum() function         \\
+		File System     & Reduce by mean()                             &  Aggregate all file systems by mean() function \\
+		                &
+		Reduce by sum() & Aggregate all file systems by sum() function \\
+		Metric          & Reduce by sum()                              &  Aggregate all nine metrics by sum()           \\
+		Time            &                                              &  Convert segments to coding formats            \\
+		All             & Reduce by mean()                             &  Reduces time series to a fixed set of values  \\
 	\end{tabularx}
 	\caption{Dimension reduction strategies for the original 4D-data.}
 	\label{tab:reduction_techniques}
@@ -548,12 +546,12 @@ Finally, we use a Normalized-Difference-based or Relative-Change-based similarit
 \begin{table}
   \centering
   \begin{tabularx}{\textwidth}{lllX}
-    Distance              & Formula                                       & Domain                  & Description                                                                                    \\ 
+    Distance              & Formula                                       & Domain                  & Description                                                                                    \\
     \midrule
-    Euclidean             & $d_{\text{e}} =\sqrt{(\sum_i^n (a_i - b_i))}$ & $a, b \in \mathbb{R}^n$ & The Euclidean distance between two vectors.                                                    \\ 
-    Levenshtein           & $d_{\text{lev}} = \text{lev}(a, b)$           & $a, b \in$ Time Series  & Number of operation (inserts, deletes, and changes) requires to convert one coding in another. \\ 
-    Normalized-Difference & $d_{\text{nd}} = \frac{|a - b|}{16}$          & $0 \le a, b \le 16$     & A change from level 2 to level 6 on a 16 level system would be (6 - 2) / 16 = 0.25.            \\ 
-    Relative-Change       & $d_{\text{rc}} = \frac{\min(a,b)}{\max(a,b)}$ & $a, b \in \mathbb{R}^+$ & A change from level 2 to level 6 system would be 2/6 = 0.66.                                   \\ 
+    Euclidean             & $d_{\text{e}} =\sqrt{(\sum_i^n (a_i - b_i))}$ & $a, b \in \mathbb{R}^n$ & The Euclidean distance between two vectors.                                                    \\
+    Levenshtein           & $d_{\text{lev}} = \text{lev}(a, b)$           & $a, b \in$ Time Series  & Number of operation (inserts, deletes, and changes) requires to convert one coding in another. \\
+    Normalized-Difference & $d_{\text{nd}} = \frac{|a - b|}{16}$          & $0 \le a, b \le 16$     & A change from level 2 to level 6 on a 16 level system would be (6 - 2) / 16 = 0.25.            \\
+    Relative-Change       & $d_{\text{rc}} = \frac{\min(a,b)}{\max(a,b)}$ & $a, b \in \mathbb{R}^+$ & A change from level 2 to level 6 system would be 2/6 = 0.66.                                   \\
   \end{tabularx}
   \caption{Distance functions used to compute similarities.}
   \label{tab:sim_funcs}
@@ -562,10 +560,10 @@ Finally, we use a Normalized-Difference-based or Relative-Change-based similarit
 \begin{table}
   \centering
     \begin{tabularx}{\textwidth}{lX}
-      Operation       & Description                                                                                  \\ 
+      Operation       & Description                                                                                  \\
       \midrule
-      Trimming        & Remove segments at the beginning or/and at the end of the longest time series. \\ 
-      Zeros-Insertion & Insert zero-segments at the beginning, between I/O phases, or/and at the end of time series. \\ 
+      Trimming        & Remove segments at the beginning or/and at the end of the longest time series. \\
+      Zeros-Insertion & Insert zero-segments at the beginning, between I/O phases, or/and at the end of time series. \\
     \end{tabularx}
     \caption{Length adjustment strategies create time series with the same length, and with maximized similarity.}
   \label{tab:matching_strategies}
@@ -648,12 +646,12 @@ In brief, the algorithms can be characterized like in \Cref{tab:alg_character}.
   \begin{tabularx}{\textwidth}{lX}
     Algorithm & Characterization \\
     \midrule
-    ML            & a set of \textbf{traditional machine learning} techniques on job profiles.                                                        \\ 
-    BIN\_ALL      & \textbf{Levenshtein} distance applied on \textbf{binary codings.}                                                                 \\ 
-    BIN\_AGGZEROS & \textbf{Levenshtein} distance applied on \textbf{binary codings}, but with \textbf{zero aggregation} of contiguous zero segments. \\ 
-    HEX\_LEV      & \textbf{Levenshtein} distance applied on \textbf{hexadecimal coding}.                                                             \\ 
-    HEX\_NATIVE   & a \textbf{performance-aware} algorithm.                                                                                           \\ 
-    PM\_QUANT     & a \textbf{performance-aware} and \textbf{I/O phase-aware} algorithm.                                                              \\ 
+    ML            & a set of \textbf{traditional machine learning} techniques on job profiles.                                                        \\
+    BIN\_ALL      & \textbf{Levenshtein} distance applied on \textbf{binary codings.}                                                                 \\
+    BIN\_AGGZEROS & \textbf{Levenshtein} distance applied on \textbf{binary codings}, but with \textbf{zero aggregation} of contiguous zero segments. \\
+    HEX\_LEV      & \textbf{Levenshtein} distance applied on \textbf{hexadecimal coding}.                                                             \\
+    HEX\_NATIVE   & a \textbf{performance-aware} algorithm.                                                                                           \\
+    PM\_QUANT     & a \textbf{performance-aware} and \textbf{I/O phase-aware} algorithm.                                                              \\
   \end{tabularx}
   \caption{Algorithm characterization}
   \label{tab:alg_character}
@@ -786,7 +784,7 @@ This algorithm works on the same principle as the BIN algorithms, with the diffe
 This adaption allows a comparison of time series where one metrics differs as only one metric string would differ while with binary coding the overall string would be different.
 
 \begin{equation}
-	\text{similarity}\left(\text{job}_{A},\text{job}_{B} \right) = 1 - \frac{ \sum_{m \in Metrics}^{} \text{levenshtein} \left(\text{job}_{A,m},\text{\text{job}}_{B,m} \right) }{|\text{Metrics}| \cdot \max(|job_A|, |job_{B}|)} 
+	\text{similarity}\left(\text{job}_{A},\text{job}_{B} \right) = 1 - \frac{ \sum_{m \in Metrics}^{} \text{levenshtein} \left(\text{job}_{A,m},\text{\text{job}}_{B,m} \right) }{|\text{Metrics}| \cdot \max(|job_A|, |job_{B}|)}
 \end{equation}
 
 \subsubsection{HEX\_NATIVE}
@@ -962,13 +960,13 @@ According to this algorithm, the jobs are similar to 73\%.
 \begin{table}
 \centering
 \begin{tabular}{lllrr}
-  Metric       & $C_A$                 & $S_B$                 & SliceSimilarity($C_A$, $S_B$) \\ 
+  Metric       & $C_A$                 & $S_B$                 & SliceSimilarity($C_A$, $S_B$) \\
   \midrule
-  md\_read     & \lstinline|[1:1:0:0]| & \lstinline|[5:0:0:0]| & 0.7375                        \\ 
-  read\_bytes  & \lstinline|[1:1:2:2]| & \lstinline|[1:1:2:2]| & 0.8                           \\ 
-  write\_bytes & \lstinline|[0:0:0:0]| & \lstinline|[0:1:4:0]| & 0.65                          \\ 
+  md\_read     & \lstinline|[1:1:0:0]| & \lstinline|[5:0:0:0]| & 0.7375                        \\
+  read\_bytes  & \lstinline|[1:1:2:2]| & \lstinline|[1:1:2:2]| & 0.8                           \\
+  write\_bytes & \lstinline|[0:0:0:0]| & \lstinline|[0:1:4:0]| & 0.65                          \\
   \midrule
-  Mean         &                       &                       & $\approx$0.73                          \\ 
+  Mean         &                       &                       & $\approx$0.73                          \\
 \end{tabular}
 \caption{Similarity computation.}
 \label{tab:hex_native:compute_sim}
@@ -1162,16 +1160,16 @@ The example below shows the pairs of I/O phases and their matches.
 \begin{table}
 \centering
 \begin{tabular}{lllrr}
-	Metric           & I/O Phase A                 & I/O Phase B                 & Match     & Length \\ 
+	Metric           & I/O Phase A                 & I/O Phase B                 & Match     & Length \\
 	\midrule
-	md\_file\_create & \lstinline|[-:-:-:-:-]|     & \lstinline|[2:2:2:9:3]|     & 0         & 5      \\ 
-	                 & \lstinline|[-:1:-:-]|       & \lstinline|[9:1:1:1]|       & 1         & 4      \\ 
-	read\_bytes      & \lstinline|[2:2:2:2:8:2:2]| & \lstinline|[-:-:-:-:9:3:-]| & 8/9 + 2/3 & 7      \\ 
-	                 & \lstinline|[1]|             & \lstinline|[1]|             & 1         & 1      \\ 
-	                 & \lstinline|[8:1:1]|         & \lstinline|[-:-:-]|         & 0         & 3      \\ 
-	write\_bytes     & \lstinline|[5]|             & \lstinline|[-]|             & 0         & 1      \\ 
+	md\_file\_create & \lstinline|[-:-:-:-:-]|     & \lstinline|[2:2:2:9:3]|     & 0         & 5      \\
+	                 & \lstinline|[-:1:-:-]|       & \lstinline|[9:1:1:1]|       & 1         & 4      \\
+	read\_bytes      & \lstinline|[2:2:2:2:8:2:2]| & \lstinline|[-:-:-:-:9:3:-]| & 8/9 + 2/3 & 7      \\
+	                 & \lstinline|[1]|             & \lstinline|[1]|             & 1         & 1      \\
+	                 & \lstinline|[8:1:1]|         & \lstinline|[-:-:-]|         & 0         & 3      \\
+	write\_bytes     & \lstinline|[5]|             & \lstinline|[-]|             & 0         & 1      \\
 	\midrule
-	Sum              &                             &                             & 3.56      & 21     \\ 
+	Sum              &                             &                             & 3.56      & 21     \\
 \end{tabular}
 \caption{Best combination of I/O phases, that achieves the highest possible similarity.}
 \end{table}
@@ -1322,22 +1320,22 @@ As the examples in \Cref{tab:ml_examples} show, observed cluster contains the fo
  \begin{subtable}{\textwidth}
    \centering
      \begin{tabular}{lln{1}{\rd}|l}
-       \rot{Job-IO-Utilization} & \rot{Job-IO-Problem-Time} & \rot{Job-IO-Balance} & \rot{Binary coding}                       \\ 
+       \rot{Job-IO-Utilization} & \rot{Job-IO-Problem-Time} & \rot{Job-IO-Balance} & \rot{Binary coding}                       \\
        \midrule
-       4                        & 1                         & 0.4375000            & [118]                                     \\ 
-       4                        & 1                         & 0.4450206            & [368:368:368:368:368:368:374:368:368:368] \\ 
-       4                        & 1                         & 0.4583333            & [496:496]                                 \\ 
+       4                        & 1                         & 0.4375000            & [118]                                     \\
+       4                        & 1                         & 0.4450206            & [368:368:368:368:368:368:374:368:368:368] \\
+       4                        & 1                         & 0.4583333            & [496:496]                                 \\
      \end{tabular}
    \caption{IO-metrics job profiles}
  \end{subtable}
  \begin{subtable}{\textwidth}
    \centering
      \begin{tabular}{n{1}{\rd}n{1}{\rd}n{1}{\rd}n{1}{\rd}n{1}{\rd}n{1}{\rd}n{1}{\rd}n{1}{\rd}|l}
-       \rot{1\_md\_file\_delete} & \rot{1\_md\_mod} & \rot{1\_md\_other} & \rot{1\_md\_read} & \rot{1\_read\_bytes} & \rot{1\_read\_calls} & \rot{1\_write\_bytes} & \rot{1\_write\_calls} & \rot{Binary coding} \\ 
+       \rot{1\_md\_file\_delete} & \rot{1\_md\_mod} & \rot{1\_md\_other} & \rot{1\_md\_read} & \rot{1\_read\_bytes} & \rot{1\_read\_calls} & \rot{1\_write\_bytes} & \rot{1\_write\_calls} & \rot{Binary coding} \\
        \midrule
-       0.009259259               & 0.01851852       & 0.25000000         & 0.027777778       & 0.00462963           & 0.009259259          & 0.00462963            & 0.03240741            & [340:510:272]       \\ 
-       0.012578616               & 0.01257862       & 0.24528302         & 0.006289308       & 0.00617284           & 0.006172840          & 0.01257862            & 0.01257862            & [510:0:0]           \\ 
-       0.016666667               & 0.01666667       & 0.25000000         & 0.016666667       & 0.00000000           & 0.000000000          & 0.00000000            & 0.01666667            & [14:280]            \\ 
+       0.009259259               & 0.01851852       & 0.25000000         & 0.027777778       & 0.00462963           & 0.009259259          & 0.00462963            & 0.03240741            & [340:510:272]       \\
+       0.012578616               & 0.01257862       & 0.24528302         & 0.006289308       & 0.00617284           & 0.006172840          & 0.01257862            & 0.01257862            & [510:0:0]           \\
+       0.016666667               & 0.01666667       & 0.25000000         & 0.016666667       & 0.00000000           & 0.000000000          & 0.00000000            & 0.01666667            & [14:280]            \\
      \end{tabular}
    \caption{IO-duration job profiles}
  \end{subtable}
@@ -1539,18 +1537,18 @@ The following general characteristic observations are made:
 		\begin{tiny}
 			\begin{tabular}{l|r}
 				\rowcolor{tblhead}
-				Binary coding of the centroid                                                                    &  Type     \\ 
+				Binary coding of the centroid                                                                    &  Type     \\
 				\hline
-				0:0:0:0:0:0:294:0:0:0:0:32:0:0:0:0:0:0:0:0:0:0:0:32:0:0:0:0:0:0:0:0:0:0:0:32:0:0:0:0:0:0:0:0:0:0 &  centroid \\ 
-				\multicolumn{2}{l}{}                                                                             \\ 
+				0:0:0:0:0:0:294:0:0:0:0:32:0:0:0:0:0:0:0:0:0:0:0:32:0:0:0:0:0:0:0:0:0:0:0:32:0:0:0:0:0:0:0:0:0:0 &  centroid \\
+				\multicolumn{2}{l}{}                                                                             \\
 				\rowcolor{tblhead}
-				Binary coding of jobs in the cluster                                                             &  Count    \\ 
+				Binary coding of jobs in the cluster                                                             &  Count    \\
 				\hline
-				0:0:0:0:0:0:359:96:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0   &  95       \\ 
-				0:0:0:0:0:0:295:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0    &  62       \\ 
-				0:0:0:0:0:0:0:0:0:0:0:0:4:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0  &  47       \\ 
-				0:0:0:0:0:0:359:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0    &  44       \\ 
-				0:0:0:0:0:6:6:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0  &  40       \\ 
+				0:0:0:0:0:0:359:96:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0   &  95       \\
+				0:0:0:0:0:0:295:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0    &  62       \\
+				0:0:0:0:0:0:0:0:0:0:0:0:4:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0  &  47       \\
+				0:0:0:0:0:0:359:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0    &  44       \\
+				0:0:0:0:0:6:6:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0  &  40       \\
 			\end{tabular}
 		\end{tiny}
 		\caption{Centroid and Top 5 job phenotypes.}
@@ -2007,18 +2005,18 @@ While sum() is better for visualization, the mean value allows us to build simpl
 				\rowcolor{tblhead}
 				\multicolumn{2}{l|}{Hexadecimal coding} & \\
 				\rowcolor{tblhead}
-				md\_other                                           &  read\_calls                                           & Type     \\ 
+				md\_other                                           &  read\_calls                                           & Type     \\
 				\hline
-				0:\dots:0                                           &  3:3:8:8:8:5:6:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8 & job      \\ 
-				0:\dots:0                                           &  8:8:8:8:8:2:6:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8 & centroid \\ 
-				\multicolumn{3}{l}{}                                \\ 
-				\rowcolor{tblhead}      md\_other                   &  read\_calls                                           & Count    \\ 
+				0:\dots:0                                           &  3:3:8:8:8:5:6:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8 & job      \\
+				0:\dots:0                                           &  8:8:8:8:8:2:6:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8 & centroid \\
+				\multicolumn{3}{l}{}                                \\
+				\rowcolor{tblhead}      md\_other                   &  read\_calls                                           & Count    \\
 				\hline
-				0:\dots:0                                           &  0:0:0:0:0:0:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8   & 4        \\ 
-				0:\dots:0                                           &  8:8:8:8:8:2:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8   & 4        \\ 
-				0:0:0:4:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0 &  0:0:0:0:0:0:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8   & 4        \\ 
-				0:\dots:0                                           &  8:8:8:8:8:3:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8 & 3        \\ 
-				0:\dots:0                                           &  0:0:0:0:0:0:2:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8   & 2        \\ 
+				0:\dots:0                                           &  0:0:0:0:0:0:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8   & 4        \\
+				0:\dots:0                                           &  8:8:8:8:8:2:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8   & 4        \\
+				0:0:0:4:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0 &  0:0:0:0:0:0:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8   & 4        \\
+				0:\dots:0                                           &  8:8:8:8:8:3:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8 & 3        \\
+				0:\dots:0                                           &  0:0:0:0:0:0:2:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8   & 2        \\
 			\end{tabular}
 		\end{tiny}
 		\caption{Job, centroid and Top 5 job phenotypes.}
