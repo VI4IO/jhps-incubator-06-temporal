@@ -519,7 +519,7 @@ This coding preserves monitoring data for each metric and each segment.
 As the name suggests, the value of a segment is converted into a hexadecimal number to allow creation of a string representing the I/O behavior.
 The numbers are obtained in two steps.
 Firstly, the dimension reduction aggregates the file system and the node dimensions and computes a mean value for each metric and segment, which lies in the interval [0,4].
-Secondly, the mean values are quantized into NonIO + 16 I/O levels -- 0 (NonI0) represents the interval [0,0.125), 1 [0.375,0.625), 2 [0.625,0.825) $ \ldots $ , f [3.875,4].
+Secondly, the mean values are quantized into NonIO + 16 I/O levels -- 0 (NonI0) represents the interval [0,0.25), 1 = [0.25,0.625), 2 = [0.625,0.825) $ \ldots $, e = [XX, XX), f = [3.875,4].
 The example below shows hexadecimal coding for a job containing 6 segments.
 
 \begin{lstlisting}[caption={Hexadecimal coding of a six segments long job.}]
@@ -1199,7 +1199,11 @@ In the same cluster, we expect the sequences to be similar.
 If not, the clustering algorithm is not effective.
 
 
-\section{Test Environment}%
+
+\section{Evaluation}%
+\label{sec:evaluation}
+
+\subsection{Test Environment}%
 \label{sec:test_environment}
 For the performance tests, we allocate a compute node on Mistral supercomputer.
 It is equipped with 2x Intel\textsuperscript\textregistered\@ Xeon\textsuperscript\textregistered\@ CPU E5 2680 v3 @ 2.50GHz, 64GB DDR4 RAM\@.
@@ -1207,8 +1211,6 @@ For clustering of job profiles, we use the agglomerative clustering algorithm, d
 For clustering of binary and hexadecimal codings we use a clustering algorithm implemented in Rust 1.42.0, and run it on a single core.
 
 
-\section{Evaluation}%
-\label{sec:evaluation}
 \subsection{Description of Our Data Set}
 This section describes the job data extracted from Mistral, originally we gathered 1\,million jobs from a period of 203 days.
 Mostly jobs are allowed to run up to 8-hours, leading to time series with up to 48 segments.
