@@ -951,6 +951,97 @@ According to this algorithm, the two jobs in the table are similar to 73\% as 7 
 	\label{lst:sim:hex_native}
 \end{listing}
 
+\begin{listing}
+		\noindent\begin{minipage}{0.49\textwidth}
+			\begin{lstlisting}[basicstyle=\fontsize{8}{8}\ttfamily]
+			md_file_create [0:0:0:0]
+			md_file_delete [0:0:0:0]
+			md_mod         [0:0:0:0]
+			md_other       [0:0:0:0]
+			md_read        [1:1:0:0]
+			read_bytes     [1:1:2:2]
+			read_calls     [0:0:0:0]
+			write_bytes    [0:0:0:0]
+			write_calls    [0:0:0:0]
+			\end{lstlisting}
+			\vspace{-2em}
+			\subcaption{Coding of Job A}
+			\label{lst:sim:hex_hative:step1:job_a}
+		\end{minipage}
+		\noindent\begin{minipage}{0.49\textwidth}
+		\begin{lstlisting}[basicstyle=\fontsize{8}{8}\ttfamily]
+		md_file_create [0:0:0:0:0]
+		md_file_delete [0:0:0:0:0]
+		md_mod         [0:0:0:0:0]
+		md_other       [0:0:0:0:0]
+		md_read        [5:5:0:0:0]
+		read_bytes     [1:1:1:2:2]
+		read_calls     [0:0:0:0:0]
+		write_bytes    [0:0:4:8:0]
+		write_calls    [0:0:0:0:0]
+		\end{lstlisting}
+		\vspace{-2em}
+		\subcaption{Coding of Job B}
+		\label{lst:sim:hex_native:step1:job_b}
+		\end{minipage}
+	\caption{HEX\_NATIVE: Hexadecimal codings of two jobs and I/O intensive metrics.}
+	\label{lst:sim:hex_native:step1}
+\end{listing}
+
+\begin{listing}
+		\noindent\begin{minipage}{0.49\textwidth}
+			\begin{lstlisting}[basicstyle=\fontsize{8}{8}\ttfamily]
+			md_file_create [0:0:0:0]
+			md_file_delete [0:0:0:0]
+			md_mod         [0:0:0:0]
+			md_other       [0:0:0:0]
+			md_read        [1:1:0:0]
+			read_bytes     [1:1:2:2]
+			read_calls     [0:0:0:0]
+			write_bytes    [0:0:0:0]
+			write_calls    [0:0:0:0]
+			\end{lstlisting}
+			\vspace{-2em}
+			\subcaption{Coding of Job A}
+			%\label{lst:sim:hex_hative:step1:job_a}
+		\end{minipage}
+		\noindent\begin{minipage}{0.49\textwidth}
+		\begin{lstlisting}[basicstyle=\fontsize{8}{8}\ttfamily]
+		md_file_create [0:0:0:0:0]
+		md_file_delete [0:0:0:0:0]
+		md_mod         [0:0:0:0:0]
+		md_other       [0:0:0:0:0]
+		md_read        [5:5:0:0:0]
+		read_bytes     [1:1:1:2:2]
+		read_calls     [0:0:0:0:0]
+		write_bytes    [0:0:4:8:0]
+		write_calls    [0:0:0:0:0]
+		\end{lstlisting}
+		\vspace{-2em}
+		\subcaption{Coding of Job B}
+		%\label{lst:sim:hex_native:step1:job_b}
+		\end{minipage}
+	\caption{HEX\_NATIVE: Hexadecimal codings of two jobs and I/O intensive metrics.}
+	%\label{lst:sim:hex_native:step1}
+\end{listing}
+
+
+
+\begin{table}[t]
+\centering
+\begin{tabular}{lllr}
+ 	$\text{Metric}_{IO}$ & $C_A$                 & $C_B$                   \\ 
+ 	\midrule
+ 	md\_read             & \lstinline|[1:1:0:0]| & \lstinline|[5:5:0:0:0]| \\ 
+ 	read\_bytes          & \lstinline|[1:1:2:2]| & \lstinline|[1:1:1:2:2]| \\ 
+ 	write\_bytes         & \lstinline|[0:0:0:0]| & \lstinline|[0:0:4:8:0]| \\ 
+ 	\midrule
+ 	Mean                 &                       &                         \\ 
+\end{tabular}
+\caption{HEX\_NATIVE: Similarity computation.}
+%\label{tab:hex_native:compute_sim}
+\end{table}
+
 %1 5 -> 0.75
 %1 5 -> 0.75
 %0 0 -> 1
@@ -996,13 +1087,16 @@ According to this algorithm, the two jobs in the table are similar to 73\% as 7 
 \begin{table}[t]
 \centering
 \begin{tabular}{lllrr}
-  Metric       & $C_A$                 & $S_B$                 & SliceSimilarity($C_A$, $S_B$) \\
+  $\text{Metric}_{IO}$       & $C_A$                 & $S_B$                 & SliceSimilarity($C_A$, $S_B$) \\ 
   \midrule
-  md\_read     & \lstinline|[1:1:0:0]| & \lstinline|[5:0:0:0]| & 0.7375                        \\
-  read\_bytes  & \lstinline|[1:1:2:2]| & \lstinline|[1:1:2:2]| & 0.8                           \\
-  write\_bytes & \lstinline|[0:0:0:0]| & \lstinline|[0:1:4:0]| & 0.65                          \\
+  md\_read     & \lstinline|[1:1:0:0]| & \lstinline|[5:5:0:0]| & 0.7                           \\ 
+  &                       & \lstinline|[5:0:0:0]| & \textbf{0.7375}                        \\ 
+  read\_bytes  & \lstinline|[1:1:2:2]| & \lstinline|[1:1:1:2]| & 0.7875                        \\ 
+  &                       & \lstinline|[1:1:2:2]| & \textbf{0.8}                         \\ 
+  write\_bytes & \lstinline|[0:0:0:0]| & \lstinline|[0:0:4:8]| & 0.65                          \\ 
+               &                       & \lstinline|[0:4:8:0]| & 0.65                          \\ 
   \midrule
-  Mean         &                       &                       & $\approx$0.73                          \\
+  Mean         &                       &                       & $\approx$0.73                 \\ 
 \end{tabular}
 \caption{HEX\_NATIVE: Similarity computation.}
 \label{tab:hex_native:compute_sim}
