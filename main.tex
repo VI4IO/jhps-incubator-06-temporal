@@ -682,7 +682,7 @@ This section describes the evaluated algorithms in detail.
 To apply existing clustering algorithms, first, a job-profile is created in the pre-processing.
 The 4d time series can be transformed into the required fixed-size input format accepted by the general-purpose ML clustering algorithms.
 In the pre-processing step, the MinMaxScaler scales the features to values between 0 and 1 using MinMax normalization.
-Therefore, the highest distance between two points can be at most \(\epsilon_\text{max} = d^{1/d}\), where d is the dimension of the dataset.
+The Eucledian distance is used; therefore, the highest distance between two points can be at most \(\epsilon_\text{max} = d^{1/d}\), where d is the dimension of the dataset.
 
 We explored two job profiles: IO-metric and I/O-duration.
 The \textbf{IO-metric job profile} utilizes three features, Job-I/O-Balance, Job-I/O-Utilization, and Job-I/O-Problem-Time (as defined in \cite{iocats2020}).
@@ -745,7 +745,7 @@ It is the number of Levenshtein operations (changes/deletes/inserts) divided by 
 		\subcaption{Job B}
 		\label{lst:test:b}
 	\end{minipage}
-	\caption{The similarity between these two jobs is 73 percent}
+	\caption{BIN\_ALL: The similarity between these two jobs is 73 percent}
 	\label{lst:test}
 \end{listing}
 
@@ -782,7 +782,7 @@ The example below shows the reduced codings from the previous example.
 		\subcaption{Job B}
 		\label{lst:sim:bin_aggzeros:job_b}
 	\end{minipage}
-	\caption{The similarity between these two jobs is 53 percent}
+	\caption{BIN\_AGGZEROS: The similarity between these two jobs is 53 percent}
 	\label{lst:sim:bin_aggzeros}
 \end{listing}
 
@@ -834,7 +834,7 @@ float maxSimilarity(CA, CB) {
 }
 \end{lstlisting}
 
-The \texttt{sliceSimilarity()} in \Cref{eq:slicesim} function computes similarity between two codings of the same length.
+The \texttt{sliceSimilarity()} in \Cref{eq:slicesim} computes similarity between two codings of the same length.
 It iterates over all positions of the coding $C_A$ and slice $S_B$, computes segment similarities, and the sum.
 Lastly, it normalizes the sum by the length of $job_B$.
 This function maps the differences between performance levels of the same segments (values between 0 and 16) to a relative value between 0 and 1.
@@ -843,10 +843,10 @@ This function maps the differences between performance levels of the same segmen
 	\text{sliceSimilarity}\left(C_{A},S_{B}\right) = \frac{1}{|job_B|}\sum_{\text{pos}=1}^{|job_A|} \left(1 - \frac{\vert C_{A,\text{pos}}-S_{B,\text{pos}} \vert }{16}\right)\text{, with }|job_{B}| \geq |job_{A}| \label{eq:slicesim}
 \end{equation}
 
-In \Cref{lst:sim:hex_native} we apply the approach to compute similarity between two jobs.
+In \Cref{lst:sim:hex_native} we apply the approach to compute similarity between two jobs; the trimmed metrics are shown only to highlight similarity and difference between the jobs better.
 First, we determine and trim the I/O intensive metrics in \Cref{lst:sim:hex_native:job_a:mio,lst:sim:hex_native:job_b:mio}.
 Then we use the \Cref{eq:slicesim} to computed individual metrics similarities, and finally, we compute the mean in \Cref{tab:hex_native:compute_sim}.
-According to this algorithm, the jobs are similar to 73\%.
+According to this algorithm, the two jobs in the table are similar to 73\% as 7 of the metrics are actually identical.
 
 \begin{listing}
 	\noindent\begin{minipage}{\textwidth}
@@ -918,7 +918,7 @@ According to this algorithm, the jobs are similar to 73\%.
 			\label{lst:sim:hex_native:job_b:mio}
 		\end{minipage}
 	\end{minipage}
-	\caption{Hexadecimal codings of two jobs and I/O intensive metrics.}
+	\caption{HEX\_NATIVE: Hexadecimal codings of two jobs and I/O intensive metrics.}
 	\label{lst:sim:hex_native}
 \end{listing}
 
@@ -964,7 +964,7 @@ According to this algorithm, the jobs are similar to 73\%.
 %sim 0.7291667
 
 
-\begin{table}
+\begin{table}[t]
 \centering
 \begin{tabular}{lllrr}
   Metric       & $C_A$                 & $S_B$                 & SliceSimilarity($C_A$, $S_B$) \\
@@ -975,16 +975,16 @@ According to this algorithm, the jobs are similar to 73\%.
   \midrule
   Mean         &                       &                       & $\approx$0.73                          \\
 \end{tabular}
-\caption{Similarity computation.}
+\caption{HEX\_NATIVE: Similarity computation.}
 \label{tab:hex_native:compute_sim}
 \end{table}
 
 
 \subsubsection{PM\_QUANT}
-The phase-matching quantization algorithm allows us to cluster variable length jobs.
+The developed phase-matching quantization algorithm allows us to cluster variable length jobs by aligning IO phases.
 First, using a hexadecimal coding, phases of consecutive I/O segments are detected and extracted.
 Then, the best match between the (disjoint) phases is determined, finally the similarity is computed.
-We will discuss the details of each step on the following example.
+We will discuss the details of each step on the example jobs in \Cref{lst:sim:pm_quant}.
 
 
 \begin{listing}
@@ -1056,7 +1056,7 @@ We will discuss the details of each step on the following example.
 			\label{lst:sim:pm_quant:phases:job_b}
 		\end{minipage}
 	\end{minipage}
-	\caption{Hexadecimal codings of two jobs and their I/O phases.}
+	\caption{PM\_QUANT: Hexadecimal codings of two jobs and their I/O phases.}
 	\label{lst:sim:pm_quant}
 \end{listing}
 
@@ -1066,16 +1066,8 @@ We will discuss the details of each step on the following example.
 According to our I/O phase definition, phases are separated by zeros.
 This definition makes the detection of individual phases to a trivial task.
 Relevant for similarity computation are only metrics that contain at least one non-zero segment.
-In this example, that is md\_file\_create, read\_bytes and write\_bytes metrics:
-%\begin{lstlisting}
-%job_A_md_file_create : [[2,2,2,9,3], [9,1,1,1]]
-%job_A_read_bytes : [[9,3], [1]]
-%job_A_write_bytes : []
+In this example, that are the md\_file\_create, read\_bytes and write\_bytes metrics:
 
-%job_B_md_file_create : [[1]]
-%job_B_read_bytes : [[2,2,2,2,8,2,2], [1], [8,1,1]]
-%job_B_write_bytes : [[5]]
-%\end{lstlisting}
 
 \paragraph{Phase matching}
 Now we slide the shorter phase over the longer and compute similarity to the corresponding part such that we can find the best match.
