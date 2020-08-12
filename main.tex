@@ -520,7 +520,8 @@ This coding preserves monitoring data for each metric and each segment.
 As the name suggests, the value of a segment is converted into a hexadecimal number to allow creation of a string representing the I/O behavior.
 The numbers are obtained in two steps.
 Firstly, the dimension reduction aggregates the file system and the node dimensions and computes a mean value for each metric and segment, which lies in the interval [0,4].
-Secondly, the mean values are quantized into NonIO + 16 I/O levels -- 0 (NonI0) represents the interval [0,0.25), 1 = [0.25,0.625), 2 = [0.625,0.825) $ \ldots $, e = [XX, XX), f = [3.875,4].
+%Secondly, the mean values are quantized into NonIO + 16 I/O levels -- 0 (NonI0) represents the interval [0,0.25), 1 = [0.25,0.625), 2 = [0.625,0.825) $ \ldots $, e = [XX, XX), f = [3.875,4].
+Secondly, the mean values are quantized into one NonIO level and 16 I/O levels (\Cref{tab:quant_intervals}).
 The example below shows hexadecimal coding for a job containing 6 segments.
 
 \begin{table}
@@ -545,7 +546,8 @@ Level & Interval      & Interval Size \\
 15    & [3.625,3.875) & 0.25          \\ 
 16    & [3.875,4]     & 0.125         \\ 
 \end{tabular}
-\caption{Non-unifor quantization intervals}
+\caption{Non-unifomr quantization intervals}
+\label{tab:quant_intervals}
 \end{table}
 
 
