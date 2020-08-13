@@ -404,7 +404,7 @@ By reducing along all dimension, you obtain basically a job profile (as discusse
 
 
 Segmented data contains a numeric floating-point value for each data, which can be too much information for the analysis.
-Therefore, we introduce two condensed data representations called binary and hexadecimal coding.
+Therefore, we introduce two condensed data representations called binary and quantized coding.
 Additionally, we introduce two operations on the coding:
 the first extracts I/O phases -- a phase is a consecutive non-zero series of segments;
 the second merges all consecutive zero segments into one segment, i.e., removes compute phases in the statistics.
@@ -426,7 +426,7 @@ The bits are set by the following function:
 			\end{cases}, i \in [\text{enumerated metrics}]
 		\end{equation}
 	 } \\[-1em]
-	 Hex-Quantization & Quantize segments to NonIO + 16 I/O levels.\\
+	 Quantization & Quantize segments to NonIO + 16 I/O levels.\\
 	 Zeros-Aggregation & Merge all consecutive zero segments.\\
 	 Phase-Extraction &  Extract continuous sequences of non-zero segments.
 \par - Split time series at zero segments in sub time series (I/O phases) and remove zero segments.
@@ -436,7 +436,7 @@ The bits are set by the following function:
  \label{tab:coding_ops}
 \end{table}
 
-\paragraph{Binary coding}
+\paragraph{B-coding}
 Binary coding represents monitoring data as a sequence of numbers, where each number represents the overall file system usage.
 The number is computed based on the nine metrics found in the segment, e.g., if a phase is read-intense and write-intense, it is encoded as one type of behavior.
 In this approach, each conceivable combination of activities has a unique number.
@@ -499,7 +499,7 @@ To reduce the 4-dimensional data, we reduce that structure to two dimensions (se
 In the resulting table we leave zero scores, and change scores larger than zero to one.
 After coding each segment, the jobs can be represented as a sequence of numbers, e.g.,
 
-\begin{lstlisting}[caption={Binary coding of a 15 segments long job.}]
+\begin{lstlisting}[caption={B-coding of a 15 segments long job.}]
 [1:5:-:-:-:-:-:-:96:96:96:96:96:96:96]
 \end{lstlisting}
 
@@ -508,20 +508,22 @@ It can be anything, like a job is waiting for resources, or computing something.
 It can also be that the job script cannot start immediately or run on a slow network.
 To catch such jobs, we aggregate multiple consecutive zero segments into one zero segment, thus the coding of the previous job would replace all 0:...:0 sequences just with one 0.
 
-\begin{lstlisting}[caption={Binary coding of a 15 segments long job with zero aggregation applied.}]
+\begin{lstlisting}[caption={B-coding of a 15 segments long job with zero aggregation applied.}]
 [1:5:-:96:96:96:96:96:96:96]
 \end{lstlisting}
 
 Note, that the actual job length is kept for analysis purpose, thus, only the length of the encoded sequence changes.
 
-\paragraph*{Hexadecimal coding}
-
-This coding preserves monitoring data for each metric and each segment.
-As the name suggests, the value of a segment is converted into a hexadecimal number to allow creation of a string representing the I/O behavior.
+\paragraph*{Q-coding}
+Quantum coding preserves monitoring data for each metric and each segment.
+As the name suggests, the value of a segment is quantized into a number to allow creation of a string representing the I/O behavior.
+The quantum intervals are allowed to be non-uniform.
+By shrinking some intervals we can investigate these parts in more detail.
 The numbers are obtained in two steps.
 Firstly, the dimension reduction aggregates the file system and the node dimensions and computes a mean value for each metric and segment, which lies in the interval [0,4].
 Secondly, the mean values are quantized into one NonIO level and 16 I/O levels (\Cref{tab:quant_intervals}).
-The example below shows hexadecimal coding for a job containing 6 segments.
+
+The example below shows Q-coding for a job containing 6 segments.
 
 \begin{table}
   \begin{subtable}{0.49\textwidth}
@@ -529,7 +531,7 @@ The example below shows hexadecimal coding for a job containing 6 segments.
     \begin{tabular}{lll}
       Code & Interval      & Interval Size \\
       \midrule
-      -, 0, NonIO     & [0,0.125)     & 0.125         \\
+      0, -, NonIO     & [0,0.125)     & 0.125         \\
       1     & [0.125,0.375) & 0.25          \\
       2    & [0.375,0.625) & 0.25          \\
       3    & [0.625,0.875) & 0.25          \\
@@ -555,11 +557,11 @@ The example below shows hexadecimal coding for a job containing 6 segments.
       16    & [3.875,4]     & 0.125         \\
     \end{tabular}
   \end{subtable}
-\caption{HEX coding: Non-uniform quantization intervals}
+\caption{Q-coding with non-uniform quantization intervals}
 \label{tab:quant_intervals}
 \end{table}
 
-\begin{lstlisting}[caption={Hexadecimal coding of a six segments long job.}]
+\begin{lstlisting}[caption={Q-coding of a six segments long job.}]
 'md_file_create' : [-:-:2:2:2:9]
 'md_file_delete' : [-:-:-:-:-:-]
 'md_mod'         : [-:-:-:-:-:-]
@@ -691,24 +693,15 @@ In brief, the algorithms can be characterized like in \Cref{tab:alg_character}.
     Algorithm & Characterization \\
     \midrule
     ML            & a set of \textbf{traditional machine learning} techniques on job profiles.                                                        \\
-    BIN\_ALL      & \textbf{Levenshtein} distance applied on \textbf{binary codings.}                                                                 \\
-    BIN\_AGGZEROS & \textbf{Levenshtein} distance applied on \textbf{binary codings}, but with \textbf{zero aggregation} of contiguous zero segments. \\
-    HEX\_LEV      & \textbf{Levenshtein} distance applied on \textbf{hexadecimal coding}.                                                             \\
-    HEX\_NATIVE   & A \textbf{performance-aware} algorithm operating on hexadecimal coding.                                                                                           \\
-    PM\_QUANT     & A \textbf{performance-aware} and \textbf{I/O phase-aware} algorithm.                                                              \\
+    B\_ALL      & \textbf{Levenshtein} distance applied on \textbf{B-codings.}                                                                 \\
+    B\_AGGZEROS & \textbf{Levenshtein} distance applied on \textbf{B-codings}, but with \textbf{zero aggregation} of contiguous zero segments. \\
+    Q\_LEV      & \textbf{Levenshtein} distance applied on \textbf{Q-coding}.                                                             \\
+    Q\_NATIVE   & A \textbf{performance-aware} algorithm operating on Q-coding.                                                                                           \\
+    Q\_PHASES     & A \textbf{performance-aware} and \textbf{I/O phase-aware} algorithm.                                                              \\
   \end{tabularx}
   \caption{Algorithm characterization}
   \label{tab:alg_character}
 \end{table}
-
-%\begin{itemize}
-% \item (ML): a set of \textbf{traditional machine learning} techniques on job profiles.
-% \item (BIN\_ALL): \textbf{Levenshtein} distance applied on \textbf{binary codings.}
-% \item (BIN\_AGGZEROS):  \textbf{Levenshtein} distance applied on \textbf{binary codings}, but with \textbf{zero aggregation} of contiguous zero segments.
-% \item (HEX\_LEV): \textbf{Levenshtein} distance applied on \textbf{hexadecimal coding}.
-% \item (HEX\_NATIVE): a \textbf{performance-aware} algorithm.
-% \item (PM\_QUANT): a \textbf{performance-aware} and \textbf{I/O phase-aware} algorithm.
-%\end{itemize}
 
 
 \subsection{Algorithms}
@@ -750,8 +743,8 @@ This workaround involves three steps:
  \item Predict labels of 1,000,000 jobs with the trained decision tree model
 \end{enumerate}
 
-\subsubsection{BIN\_ALL}
-This algorithm converts the time series data via binary coding to a string and then determine the relative similarity using the Levenshtein distance.
+\subsubsection{B\_ALL}
+This algorithm converts the time series data via B-coding to a string and then determine the relative similarity using the Levenshtein distance.
 The Levenshtein based similarity between two jobs is determined using \Cref{eq:sim:bin_all}.
 
 \begin{equation}
@@ -782,13 +775,13 @@ It is the number of Levenshtein operations (changes/deletes/inserts) divided by 
 		\subcaption{Job B}
 		\label{lst:test:b}
 	\end{minipage}
-	\caption{BIN\_ALL: The similarity between these two jobs is 73 percent}
+	\caption{B\_ALL: The similarity between these two jobs is 73 percent}
 	\label{lst:test}
 \end{listing}
 
 
-\subsubsection{BIN\_AGGZEROS}
-This is a variant of BIN\_ALL where subsequent zero-sequences are reduced to a single zero segment before \Cref{eq:sim:bin_aggzeros} is applied.
+\subsubsection{B\_AGGZEROS}
+This is a variant of B\_ALL where subsequent zero-sequences are reduced to a single zero segment before \Cref{eq:sim:bin_aggzeros} is applied.
 This allows us to focus on I/O intensive parts of the job.
 The example below shows the reduced codings from the previous example.
 
@@ -819,12 +812,12 @@ The example below shows the reduced codings from the previous example.
 		\subcaption{Job B}
 		\label{lst:sim:bin_aggzeros:job_b}
 	\end{minipage}
-	\caption{BIN\_AGGZEROS: The similarity between these two jobs is 53 percent}
+	\caption{B\_AGGZEROS: The similarity between these two jobs is 53 percent}
 	\label{lst:sim:bin_aggzeros}
 \end{listing}
 
-  \subsubsection{HEX\_LEV}
-This algorithm works on the same principle as the BIN algorithms, with the difference that it applies a hexadecimal coding and then computes the mean similarity across all metrics using Levenshtein.
+  \subsubsection{Q\_LEV}
+This algorithm works on the same principle as the B algorithms, with the difference that it applies a Q-coding and then computes the mean similarity across all metrics using Levenshtein.
 This adaption allows a comparison of time series where one metrics differs as only one metric string would differ while with binary coding the overall string would be different.
 
 \begin{equation}
@@ -832,9 +825,9 @@ This adaption allows a comparison of time series where one metrics differs as on
 \end{equation}
 
 \FloatBarrier
-\subsubsection{HEX\_NATIVE}
+\subsubsection{Q\_NATIVE}
 This algorithm computes a performance-aware similarity between two jobs.
-It works with a selection of I/O intensive metrics from hexadecimal codings ($\text{Metrics}_{\text{IO}}$) and utilizes the Normalized-Difference distance for similarity computation.
+It works with a selection of I/O intensive metrics from Q-codings ($\text{Metrics}_{\text{IO}}$) and utilizes the Normalized-Difference distance for similarity computation.
 %It utilizes only the I/O intensive metrics, denoted by $\text{Metrics}_{\text{IO}}$.
 %This set contains those metrics where at least one job contains at least one non-zero segment in this metric.
 Assume there are two jobs, $job_A$ and $job_B$.
@@ -920,7 +913,7 @@ According to this algorithm, the two jobs in the table are similar to 73\% as th
 		\subcaption{Coding of Job B}
 		%\label{lst:sim:hex_native:step1:job_b}
 		\end{minipage}
-	\caption{HEX\_NATIVE: Hexadecimal codings of two jobs and I/O intensive metrics.}
+	\caption{Q\_NATIVE: Q-codings of two jobs and I/O intensive metrics.}
   \label{lst:sim:hex_native:jobs}
 \end{listing}
 
@@ -980,7 +973,7 @@ According to this algorithm, the two jobs in the table are similar to 73\% as th
   write\_bytes         & \lstinline|[-:-:-:-]| & \lstinline|[-:-:4:8:-]| & 0   & \lstinline|[-:-:4:8]| & 0.65                   \\ 
   write\_bytes         & \lstinline|[-:-:-:-]| & \lstinline|[-:-:4:8:-]| & 1   & \lstinline|[-:4:8:-]| & 0.65                   \\ 
 \end{tabular}
-\caption{HEX\_NATIVE: Slice similarities $S_{B,pos} = \text{substr}(\text{str}=C_B, \text{start}=pos, \text{len}=L_A)$}
+\caption{Q\_NATIVE: Slice similarities $S_{B,pos} = \text{substr}(\text{str}=C_B, \text{start}=pos, \text{len}=L_A)$}
 \label{tab:hex_native:compute_slice_sim}
 \end{table}
 
@@ -995,15 +988,15 @@ According to this algorithm, the two jobs in the table are similar to 73\% as th
   \midrule
   Mean()  &                       &                         &  Similarity $\approx$ 0.73        \\ 
 \end{tabular}
-\caption{HEX\_NATIVE: Similarity computation.}
+\caption{Q\_NATIVE: Similarity computation.}
 \label{tab:hex_native:compute_sim}
 \end{table}
 
 
 \FloatBarrier
-\subsubsection{PM\_QUANT}
+\subsubsection{Q\_PHASES}
 The developed phase-matching quantization algorithm allows us to cluster variable length jobs by aligning IO phases.
-First, using a hexadecimal coding, phases of consecutive I/O segments are detected and extracted.
+First, using a Q-coding, phases of consecutive I/O segments are detected and extracted.
 Then, the best match between the (disjoint) phases is determined, finally the similarity is computed.
 We will discuss the details of each step on the example jobs in \Cref{lst:sim:pm_quant}.
 
@@ -1077,7 +1070,7 @@ We will discuss the details of each step on the example jobs in \Cref{lst:sim:pm
 			\label{lst:sim:pm_quant:phases:job_b}
 		\end{minipage}
 	\end{minipage}
-	\caption{PM\_QUANT: Hexadecimal codings of two jobs and their I/O phases.}
+	\caption{Q\_PHASES: Q-codings of two jobs and their I/O phases.}
 	\label{lst:sim:pm_quant}
 \end{listing}
 
@@ -1229,7 +1222,7 @@ If not, the clustering algorithm is not effective.
 For the performance tests, we allocate a compute node on Mistral supercomputer.
 It is equipped with 2x Intel\textsuperscript\textregistered\@ Xeon\textsuperscript\textregistered\@ CPU E5 2680 v3 @ 2.50GHz, 64GB DDR4 RAM\@.
 For clustering of job profiles, we use the agglomerative clustering algorithm, decision trees, and the MinMaxScaler from the Scikit-Learn 0.22.1 library and Python 3.8.0.
-For clustering of binary and hexadecimal codings we use a clustering algorithm implemented in Rust 1.42.0, and run it on a single core.
+For clustering of B-codings and Q-codings we use a clustering algorithm implemented in Rust 1.42.0, and run it on a single core.
 
 
 \subsection{Description of Our Data Set}
@@ -1237,14 +1230,12 @@ This section describes the job data extracted from Mistral, originally we gather
 Mostly jobs are allowed to run up to 8-hours, leading to time series with up to 48 segments.
 From the perspective of this work, analysis of non-I/O-intensive jobs (jobs with zero in all segments) is irrelevant, these jobs can be grouped into one class easily.
 For that reason, we detect zero-jobs early and remove them from the dataset; these are about 40\% of jobs.
-%Note that PM ignores such jobs by design.
-%Therefore, this step wouldn't be necessary.
 
-The number of zero-jobs is different for hexadecimal and binary mode codings.
-The reason is the quantization to HEX coding which computes mean performance values for all segments and then quantizes them into NonIO + 16 levels.
+The number of zero-jobs is different for Q-codings and B-codings.
+The reason is the quantization to Q-coding which computes mean performance values for all segments and then quantizes them into NonIO + 16 levels.
 Hereby, some segments can be quantized to zeros, if the mean value is lower than 0.125.
 Therefore, it may happen that some jobs fall into the zero-job category, if all segments are quantized to zeros.
-It can not happen in BIN coding, because it preserves all active segments.
+It can not happen in B-coding, because it preserves all active segments.
 Interestingly, it affects around 14$\%$ of jobs.
 \Cref{tab:n_intensive_jobs} shows the number of jobs that are analyzed further.
 
@@ -1253,8 +1244,8 @@ Interestingly, it affects around 14$\%$ of jobs.
   \begin{tabular}{ll}
     Algorithm & Number of I/O intensive jobs \\
     \midrule
-    BIN\_$\ast$, PM\_FLOAT, HEX\_NATIVE &  583.000 \\
-    HEX\_LEV, PM\_QUANT &  444.000 \\
+    B\_$\ast$, Q\_NATIVE &  583.000 \\
+    Q\_LEV, Q\_PHASES &  444.000 \\
   \end{tabular}
   \caption{Numbers of I/O-intensive jobs.}
   \label{tab:n_intensive_jobs}
@@ -1284,8 +1275,8 @@ The metrics (md\_bytes, md\_mod, and md\_file\_delete) have the longest tail; so
 We explored our discussed job profiles: IO-metric and IO-duration.
 For both datasets we explore $\epsilon \in [0.03, 0.06, 0.09, 0.1, 0.2, 0.3]$.
 
-\paragraph{BIN/HEX/PM}
-In the experiments with BIN*, HEX* and PM* algorithms, we cluster jobs varying the similarity parameter SIM $\in [0.1, 0.3, 0.5, 0.7, 0.9, 0.95, 0.99]$.
+\paragraph{B/Q-algorithms}
+In the experiments with B/Q-algorithms, we cluster jobs varying the similarity parameter SIM $\in [0.1, 0.3, 0.5, 0.7, 0.9, 0.95, 0.99]$.
 Additionally, we capture the clustering progress each time after clustering 10,000 jobs.
 
 
@@ -1338,7 +1329,7 @@ The examples in \Cref{tab:ml_examples} show some jobs in one cluster for a high 
  \begin{subtable}{\textwidth}
    \centering
      \begin{tabular}{lln{1}{\rd}|l}
-       \rot{Job-IO-Utilization} & \rot{Job-IO-Problem-Time} & \rot{Job-IO-Balance} & \rot{Binary coding}                       \\
+       \rot{Job-IO-Utilization} & \rot{Job-IO-Problem-Time} & \rot{Job-IO-Balance} & \rot{B-coding}                       \\
        \midrule
        4                        & 1                         & 0.4375000            & [118]                                     \\
        4                        & 1                         & 0.4450206            & [368:368:368:368:368:368:374:368:368:368] \\
@@ -1349,7 +1340,7 @@ The examples in \Cref{tab:ml_examples} show some jobs in one cluster for a high 
  \begin{subtable}{\textwidth}
    \centering
      \begin{tabular}{n{1}{\rd}n{1}{\rd}n{1}{\rd}n{1}{\rd}n{1}{\rd}n{1}{\rd}n{1}{\rd}n{1}{\rd}|l}
-       \rot{1\_md\_file\_delete} & \rot{1\_md\_mod} & \rot{1\_md\_other} & \rot{1\_md\_read} & \rot{1\_read\_bytes} & \rot{1\_read\_calls} & \rot{1\_write\_bytes} & \rot{1\_write\_calls} & \rot{Binary coding} \\
+       \rot{1\_md\_file\_delete} & \rot{1\_md\_mod} & \rot{1\_md\_other} & \rot{1\_md\_read} & \rot{1\_read\_bytes} & \rot{1\_read\_calls} & \rot{1\_write\_bytes} & \rot{1\_write\_calls} & \rot{B-coding} \\
        \midrule
        0.009259259               & 0.01851852       & 0.25000000         & 0.027777778       & 0.00462963           & 0.009259259          & 0.00462963            & 0.03240741            & [340:510:272]       \\
        0.012578616               & 0.01257862       & 0.24528302         & 0.006289308       & 0.00617284           & 0.006172840          & 0.01257862            & 0.01257862            & [510:-:-]           \\
@@ -1371,7 +1362,7 @@ However, even with a good feature set that works on our test system, it is unlik
 Therefore, we conclude that this adapted version of hierarchical clustering based on job profiles isn't suitable to analyze the I/O time series data of jobs and we must compare time series to obtain a suitable similarity metrics.
 
 \subsection{Quantitative Evaluation}
-This section contains data statistics, clustering progress, and clustering results when applying the five customized algorithms: BIN\_ALL,  BIN\_AGGZEROS, HEX\_LEV, HEX\_NATIVE, PM\_QUANT.
+This section contains data statistics, clustering progress, and clustering results when applying the five customized algorithms: B\_ALL,  B\_AGGZEROS, Q\_LEV, Q\_NATIVE, Q\_PHASES.
 
 \subsubsection{Impact of the User-Defined Similarity}
 In the introduced algorithms, the user-defined similarity (SIM) that the jobs in a cluster must fullfill to the cluster centroid controls the cluster formation.
@@ -1381,8 +1372,8 @@ Although an optimal SIM value depends on use case and dataset, a parameter explo
 
 \Cref{fig:clustering_progress} shows the number of clusters created when clustering an increasing total number of jobs for different SIM values; each point represents the number for an analyzed number of jobs in increments of 10,000 jobs.
 For all algorithms, we can see that with an increase in SIM value, the number of clusters created increases, and the number of total clusters created slows down the more jobs have been processed as jobs are allocated to existing clusters.
-BIN creates most clusters while HEX\_NATIVE creates the least and PM is in between.
-For SIM of 99\%, BIN and HEX\_LEV can barely group jobs together.
+B\_ALL creates most clusters while Q\_NATIVE creates the least and Q\_PHASES is in between.
+For SIM of 99\%, B and Q\_LEV can barely group jobs together.
 
 
 \Cref{fig:alg_runtimes} shows the clustering runtimes for the same experiment.
@@ -1391,11 +1382,11 @@ The reason is that the algorithm tries to put each job in existing clusters firs
 It iterates over them, and only if it is not able to find a suitable cluster, it creates a new one.
 The more clusters exist, the longer is the processing time.
 Since, for low SIM values there is a low number of clusters, the clustering is much faster.
-PM\_QUANT has exceptionally high runtimes due to quadratic runtimes of phase matching.
+Q\_PHASES has exceptionally high runtimes due to quadratic runtimes of phase matching.
 In one case, the runtimes clustering of 10,000 jobs took up to 4.3 hours (the few outliers are not shown in the picture).
 We suppose this is caused by the quadratic runtimes of the phase matching procedure.
 
-From this initial considerations, it appears that HEX\_NATIVE is well suited, it generates the least number of clusters and is efficient.
+From this initial considerations, it appears that Q\_NATIVE is well suited, it generates the least number of clusters and is efficient.
 However, looking at the overall number of created clusters isn't enough to assess the quantity of the aggregation.
 Additional quantitative metrics need to be used, such as the number of small clusters.
 
@@ -1408,32 +1399,34 @@ The maximum number of clusters is equivalent to the number of jobs; it is visual
 Coding with 100$\%$  similarity are of the same job phenotype, i.e, they have exactly the same length and I/O behavior.
 
 The gradient of the curve shows the generalization capabilities of each algorithm for different SIM values.
-Apparently, for all algorithms (except HEX) there is a SIM value, where the number of clusters with more than ten and two jobs is decreasing, i.e., the clustering algorithms start to split clusters into individual job clusters.
+Apparently, for all algorithms (except Q*) there is a SIM value, where the number of clusters with more than ten and two jobs is decreasing, i.e., the clustering algorithms start to split clusters into individual job clusters.
 That is something we usually want to prevent, because the algorithms stop finding similar jobs, but focus on refining clusters.
 
 \smallskip
 
 In \Cref{fig:cum_num_job_sizes}, the distribution of the relative cluster size for all jobs.
 The ABS algorithms tend to create many small clusters.
-PM creates a variety of different cluster sizes and HEX\_NATIVE the biggest clusters.
+Q\_PHASES creates a variety of different cluster sizes and Q\_NATIVE the biggest clusters.
 Interestingly after scaling both axes with log10, we can observe a linear behavior for all algorithms.
 
 When looking for an optimal SIM, we consider the following criteria:
 we need to select a SIM value where a further increase of it doesn't increase the number of clusters significantly, i.e., we can see a flattening curve with increasing numbers of jobs, which indicates that more jobs are placed in clusters and less clusters are created.
-PM and BIN algorithms work best for SIM values between 0.7 and 0.9, and for HEX the SIM value between 0.95 and 0.99.
+Q\_PHASES and B* algorithms work best for SIM values between 0.7 and 0.9, and for other Q-algorithms the SIM value between 0.95 and 0.99.
 
 Another strategy could be to start with a high SIM value and then decrease it until the clusters are big enough while appear to be sufficiently similar for the current analysis.
 
 \begin{figure}
   \centering
-   \includegraphics[width=\textwidth]{image15.png}
+   %\includegraphics[width=\textwidth]{image15.png}
+   \includegraphics[width=\textwidth]{progress.png}
    \caption{Clustering progress.}
    \label{fig:clustering_progress}
 \end{figure}
 
 \begin{figure}
   \centering
-  \includegraphics[width=4.61in,height=3.68in]{image18.png}
+  %\includegraphics[width=4.61in,height=3.68in]{image18.png}
+  \includegraphics[width=4.61in,height=3.68in]{runtimes.png}
   \caption{Runtime for executing the clustering.}
   \label{fig:alg_runtimes}
 \end{figure}
@@ -1441,14 +1434,14 @@ Another strategy could be to start with a high SIM value and then decrease it un
 
 \begin{figure}
   \centering
-  \includegraphics[width=4.61in,height=2.76in]{image19.png}
+  \includegraphics[width=4.61in,height=2.76in]{image19_2.png}
   \caption{Similarity value exploration.}
   \label{fig:sim_exploration}
 \end{figure}
 
 \begin{figure}
   \centering
-  \includegraphics[width=4.61in,height=1.85in]{image22.png}
+  \includegraphics[width=4.61in,height=1.85in]{image22_2.png}
   \caption{Cumulative number of jobs with different sizes.}
   \label{fig:cum_num_job_sizes}
 \end{figure}
@@ -1475,7 +1468,7 @@ We believe that clustering by relevance (potentially extended by the occupied no
 
 \begin{figure}
   \centering
-   \includegraphics[width=4.61in,height=6.44in]{image11.png}
+   \includegraphics[width=4.61in,height=6.44in]{image11_2.png}
    \caption{Top 10 relevant jobs ordered by relevance.
    The colors indicate the mean similarity of the jobs in a cluster to the cluster centroid.
    The number above a bar denotes the mean job length of the cluster.}
@@ -1493,11 +1486,11 @@ At the end, we include an illustration which describes the segment length distri
 \subsubsection{Algorithm characteristics}
 The SIM value selection strategy can vary from use case to use case.
 As criteria, we choose a SIM value that creates a moderate number of clusters (around 50\% of job phenotypes) and keeps its generalization capabilities (the number of clusters with more than 1 job is considerable).
-For the BIN algorithms we chose a SIM of 0.7, and the HEX algorithm SIM of 0.9.
+For the B algorithms we chose a SIM of 0.7, and the Q algorithm SIM of 0.9.
 
 \FloatBarrier
-\paragraph{BIN\_ALL}
-For the BIN algorithms, we show the statistics of the largest clusters as well in \Cref{tab:bin:largest_clusters} as there is an important aspect.
+\paragraph{B\_ALL}
+For the B-algorithms, we show the statistics of the largest clusters as well in \Cref{tab:bin:largest_clusters} as there is an important aspect.
 Looking at \Cref{tab:bin:largest_clusters}, the six largest clusters contain the shortest possible jobs (one segment long).
 In each cluster, all jobs have the identical coding; these short running jobs are likely pre/post-processing jobs.
 
@@ -1528,7 +1521,7 @@ The following general characteristic observations are made:
 		$[128]$ & 10,228 \\
 		$[8]$   & 9,446  \\
 	\end{tabular}
-	\caption{BIN algorithm: Top 6 largest clusters created with SIM = 0.7.}
+	\caption{B-algorithms: Top 6 largest clusters created with SIM = 0.7.}
 	\label{tab:bin:largest_clusters}
 \end{table}
 
@@ -1548,12 +1541,12 @@ The following general characteristic observations are made:
 		\begin{tiny}
 			\begin{tabular}{l|r}
 				\rowcolor{tblhead}
-				Binary coding of the centroid                                                                    &  Type     \\
+				B-coding of the centroid                                                                    &  Type     \\
 				\hline
 				-:-:-:-:-:-:294:-:-:-:-:32:-:-:-:-:-:-:-:-:-:-:-:32:-:-:-:-:-:-:-:-:-:-:-:32:-:-:-:-:-:-:-:-:-:- &  centroid \\
 				\multicolumn{2}{l}{}                                                                             \\
 				\rowcolor{tblhead}
-				Binary coding of jobs in the cluster                                                             &  Count    \\
+				B-coding of jobs in the cluster                                                             &  Count    \\
 				\hline
 				-:-:-:-:-:-:359:96:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-   &  95       \\
 				-:-:-:-:-:-:295:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-    &  62       \\
@@ -1572,13 +1565,13 @@ The following general characteristic observations are made:
 		\caption{Length distribution in the cluster.}
 		\label{cluster:bin_all:length}
 	\end{subfigure}
-	\caption{BIN algorithm: Information of the selected cluster (SIM=0.7).}
+	\caption{B-algorithm: Information of the selected cluster (SIM=0.7).}
 	\label{cluster:bin_all}
 \end{figure}
 
 \FloatBarrier
-\paragraph{BIN\_AGGZEROS}
-The first clusters are identical to BIN, e.g., as shown in \Cref{tab:bin:largest_clusters}.
+\paragraph{B\_AGGZEROS}
+The first clusters are identical to B\_ALL, e.g., as shown in \Cref{tab:bin:largest_clusters}.
 The reason that both algorithms create the same clusters is that the zero aggregation has no effect on formation of short jobs: the minimum job length required for effective zero aggregation is at least three segments.
 
 We chose again a cluster of the Top 20, information related to the cluster is shown in \Cref{cluster:bin_aggzeros}.
@@ -1586,8 +1579,8 @@ The following is characteristic for this algorithm:
 
 \begin{enumerate}
  \item Job types can significantly differ from centroid and from each other.
- \item Lengths of job phenotypes in a cluster are relatively far from the centroid and compared to BIN\_ALL.
- \item I/O intensive clusters appear to be cleaner than BIN\_ALL.
+ \item Lengths of job phenotypes in a cluster are relatively far from the centroid and compared to B\_ALL.
+ \item I/O intensive clusters appear to be cleaner than B\_ALL.
 \end{enumerate}
 
 \begin{figure}
@@ -1607,13 +1600,13 @@ The following is characteristic for this algorithm:
 		\begin{tiny}
 			\begin{tabular}{l|r}
 				\rowcolor{tblhead}
-				Binary coding of the centroid                                                                         &  Type     \\
+				B-coding of the centroid                                                                         &  Type     \\
 				\hline
 				272:272:272:272:272:278:286:272:272:272:272:272:272:272:272:272:272:272:272            &  centroid \\
 				\multicolumn{2}{l}{}                                                                   \\
 				\hline
 				\rowcolor{tblhead}
-				Binary coding of jobs in the cluster                                                                          &  Count    \\
+				B-coding of jobs in the cluster                                                                          &  Count    \\
 				272:272:272:272:272:278:286:272:272:272:272:272:272:272:272:272:272:272:272            &  528      \\
 				272:272:272:272:272:406:286:272:272:272:272:272:272:272:272:272                        &  96       \\
 				272:272:272:272:272:279:31:272:272:272:272:272:272:272:272:272:272:272:272:272:272:272 &  53       \\
@@ -1631,15 +1624,15 @@ The following is characteristic for this algorithm:
 		\caption{Job length distribution in the cluster.}
 		\label{cluster:bin_aggzeros:length}
 	\end{subfigure}
-	\caption{BIN\_AGGZEROS algorithm: Information of the selected cluster (SIM=0.7).}
+	\caption{B\_AGGZEROS algorithm: Information of the selected cluster (SIM=0.7).}
 	\label{cluster:bin_aggzeros}
 \end{figure}
 
 
 \FloatBarrier
-\paragraph{HEX\_LEV}
-Due to the longer hexadecimal codings, smaller changes in the SIM value don't change the clusters as quickly,  compared to binary codings.
-Therefore, for this exploration, we chose a SIM value higher than for BIN algorithms.
+\paragraph{Q\_LEV}
+Due to the longer Q-codings, smaller changes in the SIM value don't change the clusters as quickly, compared to B-codings.
+Therefore, for this exploration, we chose a SIM value higher than for B-algorithms.
 We observe the following cluster characteristics:
 \begin{enumerate}
  \item Similar job lengths.
@@ -1669,7 +1662,7 @@ In the selected cluster, there is mostly one segment of I/O activity.
 		\begin{tiny}
 			\begin{tabular}{llll|r}
 				\rowcolor{tblhead}
-				\multicolumn{4}{l|}{Hexadecimal coding} & \\
+				\multicolumn{4}{l|}{Q-coding} & \\
 				\rowcolor{tblhead}
 				md\_file\_create  & md\_file\_delete  & md\_mod           & read\_calls       & Type     \\
 				\hline
@@ -1695,13 +1688,13 @@ In the selected cluster, there is mostly one segment of I/O activity.
 		\caption{Length distribution in the cluster.}
 		\label{cluster:hex_lev:length}
 	\end{subfigure}
-	\caption{HEX algorithm: Information of the selected cluster (SIM=0.9).}
+	\caption{Q\_LEV algorithm: Information of the selected cluster (SIM=0.9).}
 	\label{cluster:hex_lev}
 \end{figure}
 
 
 \FloatBarrier
-\paragraph{HEX\_NATIVE}
+\paragraph{Q\_NATIVE}
 The SIM value exploration shows that this algorithm works best with high SIM values.
 Clustering with SIM=0.99 results in clusters that have equal job lengths.
 From the definition of the equation, for a similarity of 99\% the centroid must be longer than 100 segments to attract jobs with 99 or 101 length.
@@ -1732,7 +1725,7 @@ In the selected cluster, jobs with a length of 4 have mostly the activity of one
 		\begin{tiny}
 			\begin{tabular}{lll|r}
 				\rowcolor{tblhead}
-				\multicolumn{3}{l|}{Hexadecimal coding} &            \\
+				\multicolumn{3}{l|}{Q-coding} &            \\
 				\rowcolor{tblhead}
 				md\_file\_delete     &  md\_mod   & md\_other & Type     \\
 				\hline
@@ -1758,18 +1751,18 @@ In the selected cluster, jobs with a length of 4 have mostly the activity of one
 		\caption{Length distribution in the cluster.}
 		\label{cluster:hex_native:length}
 	\end{subfigure}
-	\caption{HEX\_NATIVE algorithm: Information of the selected cluster (SIM=0.99).}
+	\caption{Q\_NATIVE algorithm: Information of the selected cluster (SIM=0.99).}
 	\label{cluster:hex_native}
 \end{figure}
 
 \FloatBarrier
-\paragraph{PM\_QUANT}
+\paragraph{Q\_PHASES}
 Information related to the selected cluster is shown in \Cref{cluster:pm_quant}.
 The first thing to mention are the high generalization capabilities of the algorithm, i.e., that many jobs are mapped to a relatively low number of types.
 The next typical property is shown in \Cref{cluster:pm_quant:length}, where we can see that almost the full range of job lengths is represented in the cluster.
-This happens, because the PM ignores zero segments.
-The aggregation of zero segments is important as most jobs have few I/O phases, in contrast to BIN\_AGGZEROS, it works more efficient.
-For example, for PM, the job phenotypes in \Cref{cluster:pm_quant:top_jobs} in the row one and two are 100$\%$ similar.
+This happens, because the Q\_PHASES ignores zero segments.
+The aggregation of zero segments is important as most jobs have few I/O phases, in contrast to B\_AGGZEROS, it works more efficient.
+For example, for Q\_PHASES, the job phenotypes in \Cref{cluster:pm_quant:top_jobs} in the row one and two are 100$\%$ similar.
 The centroid and the jobs contain quite similar I/O patterns.
 
 General cluster characteristics:
@@ -1795,7 +1788,7 @@ General cluster characteristics:
 	 \begin{tiny}
 		 \begin{tabular}{ll|r}
 			 \rowcolor{tblhead}
-			 \multicolumn{2}{l|}{Hexadecimal coding} &              \\
+			 \multicolumn{2}{l|}{Q-coding} &              \\
 			 \rowcolor{tblhead}
 			 md\_file\_delete     &  md\_mod     & Type     \\
 			 \hline
@@ -1821,7 +1814,7 @@ General cluster characteristics:
 		\caption{Length distribution in the cluster.}
 		\label{cluster:pm_quant:length}
 	\end{subfigure}
-	\caption{PM\_QUANT algorithm: Information of the selected cluster (SIM=0.7).}
+	\caption{Q\_PHASES algorithm: Information of the selected cluster (SIM=0.7).}
 	\label{cluster:pm_quant}
 \end{figure}
 
@@ -1849,7 +1842,7 @@ Now, we identify and investigate the cluster that contains this job for the diff
 Overall, we find this job leads to good conditions for all algorithms, i.e., all the algorithms work well in this use case.
 
 \FloatBarrier
-\paragraph{BIN\_ALL}
+\paragraph{B\_ALL}
 Information related to the cluster of the job is in \Cref{cluster:use_case:bin}.
 We find that the identified jobs in the cluster are sufficiently related.
 
@@ -1869,13 +1862,13 @@ We find that the identified jobs in the cluster are sufficiently related.
 		\begin{tiny}
 			\begin{tabular}{l|r}
 				\rowcolor{tblhead}
-				Binary coding                                                                                          &  Type     \\
+				B-coding                                                                                          &  Type     \\
 				\hline
 				192:192:192:192:192:192:196:192:192:192:192:192:192:192:192:192:192:192:192:192:192:192:64:64:64:64:64 &  job      \\
 				192:192:192:192:192:192:192:192:192:192:192:454:230:192:192:192:192:192:192:192:192:192:192:192        &  centroid \\
 				\multicolumn{2}{l}{}                                                                                   \\
 				\rowcolor{tblhead}
-				Binary coding                                                                                          &  Count    \\
+				B-coding                                                                                          &  Count    \\
 				\hline
 				192:192:192:192:192:454:198:192:192:192:192:192:192:192:192:192:192:192:192:192:192:192:192:192        &  5        \\
 				192:192:192:192:192:192:192:192:192:192:192:454:230:192:192:192:192:192:192:192:192:192:192:192        &  3        \\
@@ -1894,14 +1887,14 @@ We find that the identified jobs in the cluster are sufficiently related.
 		\caption{Length distribution in the cluster.}
 		\label{cluster:use_case:bin_all:length}
 	\end{subfigure}
-	\caption{BIN algorithm: Information of the selected cluster (SIM=0.7).}
+	\caption{B\_ALL algorithm: Information of the selected cluster (SIM=0.7).}
 	\label{cluster:use_case:bin}
 \end{figure}
 
 \FloatBarrier
-\paragraph{BIN\_AGGZEROS}
+\paragraph{B\_AGGZEROS}
 Information related to the cluster is in \Cref{cluster:use_case:bin_aggzeros}.
-Compared to BIN, the cluster is smaller but the jobs have a more similar ending.
+Compared to B\_ALL, the cluster is smaller but the jobs have a more similar ending.
 
 %\jk{Vl. hätte man einfach nur den Job als Centroid nehmen sollen und Ähnlichkeit aller Jobs dazu feststellen?}
 %\eb{Ist eine gute Idee fuer den zweiten Workflow.
@@ -1927,13 +1920,13 @@ Compared to BIN, the cluster is smaller but the jobs have a more similar ending.
 		\begin{tiny}
 			\begin{tabular}{l|r}
 				\rowcolor{tblhead}
-				Binary coding                                                                                             &  Type     \\
+				B-coding                                                                                             &  Type     \\
 				\hline
 				192:192:192:192:192:192:196:192:192:192:192:192:192:192:192:192:192:192:192:192:192:192:64:64:64:64:64    &  job      \\
 				511:238:192:510:192:224:228:192:192:192:192:192:192:192:192:192:192:192:192:192:192:64:64:64:64:64        &  centroid \\
 				\multicolumn{2}{l}{}                                                                                      \\
 				\rowcolor{tblhead}
-				Binary coding                                                                                             &  Count    \\
+				B-coding                                                                                             &  Count    \\
 				\hline
 				-:224:192:192:192:192:228:192:192:192:192:192:192:192:192:192:192:192:192:192:192:64:64:64:64:64          &  1        \\
 				192:192:192:192:192:192:196:192:192:192:192:192:192:192:192:192:192:192:192:192:192:192:64:64:64:64:64    &  1        \\
@@ -1952,17 +1945,17 @@ Compared to BIN, the cluster is smaller but the jobs have a more similar ending.
 		\caption{Length distribution in the cluster.}
 		\label{cluster:use_case:bin_aggzeros:length}
 	\end{subfigure}
-	\caption{BIN\_AGGZEROS algorithm: Information of the selected cluster (SIM=0.7).}
+	\caption{B\_AGGZEROS algorithm: Information of the selected cluster (SIM=0.7).}
 	\label{cluster:use_case:bin_aggzeros}
 \end{figure}
 
 \FloatBarrier
-\paragraph{HEX\_LEV}
+\paragraph{Q\_LEV}
 Information related to the cluster is in \Cref{cluster:use_case:hex_lev}.
 Overall, the job is matched partially, jobs in the cluster may contain at the beginning an idle phase.
 
-Notice that there is a discrepancy between the job visualization in \Cref{fig:use_case} and the hexadecimal job codings.
-While in \Cref{cluster:use_case:hex_lev} we can see a less intensive phase in the beginning and a high intensive phase afterwards, the hexadecimal coding contains a more or less single high intensive I/O phase.
+Notice that there is a discrepancy between the job visualization in \Cref{fig:use_case} and the quantized job codings.
+While in \Cref{cluster:use_case:hex_lev} we can see a less intensive phase in the beginning and a high intensive phase afterwards, the quantized coding contains a more or less single high intensive I/O phase.
 The reason is that we use different reduction functions.
 While in the illustration we aggregate segments by the sum() function, for the coding we use mean() function for the same set of values.
 While sum() is better for visualization, the mean value allows the algorithms to assess data independent of the number of nodes used in a job.
@@ -1983,7 +1976,7 @@ While sum() is better for visualization, the mean value allows the algorithms to
 		\begin{tiny}
 			\begin{tabular}{ll|r}
 				\rowcolor{tblhead}
-				\multicolumn{2}{l|}{Hexadecimal coding} & \\
+				\multicolumn{2}{l|}{Q-coding} & \\
 				\rowcolor{tblhead}
 				md\_other                                           &  read\_calls                                           & Type     \\
 				\hline
@@ -2009,12 +2002,12 @@ While sum() is better for visualization, the mean value allows the algorithms to
 		\caption{Length distribution in the cluster.}
 		\label{cluster:use_case:hex_lev:length}
 	\end{subfigure}
-	\caption{HEX\_LEV algorithm: Information of the selected cluster (SIM=0.9).}
+	\caption{Q\_LEV algorithm: Information of the selected cluster (SIM=0.9).}
 	\label{cluster:use_case:hex_lev}
 \end{figure}
 
 \FloatBarrier
-\paragraph{HEX\_NATIVE}
+\paragraph{Q\_NATIVE}
 Information related to the cluster is in \Cref{cluster:use_case:hex_native}.
 Again, the jobs look similar, however, for read calls the increase in performance and the drop in Segment\,5 is not captured.
 
@@ -2034,7 +2027,7 @@ Again, the jobs look similar, however, for read calls the increase in performanc
 		\begin{tiny}
 			\begin{tabular}{l|r}
 				\rowcolor{tblhead}
-				Hexadecimal coding & \\
+				Q-coding & \\
 				\rowcolor{tblhead}
 				read\_calls                                           & Type     \\
 				\hline
@@ -2061,12 +2054,12 @@ Again, the jobs look similar, however, for read calls the increase in performanc
 		\caption{Length distribution in the cluster.}
 		\label{cluster:use_case:hex_native:length}
 	\end{subfigure}
-	\caption{HEX\_NATIVE algorithm: Information of the selected cluster (SIM=0.99).}
+	\caption{Q\_NATIVE algorithm: Information of the selected cluster (SIM=0.99).}
 	\label{cluster:use_case:hex_native}
 \end{figure}
 
 \FloatBarrier
-\paragraph{PM\_QUANT}
+\paragraph{Q\_PHASES}
 Information\ related to the cluster is in \Cref{cluster:use_case:pm_quant}.
 Even with a smaller SIM value, the jobs appear related while they cover a variety of job length as well.
 
@@ -2086,7 +2079,7 @@ Even with a smaller SIM value, the jobs appear related while they cover a variet
 		\begin{tiny}
 			\begin{tabular}{l|r}
 				\rowcolor{tblhead}
-				Hexadecimal coding & \\
+				Q-coding & \\
 				\rowcolor{tblhead}
 				read\_calls                                           & Type     \\
 				\hline
@@ -2113,7 +2106,7 @@ Even with a smaller SIM value, the jobs appear related while they cover a variet
 		\caption{Length distribution in the cluster.}
 		\label{cluster:use_case:pm_quant:length}
 	\end{subfigure}
-	\caption{PM\_QUANT algorithm: Information of the selected cluster (SIM=0.7).}
+	\caption{Q\_PHASES algorithm: Information of the selected cluster (SIM=0.7).}
 	\label{cluster:use_case:pm_quant}
 \end{figure}
 
@@ -2125,7 +2118,8 @@ As most jobs contain only a subset of I/O-intensive segments, the assessment of 
 There may be specific use cases where the exact job-length play a role but generally it appears that a user or support member should be interested in similar I/O-patterns as otherwise the clusters will be polluted with  irrelevant jobs.
 
 \paragraph{Coding.} The coding of the time series data has a big impact on the potential similarity that can be uncovered.
-We explored binary, hexadecimal, and the native (floating-point, e.g., mean) values.
+We explored binary, quantized values.
+%We explored binary, quantized, and the native (floating-point, e.g., mean) values.
 
 We noticed in the experiments with native coding that the amount of generated clusters skyrocketed.
 The reason is that similarity for short jobs exceed a high SIM value quickly and this leads to the creation of new clusters, which in turn leads to long clustering runtimes.
@@ -2135,13 +2129,13 @@ Both are one segment long and only one I/O node that writes data to storage with
 Without quantization, we would represent these jobs by the following sequences:  [..., [0.0625], $ \ldots $ ] and [..., [0.03125], ...], where only active metrics have values larger than zero.
 Using the similarity function without quantization, i.e., with mean performance, would result in a similarity of 50$\%$, and for SIM $>0.5$ they would be placed in separate clusters.
 
-The hexadecimal coding quantizes the data, making them identical, and filters many jobs automatically.
+The Q-coding quantizes the data, making them identical, and filters many jobs automatically.
 Segments with mean performance less than 0.125 are rounded to zero and zero sequences are removed from the dataset.
 
-Rounding is not necessary for PM.
+Rounding is not necessary for Q\_PHASES.
 It can work directly with floating-point numbers.
 As it generalized better for smaller similarity, it wouldn't create that many clusters as for the other methods.
-The initial motivation behind the use of hexadecimal coding was to apply string methods such as Levenshtein and make data comparable with other algorithms.
+The initial motivation behind the use of quantized coding was to apply string methods such as Levenshtein and make data comparable with other algorithms.
 %For example, this allows us to see how the additional features affect the quality of clusters.
 %By accident, this was also the right decision.
 
@@ -2171,7 +2165,7 @@ We can easily construct another sequence, e.g., [-:389:-:-], where a similarity 
 For this reason, we found that the Levenshtein distance is generally not suitable.
 
 \paragraph{I/O Phases.}
-The current version of the PM algorithm ignores NonIO parts (sequences of zeros) of the monitoring data, and  handles segment sequences like [0,0,0,0,1] and [1] equally:
+The current version of the Q\_PHASES algorithm ignores NonIO parts (sequences of zeros) of the monitoring data, and handles segment sequences like [-,-,-,-,1] and [1] equally:
 \begin{lstlisting}
 job1_metric1 : [-,-,-,-,1]
 job1_metric1 : [1]
@@ -2227,10 +2221,10 @@ Our analysis shows that considering the relative I/O performance and I/O phases 
 The integration of the awareness of I/O performance produces better, but still not perfect results.
 Therefore, we found that the Levenshtein distance is generally not suitable for similarity of I/O behavior of jobs.
 
-Absolute coding aggregates three dimensions (Metric, Nodes, and FileSystems) result in a nine times shorter coding sequence than hexadecimal coding, which aggregates only two dimensions (Nodes, and FileSystems).
-Using hexadecimal coding is more precise than binary coding because hexadecimal coding sequences longer.
+Absolute coding aggregates three dimensions (Metric, Nodes, and FileSystems) result in a nine times shorter coding sequence than quantized coding, which aggregates only two dimensions (Nodes, and FileSystems).
+Using quantized coding is more precise than binary coding because quantized coding sequences longer.
 However, using the actual native floating-point value is problematic for the developed algorithms as for high similarity it will generate too many clusters.
-Therefore, we consider the quantization of hexadecimal is appropriate for this use case.
+Therefore, we consider the quantization is appropriate for this use case.
 
 The phase matching algorithm detects phases and differentiates performance values.
 In our analysis, it produced even for smaller relative similarity good results.
