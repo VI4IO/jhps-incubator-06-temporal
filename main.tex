@@ -500,7 +500,7 @@ In the resulting table we leave zero scores, and change scores larger than zero 
 After coding each segment, the jobs can be represented as a sequence of numbers, e.g.,
 
 \begin{lstlisting}[caption={Binary coding of a 15 segments long job.}]
-[1:5:0:0:0:0:0:0:96:96:96:96:96:96:96]
+[1:5:-:-:-:-:-:-:96:96:96:96:96:96:96]
 \end{lstlisting}
 
 The monitoring dataset doesn't provide information about what happens during the zero segments.
@@ -509,7 +509,7 @@ It can also be that the job script cannot start immediately or run on a slow net
 To catch such jobs, we aggregate multiple consecutive zero segments into one zero segment, thus the coding of the previous job would replace all 0:...:0 sequences just with one 0.
 
 \begin{lstlisting}[caption={Binary coding of a 15 segments long job with zero aggregation applied.}]
-[1:5:0:96:96:96:96:96:96:96]
+[1:5:-:96:96:96:96:96:96:96]
 \end{lstlisting}
 
 Note, that the actual job length is kept for analysis purpose, thus, only the length of the encoded sequence changes.
@@ -524,52 +524,51 @@ Secondly, the mean values are quantized into one NonIO level and 16 I/O levels (
 The example below shows hexadecimal coding for a job containing 6 segments.
 
 \begin{table}
-
-\begin{subtable}{0.49\textwidth}
-\begin{tabular}{lll}
-Code & Interval      & Interval Size \\
-\midrule
-NonIO     & [0,0.125)     & 0.125         \\
-0     & [0.125,0.375) & 0.25          \\
-1     & [0.375,0.625) & 0.25          \\
-2     & [0.625,0.875) & 0.25          \\
-3     & [0.875,1.125) & 0.25          \\
-4     & [1.125,1.375) & 0.25          \\
-5     & [1.375,1.625) & 0.25          \\
-6     & [1.625,1.875) & 0.25          \\
-7     & [1.875,2.125) & 0.25          \\
-\end{tabular}
-\end{subtable}
-\begin{subtable}{0.49\textwidth}
-\begin{tabular}{lll}
-Code & Interval      & Interval Size \\
-\midrule
-8     & [2.125,2.375) & 0.25          \\
-9    & [2.375,2.625) & 0.25          \\
-a    & [2.625,2.875) & 0.25          \\
-b    & [2.875,3.125) & 0.25          \\
-c    & [3.125,3.375) & 0.25          \\
-d    & [3.375,3.625) & 0.25          \\
-e    & [3.625,3.875) & 0.25          \\
-f    & [3.875,4]     & 0.125         \\
-\end{tabular}
-\end{subtable}
-
+  \begin{subtable}{0.49\textwidth}
+    \centering
+    \begin{tabular}{lll}
+      Code & Interval      & Interval Size \\
+      \midrule
+      -, 0, NonIO     & [0,0.125)     & 0.125         \\
+      1     & [0.125,0.375) & 0.25          \\
+      2    & [0.375,0.625) & 0.25          \\
+      3    & [0.625,0.875) & 0.25          \\
+      4    & [0.875,1.125) & 0.25          \\
+      5    & [1.125,1.375) & 0.25          \\
+      6    & [1.375,1.625) & 0.25          \\
+      7    & [1.625,1.875) & 0.25          \\
+      8     & [1.875,2.125) & 0.25          \\
+    \end{tabular}
+  \end{subtable}
+  \begin{subtable}{0.49\textwidth}
+    \centering
+    \begin{tabular}{lll}
+      Code & Interval      & Interval Size \\
+      \midrule
+      9     & [2.125,2.375) & 0.25          \\
+      10    & [2.375,2.625) & 0.25          \\
+      11    & [2.625,2.875) & 0.25          \\
+      12    & [2.875,3.125) & 0.25          \\
+      13    & [3.125,3.375) & 0.25          \\
+      14    & [3.375,3.625) & 0.25          \\
+      15    & [3.625,3.875) & 0.25          \\
+      16    & [3.875,4]     & 0.125         \\
+    \end{tabular}
+  \end{subtable}
 \caption{HEX coding: Non-uniform quantization intervals}
 \label{tab:quant_intervals}
 \end{table}
 
-
 \begin{lstlisting}[caption={Hexadecimal coding of a six segments long job.}]
-'md_file_create' : [0:0:2:2:2:9]
-'md_file_delete' : [0:0:0:0:0:0]
-'md_mod'         : [0:0:0:0:0:0]
-'md_other'       : [0:0:0:0:0:0]
-'md_read'        : [0:0:0:9:3:0]
-'read_bytes'     : [5:0:0:0:0:0]
-'read_calls'     : [0:0:0:0:0:0]
-'write_bytes'    : [0:0:0:0:f:f]
-'write_calls'    : [0:0:0:0:0:0]
+'md_file_create' : [-:-:2:2:2:9]
+'md_file_delete' : [-:-:-:-:-:-]
+'md_mod'         : [-:-:-:-:-:-]
+'md_other'       : [-:-:-:-:-:-]
+'md_read'        : [-:-:-:9:3:-]
+'read_bytes'     : [5:-:-:-:-:-]
+'read_calls'     : [-:-:-:-:-:-]
+'write_bytes'    : [-:-:-:-:9:9]
+'write_calls'    : [-:-:-:-:-:-]
 \end{lstlisting}
 
 \subsubsection{Similarity Metrics}
@@ -768,7 +767,7 @@ It is the number of Levenshtein operations (changes/deletes/inserts) divided by 
 \begin{listing}
 	\noindent\begin{minipage}{0.50\textwidth}
 		\begin{lstlisting}
-		[1:5:0:0:0:0:0:96:96:96:96:96:96:96]
+		[1:5:-:-:-:-:-:96:96:96:96:96:96:96]
 		\end{lstlisting}
 		\vspace{-2em}
 		\subcaption{Job A}
@@ -777,7 +776,7 @@ It is the number of Levenshtein operations (changes/deletes/inserts) divided by 
 	\hfill
 	\noindent\begin{minipage}{0.50\textwidth}
 		\begin{lstlisting}
-		[0:0:0:0:0:0:0:0:96:96:96:96:96:98]
+		[-:-:-:-:-:-:-:-:96:96:96:96:96:98]
 		\end{lstlisting}
 		\vspace{-2em}
 		\subcaption{Job B}
@@ -806,7 +805,7 @@ The example below shows the reduced codings from the previous example.
 \begin{listing}
 	\noindent\begin{minipage}{0.49\textwidth}
 		\begin{lstlisting}
-		[1:5:0:96:96:96:96:96:96:96]
+		[1:5:-:96:96:96:96:96:96:96]
 		\end{lstlisting}
 		\vspace{-2em}
 		\subcaption{Job A}
@@ -814,7 +813,7 @@ The example below shows the reduced codings from the previous example.
 	\end{minipage}
 	\noindent\begin{minipage}{0.49\textwidth}
 		\begin{lstlisting}
-		[0:96:96:96:96:96:98]
+		[-:96:96:96:96:96:98]
 		\end{lstlisting}
 		\vspace{-2em}
 		\subcaption{Job B}
@@ -832,6 +831,7 @@ This adaption allows a comparison of time series where one metrics differs as on
 	\text{similarity}\left(\text{job}_{A},\text{job}_{B} \right) = 1 - \frac{ \sum_{m \in Metrics}^{} \text{levenshtein} \left(\text{job}_{A,m},\text{\text{job}}_{B,m} \right) }{|\text{Metrics}| \cdot \max(|job_A|, |job_{B}|)}
 \end{equation}
 
+\FloatBarrier
 \subsubsection{HEX\_NATIVE}
 This algorithm computes a performance-aware similarity between two jobs.
 It works with a selection of I/O intensive metrics from hexadecimal codings ($\text{Metrics}_{\text{IO}}$) and utilizes the Normalized-Difference distance for similarity computation.
@@ -847,7 +847,7 @@ Then the job similarity between the two jobs can be computed using \Cref{eq:hexn
 %  \text{ , with }L_{B} \geq L_{A} \label{eq:hexn}
 %\end{multline}
 \begin{equation}
-  \text{similarity}\left(\text{job}_{A},\text{job}_{B} \right) = \frac{ \sum_{m \in \text{Metrics}_{\text{IO}}}^{} {\text{maxSimilarity} \left( \text{job}_{A,m}, \text{job}_{B,m} \right)}}{|\text{Metrics}_{\text{IO}}|}
+  \text{similarity}\left(\text{job}_{A},\text{job}_{B} \right) = \frac{ \sum_{m \in \text{Metrics}_{\text{IO}}}^{} {\text{maxSim} \left( \text{job}_{A,m}, \text{job}_{B,m} \right)}}{|\text{Metrics}_{\text{IO}}|}
   \label{eq:hexn}
 \end{equation}
 
@@ -856,14 +856,14 @@ Therefore, to compute similarity, it trims the most irrelevant segments of the l
 That means, we take the shortest coding sequence (CA) and check how it fits best on the longer coding sequence (CB).
 The best fitted slice is denoted as (SB).
 
-\begin{lstlisting}[caption={Pseudo code of the maxSimilarity() function}]
-float maxSimilarity(CA, CB) {
+\begin{lstlisting}[caption={Pseudo code of the maxSim() function}]
+float maxSim(CA, CB) {
   max = 0
   LA = length(CA)
   LB = length(CB)
   for pos in 0..(LB-LA) { // LB-LA is the boundary, as stated: LB > LA
     SB = substr(str=CB, start=pos, len=LA)
-    sim = sliceSimilarity(CA, SB)
+    sim = sliceSim(CA, SB)
     if sim > max {
       max = sim
     }
@@ -872,130 +872,20 @@ float maxSimilarity(CA, CB) {
 }
 \end{lstlisting}
 
-The \texttt{sliceSimilarity()} in \Cref{eq:slicesim} computes similarity between two codings of the same length.
+The \texttt{sliceSim()} in \Cref{eq:slicesim} computes similarity between two codings of the same length.
 It iterates over all positions of the coding $C_A$ and slice $S_B$, computes segment similarities, and the sum.
 Lastly, it normalizes the sum by the length of $job_B$.
 This function maps the differences between performance levels of the same segments (values between 0 and 16) to a relative value between 0 and 1.
 
 \begin{equation}
-	\text{sliceSimilarity}\left(C_{A},S_{B}\right) = \frac{1}{|job_B|}\sum_{\text{pos}=1}^{|job_A|} \left(1 - \frac{\vert C_{A,\text{pos}}-S_{B,\text{pos}} \vert }{16}\right)\text{, with }|job_{B}| \geq |job_{A}| \label{eq:slicesim}
+	\text{sliceSim}\left(C_{A},S_{B}\right) = \frac{1}{|job_B|}\sum_{\text{pos}=1}^{|job_A|} \left(1 - \frac{\vert C_{A,\text{pos}}-S_{B,\text{pos}} \vert }{16}\right)\text{, with }|job_{B}| \geq |job_{A}| \label{eq:slicesim}
 \end{equation}
 
-In \Cref{lst:sim:hex_native} we apply the approach to compute similarity between two jobs.
-First, we determine and trim the I/O intensive metrics in \Cref{lst:sim:hex_native:job_a:mio,lst:sim:hex_native:job_b:mio}.
-Then we use the \Cref{eq:slicesim} to computed individual metrics similarities, and finally, we compute the mean in \Cref{tab:hex_native:compute_sim}.
-According to this algorithm, the two jobs in the table are similar to 73\% as 7 of the metrics are actually identical.
-
-\begin{listing}
-	\noindent\begin{minipage}{\textwidth}
-		\noindent\begin{minipage}{0.6\textwidth}
-			\begin{lstlisting}[basicstyle=\fontsize{8}{8}\ttfamily]
-			md_file_create [0:0:0:0]
-			md_file_delete [0:0:0:0]
-			md_mod         [0:0:0:0]
-			md_other       [0:0:0:0]
-			md_read        [1:1:0:0]
-			read_bytes     [1:1:2:2]
-			read_calls     [0:0:0:0]
-			write_bytes    [0:0:0:0]
-			write_calls    [0:0:0:0]
-			\end{lstlisting}
-			\vspace{-2em}
-			\subcaption{Coding of Job A}
-			\label{lst:sim:hex_hative:job_a}
-		\end{minipage}
-		\noindent\begin{minipage}{0.39\textwidth}
-			\begin{lstlisting}[basicstyle=\fontsize{8}{8}\ttfamily]
-			[]
-			[]
-			[]
-			[]
-			[1:1:0:0]
-			[1:1:2:2]
-			[]
-			[0:0:0:0]
-			[]
-			\end{lstlisting}
-			\vspace{-2em}
-			\subcaption{Metrics of Job A}
-			\label{lst:sim:hex_native:job_a:mio}
-		\end{minipage}
-	\end{minipage}
-
-	\noindent\begin{minipage}{\textwidth}
-		\noindent\begin{minipage}{0.60\textwidth}
-		\begin{lstlisting}[basicstyle=\fontsize{8}{8}\ttfamily]
-		md_file_create [0:0:0:0:0]
-		md_file_delete [0:0:0:0:0]
-		md_mod         [0:0:0:0:0]
-		md_other       [0:0:0:0:0]
-		md_read        [5:5:0:0:0]
-		read_bytes     [1:1:1:2:2]
-		read_calls     [0:0:0:0:0]
-		write_bytes    [0:0:4:8:0]
-		write_calls    [0:0:0:0:0]
-		\end{lstlisting}
-		\vspace{-2em}
-		\subcaption{Coding of Job B}
-		\label{lst:sim:hex_native:job_b}
-		\end{minipage}
-		\noindent\begin{minipage}{0.39\textwidth}
-			\begin{lstlisting}[basicstyle=\fontsize{8}{8}\ttfamily]
-			[]
-			[]
-			[]
-			[]
-			[5:5:0:0]
-			[1:1:2:2]
-			[]
-			[0:0:4:8]
-			[]
-			\end{lstlisting}
-			\vspace{-2em}
-			\subcaption{Trimmed metrics of Job B}
-			\label{lst:sim:hex_native:job_b:mio}
-		\end{minipage}
-	\end{minipage}
-	\caption{HEX\_NATIVE: Hexadecimal codings of two jobs and I/O intensive metrics.}
-	\label{lst:sim:hex_native}
-\end{listing}
-
-\begin{listing}
-		\noindent\begin{minipage}{0.49\textwidth}
-			\begin{lstlisting}[basicstyle=\fontsize{8}{8}\ttfamily]
-			md_file_create [-:-:-:-]
-			md_file_delete [-:-:-:-]
-			md_mod         [-:-:-:-]
-			md_other       [-:-:-:-]
-			md_read        [1:1:-:-]
-			read_bytes     [1:1:2:2]
-			read_calls     [-:-:-:-]
-			write_bytes    [-:-:-:-]
-			write_calls    [-:-:-:-]
-			\end{lstlisting}
-			\vspace{-2em}
-			\subcaption{Coding of Job A}
-			\label{lst:sim:hex_hative:step1:job_a}
-		\end{minipage}
-		\noindent\begin{minipage}{0.49\textwidth}
-		\begin{lstlisting}[basicstyle=\fontsize{8}{8}\ttfamily]
-		md_file_create [-:-:-:-:-]
-		md_file_delete [-:-:-:-:-]
-		md_mod         [-:-:-:-:-]
-		md_other       [-:-:-:-:-]
-		md_read        [5:5:-:-:-]
-		read_bytes     [1:1:1:2:2]
-		read_calls     [-:-:-:-:-]
-		write_bytes    [-:-:4:8:-]
-		write_calls    [-:-:-:-:-]
-		\end{lstlisting}
-		\vspace{-2em}
-		\subcaption{Coding of Job B}
-		\label{lst:sim:hex_native:step1:job_b}
-		\end{minipage}
-	\caption{HEX\_NATIVE: Hexadecimal codings of two jobs and I/O intensive metrics.}
-	\label{lst:sim:hex_native:step1}
-\end{listing}
+For illustration, we apply the approach to compute similarity between two jobs listed in \Cref{lst:sim:hex_native:jobs}.
+First, we determine and trim the I/O intensive metrics and use the \Cref{eq:slicesim} to computed individual metrics similarities.
+The results are listed in \Cref{tab:hex_native:compute_slice_sim}.
+Then, we compute the mean in \Cref{tab:hex_native:compute_sim}.
+According to this algorithm, the two jobs in the table are similar to 73\% as the performance values of the I/O metrics are actually close to each other.
 
 \begin{listing}
 		\noindent\begin{minipage}{0.49\textwidth}
@@ -1031,25 +921,10 @@ According to this algorithm, the two jobs in the table are similar to 73\% as 7 
 		%\label{lst:sim:hex_native:step1:job_b}
 		\end{minipage}
 	\caption{HEX\_NATIVE: Hexadecimal codings of two jobs and I/O intensive metrics.}
-	%\label{lst:sim:hex_native:step1}
+  \label{lst:sim:hex_native:jobs}
 \end{listing}
 
 
-
-\begin{table}[t]
-\centering
-\begin{tabular}{lllr}
- 	$\text{Metric}_{IO}$ & $C_A$                 & $C_B$                   \\ 
- 	\midrule
- 	md\_read             & \lstinline|[1:1:-:-]| & \lstinline|[5:5:-:-:-]| \\ 
- 	read\_bytes          & \lstinline|[1:1:2:2]| & \lstinline|[1:1:1:2:2]| \\ 
- 	write\_bytes         & \lstinline|[-:-:-:-]| & \lstinline|[-:-:4:8:-]| \\ 
- 	\midrule
- 	Mean                 &                       &                         \\ 
-\end{tabular}
-\caption{HEX\_NATIVE: IO Metrics and Codings.}
-%\label{tab:hex_native:compute_sim}
-\end{table}
 
 %1 5 -> 0.75
 %1 5 -> 0.75
@@ -1096,22 +971,36 @@ According to this algorithm, the two jobs in the table are similar to 73\% as 7 
 \begin{table}[t]
 \centering
 \begin{tabular}{llllrr}
-$\text{Metric}_{IO}$ & $C_A$                 & $C_B$                   & shift &  $S_B = substr(C_B, \text{shift}, |C_A|))$                 & SliceSimilarity($C_A$, $S_B$) \\ 
+  $\text{Metric}_{IO}$ & $C_A$                 & $C_B$                   & pos & $S_{B,pos}$           & sliceSim($C_A$, $S_B$) \\ 
   \midrule
-  md\_read             & \lstinline|[1:1:-:-]| & \lstinline|[5:5:-:-:-]| & 0 & \lstinline|[5:5:-:-]| & 0.7                           \\ 
-  md\_read             & \lstinline|[1:1:-:-]| & \lstinline|[5:5:-:-:-]| & 1 & \lstinline|[5:-:-:-]| & \textbf{-.7375}               \\ 
-  read\_bytes          & \lstinline|[1:1:2:2]| & \lstinline|[1:1:1:2:2]| & 0 & \lstinline|[1:1:1:2]| & 0.7875                        \\ 
-  read\_bytes          & \lstinline|[1:1:2:2]| & \lstinline|[1:1:1:2:2]| & 1 & \lstinline|[1:1:2:2]| & \textbf{-.8}                  \\ 
-  write\_bytes         & \lstinline|[-:-:-:-]| & \lstinline|[1:1:1:2:2]| & 0 & \lstinline|[-:-:4:8]| & 0.65                          \\ 
-  write\_bytes         & \lstinline|[-:-:-:-]| & \lstinline|[1:1:1:2:2]| & 1 & \lstinline|[-:4:8:-]| & 0.65                          \\ 
+  md\_read             & \lstinline|[1:1:-:-]| & \lstinline|[5:5:-:-:-]| & 0   & \lstinline|[5:5:-:-]| & 0.7                    \\ 
+  md\_read             & \lstinline|[1:1:-:-]| & \lstinline|[5:5:-:-:-]| & 1   & \lstinline|[5:-:-:-]| & 0.7375                 \\ 
+  read\_bytes          & \lstinline|[1:1:2:2]| & \lstinline|[1:1:1:2:2]| & 0   & \lstinline|[1:1:1:2]| & 0.7875                 \\ 
+  read\_bytes          & \lstinline|[1:1:2:2]| & \lstinline|[1:1:1:2:2]| & 1   & \lstinline|[1:1:2:2]| & 0.8                    \\ 
+  write\_bytes         & \lstinline|[-:-:-:-]| & \lstinline|[-:-:4:8:-]| & 0   & \lstinline|[-:-:4:8]| & 0.65                   \\ 
+  write\_bytes         & \lstinline|[-:-:-:-]| & \lstinline|[-:-:4:8:-]| & 1   & \lstinline|[-:4:8:-]| & 0.65                   \\ 
+\end{tabular}
+\caption{HEX\_NATIVE: Slice similarities $S_{B,pos} = \text{substr}(\text{str}=C_B, \text{start}=pos, \text{len}=L_A)$}
+\label{tab:hex_native:compute_slice_sim}
+\end{table}
+
+\begin{table}[t]
+\centering
+\begin{tabular}{lllr}
+  $\text{Metric}_{IO}$ & $C_A$                 & $C_B$                   &  maxSim($C_A$, $C_B$) \\ 
   \midrule
-  Mean         &                       &                       & $\approx$0.73                 \\ 
+  md\_read             & \lstinline|[1:1:-:-]| & \lstinline|[5:5:-:-:-]| &  0.7375               \\ 
+  read\_bytes          & \lstinline|[1:1:2:2]| & \lstinline|[1:1:1:2:2]| &  0.8                  \\ 
+  write\_bytes         & \lstinline|[-:-:-:-]| & \lstinline|[-:-:4:8:-]| &  0.65                 \\ 
+  \midrule
+  Mean()  &                       &                         &  Similarity $\approx$ 0.73        \\ 
 \end{tabular}
 \caption{HEX\_NATIVE: Similarity computation.}
 \label{tab:hex_native:compute_sim}
 \end{table}
 
 
+\FloatBarrier
 \subsubsection{PM\_QUANT}
 The developed phase-matching quantization algorithm allows us to cluster variable length jobs by aligning IO phases.
 First, using a hexadecimal coding, phases of consecutive I/O segments are detected and extracted.
@@ -1123,15 +1012,15 @@ We will discuss the details of each step on the example jobs in \Cref{lst:sim:pm
 	\noindent\begin{minipage}{\textwidth}
 		\noindent\begin{minipage}{0.6\textwidth}
 			\begin{lstlisting}[basicstyle=\fontsize{8}{8}\ttfamily]
-			md_file_create [0:0:2:2:2:9:3:0:9:1:1:1:0]
-			md_file_delete [0:0:0:0:0:0:0:0:0:0:0:0:0]
-			md_mod         [0:0:0:0:0:0:0:0:0:0:0:0:0]
-			md_other       [0:0:0:0:0:0:0:0:0:0:0:0:0]
-			md_read        [0:0:0:0:0:0:0:0:0:0:0:0:0]
-			read_bytes     [0:0:0:9:3:0:0:0:0:0:1:0:0]
-			read_calls     [0:0:0:0:0:0:0:0:0:0:0:0:0]
-			write_bytes    [0:0:0:0:0:0:0:0:0:0:0:0:0]
-			write_calls    [0:0:0:0:0:0:0:0:0:0:0:0:0]
+			md_file_create [-:-:2:2:2:9:3:-:9:1:1:1:-]
+			md_file_delete [-:-:-:-:-:-:-:-:-:-:-:-:-]
+			md_mod         [-:-:-:-:-:-:-:-:-:-:-:-:-]
+			md_other       [-:-:-:-:-:-:-:-:-:-:-:-:-]
+			md_read        [-:-:-:-:-:-:-:-:-:-:-:-:-]
+			read_bytes     [-:-:-:9:3:-:-:-:-:-:1:-:-]
+			read_calls     [-:-:-:-:-:-:-:-:-:-:-:-:-]
+			write_bytes    [-:-:-:-:-:-:-:-:-:-:-:-:-]
+			write_calls    [-:-:-:-:-:-:-:-:-:-:-:-:-]
 			\end{lstlisting}
 			\vspace{-2em}
 			\subcaption{Coding of Job A}
@@ -1157,15 +1046,15 @@ We will discuss the details of each step on the example jobs in \Cref{lst:sim:pm
 	\noindent\begin{minipage}{\textwidth}
 		\noindent\begin{minipage}{0.60\textwidth}
 		\begin{lstlisting}[basicstyle=\fontsize{8}{8}\ttfamily]
-		md_file_create [1:0:0:0:0:0:0:0:0:0:0:0:0:0:0]
-		md_file_delete [0:0:0:0:0:0:0:0:0:0:0:0:0:0:0]
-		md_mod         [0:0:0:0:0:0:0:0:0:0:0:0:0:0:0]
-		md_other       [0:0:0:0:0:0:0:0:0:0:0:0:0:0:0]
-		md_read        [0:0:0:0:0:0:0:0:0:0:0:0:0:0:0]
-		read_bytes     [2:2:2:2:8:2:2:0:0:1:0:0:8:1:1]
-		read_calls     [0:0:0:0:0:0:0:0:0:0:0:0:0:0:0]
-		write_bytes    [0:0:0:0:0:0:0:0:0:0:0:5:0:0:0]
-		write_calls    [0:0:0:0:0:0:0:0:0:0:0:0:0:0:0]
+		md_file_create [1:-:-:-:-:-:-:-:-:-:-:-:-:-:-]
+		md_file_delete [-:-:-:-:-:-:-:-:-:-:-:-:-:-:-]
+		md_mod         [-:-:-:-:-:-:-:-:-:-:-:-:-:-:-]
+		md_other       [-:-:-:-:-:-:-:-:-:-:-:-:-:-:-]
+		md_read        [-:-:-:-:-:-:-:-:-:-:-:-:-:-:-]
+		read_bytes     [2:2:2:2:8:2:2:-:-:1:-:-:8:1:1]
+		read_calls     [-:-:-:-:-:-:-:-:-:-:-:-:-:-:-]
+		write_bytes    [-:-:-:-:-:-:-:-:-:-:-:5:-:-:-]
+		write_calls    [-:-:-:-:-:-:-:-:-:-:-:-:-:-:-]
 		\end{lstlisting}
 		\vspace{-2em}
 		\subcaption{Coding of Job B}
@@ -1463,7 +1352,7 @@ The examples in \Cref{tab:ml_examples} show some jobs in one cluster for a high 
        \rot{1\_md\_file\_delete} & \rot{1\_md\_mod} & \rot{1\_md\_other} & \rot{1\_md\_read} & \rot{1\_read\_bytes} & \rot{1\_read\_calls} & \rot{1\_write\_bytes} & \rot{1\_write\_calls} & \rot{Binary coding} \\
        \midrule
        0.009259259               & 0.01851852       & 0.25000000         & 0.027777778       & 0.00462963           & 0.009259259          & 0.00462963            & 0.03240741            & [340:510:272]       \\
-       0.012578616               & 0.01257862       & 0.24528302         & 0.006289308       & 0.00617284           & 0.006172840          & 0.01257862            & 0.01257862            & [510:0:0]           \\
+       0.012578616               & 0.01257862       & 0.24528302         & 0.006289308       & 0.00617284           & 0.006172840          & 0.01257862            & 0.01257862            & [510:-:-]           \\
        0.016666667               & 0.01666667       & 0.25000000         & 0.016666667       & 0.00000000           & 0.000000000          & 0.00000000            & 0.01666667            & [14:280]            \\
      \end{tabular}
    \caption{IO-duration job profiles}
@@ -1661,16 +1550,16 @@ The following general characteristic observations are made:
 				\rowcolor{tblhead}
 				Binary coding of the centroid                                                                    &  Type     \\
 				\hline
-				0:0:0:0:0:0:294:0:0:0:0:32:0:0:0:0:0:0:0:0:0:0:0:32:0:0:0:0:0:0:0:0:0:0:0:32:0:0:0:0:0:0:0:0:0:0 &  centroid \\
+				-:-:-:-:-:-:294:-:-:-:-:32:-:-:-:-:-:-:-:-:-:-:-:32:-:-:-:-:-:-:-:-:-:-:-:32:-:-:-:-:-:-:-:-:-:- &  centroid \\
 				\multicolumn{2}{l}{}                                                                             \\
 				\rowcolor{tblhead}
 				Binary coding of jobs in the cluster                                                             &  Count    \\
 				\hline
-				0:0:0:0:0:0:359:96:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0   &  95       \\
-				0:0:0:0:0:0:295:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0    &  62       \\
-				0:0:0:0:0:0:0:0:0:0:0:0:4:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0  &  47       \\
-				0:0:0:0:0:0:359:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0    &  44       \\
-				0:0:0:0:0:6:6:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0  &  40       \\
+				-:-:-:-:-:-:359:96:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-   &  95       \\
+				-:-:-:-:-:-:295:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-    &  62       \\
+				-:-:-:-:-:-:-:-:-:-:-:-:4:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-  &  47       \\
+				-:-:-:-:-:-:359:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-    &  44       \\
+				-:-:-:-:-:6:6:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-  &  40       \\
 			\end{tabular}
 		\end{tiny}
 		\caption{Centroid and Top 5 job phenotypes.}
@@ -1784,16 +1673,16 @@ In the selected cluster, there is mostly one segment of I/O activity.
 				\rowcolor{tblhead}
 				md\_file\_create  & md\_file\_delete  & md\_mod           & read\_calls       & Type     \\
 				\hline
-				0:...:0           & 0:0:0:1:0:0:0:0:0 & 0:...:0           & 0:...:0           & centroid \\
+				-:...:-           & -:-:-:1:-:-:-:-:- & -:...:-           & -:...:-           & centroid \\
 				\multicolumn{5}{l}{}\\
 				\rowcolor{tblhead}
 				md\_file\_create  & md\_file\_delete  & md\_mod           & read\_calls       & Count    \\
 				\hline
-				0:...:0           & 0:0:0:0:0:0:1:0:0 & 0:...:0           & 0:...:0           & 606      \\
-				0:...:0           & 0:0:0:0:0:0:0:0:1 & 0:...:0           & 0:...:0           & 562      \\
-				0:...:0           & 0:...:0           & 0:...:0           & 0:0:0:0:0:0:1:0:0 & 429      \\
-				0:...:0           & 0:0:0:1:0:0:0:0:0 & 0:...:0           & 0:...:0           & 185      \\
-				0:0:0:0:0:0:1:1:1 & 0:...:0           & 0:0:0:0:0:0:1:0:0 & 0:...:0           & 75       \\
+				-:...:-           & -:-:-:-:-:-:1:-:- & -:...:-           & -:...:-           & 606      \\
+				-:...:-           & -:-:-:-:-:-:-:-:1 & -:...:-           & -:...:-           & 562      \\
+				-:...:-           & -:...:-           & -:...:-           & -:-:-:-:-:-:1:-:- & 429      \\
+				-:...:-           & -:-:-:1:-:-:-:-:- & -:...:-           & -:...:-           & 185      \\
+				-:-:-:-:-:-:1:1:1 & -:...:-           & -:-:-:-:-:-:1:-:- & -:...:-           & 75       \\
 			\end{tabular}
 		\end{tiny}
 		\caption{Centroid and Top 5 job phenotypes. The metrics that have no I/O activity are not included in the table.}
@@ -1847,16 +1736,16 @@ In the selected cluster, jobs with a length of 4 have mostly the activity of one
 				\rowcolor{tblhead}
 				md\_file\_delete     &  md\_mod   & md\_other & Type     \\
 				\hline
-				0:\dots:0            &  0:0:1:0   & 0:0:1:0   & centroid \\
+				-:\dots:-            &  -:-:1:-   & -:-:1:-   & centroid \\
 				\multicolumn{4}{l}{} \\
 				\rowcolor{tblhead}
 				md\_file\_delete     &  md\_mod   & md\_other & Count    \\
 				\hline
-				0:\dots:0            &  0:\dots:0 & 0:0:1:0   & 5,010    \\
-				0:\dots:0            &  0:\dots:0 & 0:0:2:0   & 1,963    \\
-				0:0:1:0              &  0:\dots:0 & 0:\dots:0 & 1,099    \\
-				0:\dots:0            &  0:\dots:0 & 0:1:0:0   & 911      \\
-				0:0:1:0              &  0:0:1:0   & 0:\dots:0 & 676      \\
+				-:\dots:-            &  -:\dots:- & -:-:1:-   & 5,010    \\
+				-:\dots:-            &  -:\dots:- & -:-:2:-   & 1,963    \\
+				-:-:1:-              &  -:\dots:- & -:\dots:- & 1,099    \\
+				-:\dots:-            &  -:\dots:- & -:1:-:-   & 911      \\
+				-:-:1:-              &  -:-:1:-   & -:\dots:- & 676      \\
 			\end{tabular}
 		\end{tiny}
 		\caption{Centroid and Top 5 job phenotypes.}
@@ -1910,16 +1799,16 @@ General cluster characteristics:
 			 \rowcolor{tblhead}
 			 md\_file\_delete     &  md\_mod     & Type     \\
 			 \hline
-			 4:0:0:0:0:0          &  4:0:0:0:0:0 & centroid \\
+			 4:-:-:-:-:-          &  4:-:-:-:-:- & centroid \\
 			 \multicolumn{3}{l}{} \\
 			 \rowcolor{tblhead}
 			 md\_file\_delete     &  md\_mod     & Count    \\
 			 \hline
 			 4                    &  4           & 2329     \\
-			 4:0:0:0:0:0          &  4:0:0:0:0:0 & 1773     \\
-			 4:0                  &  4:0         & 224      \\
+			 4:-:-:-:-:-          &  4:-:-:-:-:- & 1773     \\
+			 4:-                  &  4:-         & 224      \\
 			 2                    &  4           & 65       \\
-			 0:4                  &  0:4         & 57       \\
+			 -:4                  &  -:4         & 57       \\
 		 \end{tabular}
 	 \end{tiny}
 	 \caption{Centroid and Top 5 job phenotypes.}
@@ -2046,7 +1935,7 @@ Compared to BIN, the cluster is smaller but the jobs have a more similar ending.
 				\rowcolor{tblhead}
 				Binary coding                                                                                             &  Count    \\
 				\hline
-				0:224:192:192:192:192:228:192:192:192:192:192:192:192:192:192:192:192:192:192:192:64:64:64:64:64          &  1        \\
+				-:224:192:192:192:192:228:192:192:192:192:192:192:192:192:192:192:192:192:192:192:64:64:64:64:64          &  1        \\
 				192:192:192:192:192:192:196:192:192:192:192:192:192:192:192:192:192:192:192:192:192:192:64:64:64:64:64    &  1        \\
 				192:192:193:196:192:192:192:192:192:192:192:192:192:192:192:192:192:192:192:192:64:64:64:64               &  1        \\
 				192:193:193:198:192:192:192:192:192:192:192:192:192:192:192:192:192:192:192:192:192:64:64:64:64:64:64     &  1        \\
@@ -2098,16 +1987,16 @@ While sum() is better for visualization, the mean value allows the algorithms to
 				\rowcolor{tblhead}
 				md\_other                                           &  read\_calls                                           & Type     \\
 				\hline
-				0:\dots:0                                           &  3:3:8:8:8:5:6:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8 & job      \\
-				0:\dots:0                                           &  8:8:8:8:8:2:6:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8 & centroid \\
+				-:\dots:-                                           &  3:3:8:8:8:5:6:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8 & job      \\
+				-:\dots:-                                           &  8:8:8:8:8:2:6:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8 & centroid \\
 				\multicolumn{3}{l}{}                                \\
 				\rowcolor{tblhead}      md\_other                   &  read\_calls                                           & Count    \\
 				\hline
-				0:\dots:0                                           &  0:0:0:0:0:0:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8   & 4        \\
-				0:\dots:0                                           &  8:8:8:8:8:2:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8   & 4        \\
-				0:0:0:4:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0 &  0:0:0:0:0:0:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8   & 4        \\
-				0:\dots:0                                           &  8:8:8:8:8:3:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8 & 3        \\
-				0:\dots:0                                           &  0:0:0:0:0:0:2:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8   & 2        \\
+				-:\dots:-                                           &  -:-:-:-:-:-:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8   & 4        \\
+				-:\dots:-                                           &  8:8:8:8:8:2:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8   & 4        \\
+				-:-:-:4:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:- &  -:-:-:-:-:-:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8   & 4        \\
+				-:\dots:-                                           &  8:8:8:8:8:3:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8 & 3        \\
+				-:\dots:-                                           &  -:-:-:-:-:-:2:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8   & 2        \\
 			\end{tabular}
 		\end{tiny}
 		\caption{Job, centroid and Top 5 job phenotypes.}
@@ -2269,22 +2158,22 @@ For example, the following three codings would be considered to be all different
 \begin{lstlisting}
 phase_coding_1 : [2:2:2:2:2:9:2:2]
 phase_coding_2 : [2:2:2:2:2:8:2:2]
-phase_coding_3 : [2:2:2:2:2:0:2:2]
+phase_coding_3 : [2:2:2:2:2:-:2:2]
 \end{lstlisting}
 
 Intuitively, we would say that {phase\_coding\_1 and{ phase\_coding\_2 are more similar than {phase\_coding\_2 and {phase\_coding\_3, because the difference at 6th position is smaller for 8 and 9 than to 8 to 0.
 Short runtimes lead to more polluted clusters.
 
 Here is another example that illustrated the issue of noise in clusters for Levensthein:
-Suppose two jobs [0:6:0:0] and [0:388:174:0] are in the same cluster with the centroid [0:388:0:0].
+Suppose two jobs [-:6:-:-] and [-:388:174:-] are in the same cluster with the centroid [-:388:-:-].
 Even if in both cases the similarity between the cluster and the centroid is 75$\%$  (only one change is required), we would intuitively say that these jobs are completely different, not even close to the 75$\%$  mark.
-We can easily construct another sequence, e.g., [0:389:0:0], where a similarity of 75$\%$  are justified.
+We can easily construct another sequence, e.g., [-:389:-:-], where a similarity of 75$\%$  are justified.
 For this reason, we found that the Levenshtein distance is generally not suitable.
 
 \paragraph{I/O Phases.}
 The current version of the PM algorithm ignores NonIO parts (sequences of zeros) of the monitoring data, and  handles segment sequences like [0,0,0,0,1] and [1] equally:
 \begin{lstlisting}
-job1_metric1 : [0,0,0,0,1]
+job1_metric1 : [-,-,-,-,1]
 job1_metric1 : [1]
 \end{lstlisting}
 
@@ -2295,10 +2184,10 @@ One could argue that the phase definition (of separating phases by idle phases) 
 Currently, phases are defined for each metric individually, without consideration of the overall behavior on  other metrics.
 For illustration, consider the following two jobs:
 \begin{lstlisting}
-job1_metric1 : [0:1]
-job1_metric2 : [1:0]
-job2_metric1 : [1:0]
-job2_metric2 : [1:0]
+job1_metric1 : [-:1]
+job1_metric2 : [1:-]
+job2_metric1 : [1:-]
+job2_metric2 : [1:-]
 \end{lstlisting}
 
 Currently, the algorithm recognizes the I/O patterns to be 100$\%$ similar as it extracts in all cases a phase of [1].
