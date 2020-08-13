@@ -404,7 +404,7 @@ By reducing along all dimension, you obtain basically a job profile (as discusse
 
 
 Segmented data contains a numeric floating-point value for each data, which can be too much information for the analysis.
-Therefore, we introduce two condensed data representations called binary and quantized coding.
+Therefore, we introduce two condensed data representations called binary and quantum coding.
 Additionally, we introduce two operations on the coding:
 the first extracts I/O phases -- a phase is a consecutive non-zero series of segments;
 the second merges all consecutive zero segments into one segment, i.e., removes compute phases in the statistics.
@@ -1954,8 +1954,8 @@ Compared to B\_ALL, the cluster is smaller but the jobs have a more similar endi
 Information related to the cluster is in \Cref{cluster:use_case:hex_lev}.
 Overall, the job is matched partially, jobs in the cluster may contain at the beginning an idle phase.
 
-Notice that there is a discrepancy between the job visualization in \Cref{fig:use_case} and the quantized job codings.
-While in \Cref{cluster:use_case:hex_lev} we can see a less intensive phase in the beginning and a high intensive phase afterwards, the quantized coding contains a more or less single high intensive I/O phase.
+Notice that there is a discrepancy between the job visualization in \Cref{fig:use_case} and the quantum codings.
+While in \Cref{cluster:use_case:hex_lev} we can see a less intensive phase in the beginning and a high intensive phase afterwards, the quantum coding contains a more or less single high intensive I/O phase.
 The reason is that we use different reduction functions.
 While in the illustration we aggregate segments by the sum() function, for the coding we use mean() function for the same set of values.
 While sum() is better for visualization, the mean value allows the algorithms to assess data independent of the number of nodes used in a job.
@@ -2135,7 +2135,7 @@ Segments with mean performance less than 0.125 are rounded to zero and zero sequ
 Rounding is not necessary for Q\_PHASES.
 It can work directly with floating-point numbers.
 As it generalized better for smaller similarity, it wouldn't create that many clusters as for the other methods.
-The initial motivation behind the use of quantized coding was to apply string methods such as Levenshtein and make data comparable with other algorithms.
+The initial motivation behind the use of quantum coding was to apply string methods such as Levenshtein and make data comparable with other algorithms.
 %For example, this allows us to see how the additional features affect the quality of clusters.
 %By accident, this was also the right decision.
 
@@ -2221,8 +2221,8 @@ Our analysis shows that considering the relative I/O performance and I/O phases 
 The integration of the awareness of I/O performance produces better, but still not perfect results.
 Therefore, we found that the Levenshtein distance is generally not suitable for similarity of I/O behavior of jobs.
 
-Absolute coding aggregates three dimensions (Metric, Nodes, and FileSystems) result in a nine times shorter coding sequence than quantized coding, which aggregates only two dimensions (Nodes, and FileSystems).
-Using quantized coding is more precise than binary coding because quantized coding sequences longer.
+Absolute coding aggregates three dimensions (Metric, Nodes, and FileSystems) result in a nine times shorter coding sequence than quantum coding, which aggregates only two dimensions (Nodes, and FileSystems).
+Using quantum coding is more precise than binary coding because quantum coding sequences longer.
 However, using the actual native floating-point value is problematic for the developed algorithms as for high similarity it will generate too many clusters.
 Therefore, we consider the quantization is appropriate for this use case.
 
