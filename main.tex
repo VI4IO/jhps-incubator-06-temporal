@@ -963,15 +963,15 @@ According to this algorithm, the two jobs in the table are similar to 73\% as 7 
 \begin{listing}
 		\noindent\begin{minipage}{0.49\textwidth}
 			\begin{lstlisting}[basicstyle=\fontsize{8}{8}\ttfamily]
-			md_file_create [0:0:0:0]
-			md_file_delete [0:0:0:0]
-			md_mod         [0:0:0:0]
-			md_other       [0:0:0:0]
-			md_read        [1:1:0:0]
+			md_file_create [-:-:-:-]
+			md_file_delete [-:-:-:-]
+			md_mod         [-:-:-:-]
+			md_other       [-:-:-:-]
+			md_read        [1:1:-:-]
 			read_bytes     [1:1:2:2]
-			read_calls     [0:0:0:0]
-			write_bytes    [0:0:0:0]
-			write_calls    [0:0:0:0]
+			read_calls     [-:-:-:-]
+			write_bytes    [-:-:-:-]
+			write_calls    [-:-:-:-]
 			\end{lstlisting}
 			\vspace{-2em}
 			\subcaption{Coding of Job A}
@@ -979,15 +979,15 @@ According to this algorithm, the two jobs in the table are similar to 73\% as 7 
 		\end{minipage}
 		\noindent\begin{minipage}{0.49\textwidth}
 		\begin{lstlisting}[basicstyle=\fontsize{8}{8}\ttfamily]
-		md_file_create [0:0:0:0:0]
-		md_file_delete [0:0:0:0:0]
-		md_mod         [0:0:0:0:0]
-		md_other       [0:0:0:0:0]
-		md_read        [5:5:0:0:0]
+		md_file_create [-:-:-:-:-]
+		md_file_delete [-:-:-:-:-]
+		md_mod         [-:-:-:-:-]
+		md_other       [-:-:-:-:-]
+		md_read        [5:5:-:-:-]
 		read_bytes     [1:1:1:2:2]
-		read_calls     [0:0:0:0:0]
-		write_bytes    [0:0:4:8:0]
-		write_calls    [0:0:0:0:0]
+		read_calls     [-:-:-:-:-]
+		write_bytes    [-:-:4:8:-]
+		write_calls    [-:-:-:-:-]
 		\end{lstlisting}
 		\vspace{-2em}
 		\subcaption{Coding of Job B}
@@ -1000,15 +1000,15 @@ According to this algorithm, the two jobs in the table are similar to 73\% as 7 
 \begin{listing}
 		\noindent\begin{minipage}{0.49\textwidth}
 			\begin{lstlisting}[basicstyle=\fontsize{8}{8}\ttfamily]
-			md_file_create [0:0:0:0]
-			md_file_delete [0:0:0:0]
-			md_mod         [0:0:0:0]
-			md_other       [0:0:0:0]
-			md_read        [1:1:0:0]
+			md_file_create [-:-:-:-]
+			md_file_delete [-:-:-:-]
+			md_mod         [-:-:-:-]
+			md_other       [-:-:-:-]
+			md_read        [1:1:-:-]
 			read_bytes     [1:1:2:2]
-			read_calls     [0:0:0:0]
-			write_bytes    [0:0:0:0]
-			write_calls    [0:0:0:0]
+			read_calls     [-:-:-:-]
+			write_bytes    [-:-:-:-]
+			write_calls    [-:-:-:-]
 			\end{lstlisting}
 			\vspace{-2em}
 			\subcaption{Coding of Job A}
@@ -1016,15 +1016,15 @@ According to this algorithm, the two jobs in the table are similar to 73\% as 7 
 		\end{minipage}
 		\noindent\begin{minipage}{0.49\textwidth}
 		\begin{lstlisting}[basicstyle=\fontsize{8}{8}\ttfamily]
-		md_file_create [0:0:0:0:0]
-		md_file_delete [0:0:0:0:0]
-		md_mod         [0:0:0:0:0]
-		md_other       [0:0:0:0:0]
-		md_read        [5:5:0:0:0]
+		md_file_create [-:-:-:-:-]
+		md_file_delete [-:-:-:-:-]
+		md_mod         [-:-:-:-:-]
+		md_other       [-:-:-:-:-]
+		md_read        [5:5:-:-:-]
 		read_bytes     [1:1:1:2:2]
-		read_calls     [0:0:0:0:0]
-		write_bytes    [0:0:4:8:0]
-		write_calls    [0:0:0:0:0]
+		read_calls     [-:-:-:-:-]
+		write_bytes    [-:-:4:8:-]
+		write_calls    [-:-:-:-:-]
 		\end{lstlisting}
 		\vspace{-2em}
 		\subcaption{Coding of Job B}
@@ -1041,13 +1041,13 @@ According to this algorithm, the two jobs in the table are similar to 73\% as 7 
 \begin{tabular}{lllr}
  	$\text{Metric}_{IO}$ & $C_A$                 & $C_B$                   \\ 
  	\midrule
- 	md\_read             & \lstinline|[1:1:0:0]| & \lstinline|[5:5:0:0:0]| \\ 
+ 	md\_read             & \lstinline|[1:1:-:-]| & \lstinline|[5:5:-:-:-]| \\ 
  	read\_bytes          & \lstinline|[1:1:2:2]| & \lstinline|[1:1:1:2:2]| \\ 
- 	write\_bytes         & \lstinline|[0:0:0:0]| & \lstinline|[0:0:4:8:0]| \\ 
+ 	write\_bytes         & \lstinline|[-:-:-:-]| & \lstinline|[-:-:4:8:-]| \\ 
  	\midrule
  	Mean                 &                       &                         \\ 
 \end{tabular}
-\caption{HEX\_NATIVE: Similarity computation.}
+\caption{HEX\_NATIVE: IO Metrics and Codings.}
 %\label{tab:hex_native:compute_sim}
 \end{table}
 
@@ -1095,15 +1095,15 @@ According to this algorithm, the two jobs in the table are similar to 73\% as 7 
 
 \begin{table}[t]
 \centering
-\begin{tabular}{lllrr}
-  $\text{Metric}_{IO}$       & $C_A$                 & $S_B$                 & SliceSimilarity($C_A$, $S_B$) \\ 
+\begin{tabular}{llllrr}
+$\text{Metric}_{IO}$ & $C_A$                 & $C_B$                   & shift &  $S_B = substr(C_B, \text{shift}, |C_A|))$                 & SliceSimilarity($C_A$, $S_B$) \\ 
   \midrule
-  md\_read     & \lstinline|[1:1:0:0]| & \lstinline|[5:5:0:0]| & 0.7                           \\ 
-  &                       & \lstinline|[5:0:0:0]| & \textbf{0.7375}                        \\ 
-  read\_bytes  & \lstinline|[1:1:2:2]| & \lstinline|[1:1:1:2]| & 0.7875                        \\ 
-  &                       & \lstinline|[1:1:2:2]| & \textbf{0.8}                         \\ 
-  write\_bytes & \lstinline|[0:0:0:0]| & \lstinline|[0:0:4:8]| & 0.65                          \\ 
-               &                       & \lstinline|[0:4:8:0]| & 0.65                          \\ 
+  md\_read             & \lstinline|[1:1:-:-]| & \lstinline|[5:5:-:-:-]| & 0 & \lstinline|[5:5:-:-]| & 0.7                           \\ 
+  md\_read             & \lstinline|[1:1:-:-]| & \lstinline|[5:5:-:-:-]| & 1 & \lstinline|[5:-:-:-]| & \textbf{-.7375}               \\ 
+  read\_bytes          & \lstinline|[1:1:2:2]| & \lstinline|[1:1:1:2:2]| & 0 & \lstinline|[1:1:1:2]| & 0.7875                        \\ 
+  read\_bytes          & \lstinline|[1:1:2:2]| & \lstinline|[1:1:1:2:2]| & 1 & \lstinline|[1:1:2:2]| & \textbf{-.8}                  \\ 
+  write\_bytes         & \lstinline|[-:-:-:-]| & \lstinline|[1:1:1:2:2]| & 0 & \lstinline|[-:-:4:8]| & 0.65                          \\ 
+  write\_bytes         & \lstinline|[-:-:-:-]| & \lstinline|[1:1:1:2:2]| & 1 & \lstinline|[-:4:8:-]| & 0.65                          \\ 
   \midrule
   Mean         &                       &                       & $\approx$0.73                 \\ 
 \end{tabular}
