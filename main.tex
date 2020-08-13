@@ -521,11 +521,11 @@ Note, that the actual job length is kept for analysis purpose, thus, only the le
 \paragraph*{Q-coding}
 Quantum coding preserves monitoring data for each metric and each segment.
 As the name suggests, the value of a segment is quantized into a number to allow creation of a string representing the I/O behavior.
-The quantum intervals are allowed to be non-uniform.
-By shrinking some intervals we can investigate these parts in more detail.
+The quantum intervals are allowed to be non-uniform, i.e., to be of different size.
+Theoretically, by shrinking or extending some intervals we can investigate particular performance ranges in more detail (not covered in this work).
 The numbers are obtained in two steps.
 Firstly, the dimension reduction aggregates the file system and the node dimensions and computes a mean value for each metric and segment, which lies in the interval [0,4].
-Secondly, the mean values are quantized into one NonIO level and 16 I/O levels (\Cref{tab:quant_intervals}).
+Secondly, the mean values are quantized into one NonIO level and 16 I/O levels according to \Cref{tab:quant_intervals}.
 
 The example below shows Q-coding for a job containing 6 segments.
 
@@ -561,7 +561,7 @@ The example below shows Q-coding for a job containing 6 segments.
       16    & [3.875,4]     & 0.125         \\
     \end{tabular}
   \end{subtable}
-\caption{Q-coding with non-uniform quantization intervals}
+\caption{Q-codes with non-uniform quantization intervals}
 \label{tab:quant_intervals}
 \end{table}
 
