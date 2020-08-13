@@ -35,7 +35,7 @@
 \crefname{codecount}{Code}{Codes}
 
 \DeclareFloatingEnvironment[fileext=frm,placement={!ht},name=Listing,within=section]{listing}
-\DeclareFloatingEnvironment[fileext=xyz,placement={!ht},name=Cluster\,Overview,within=section]{cluster}
+%\DeclareFloatingEnvironment[fileext=xyz,placement={!ht},name=Cluster\,Overview,within=section]{figure}
 
 
 \usepackage{verbatimbox}
@@ -50,11 +50,11 @@
 %    #1\ignorespaces
 %  }
 
-\crefname{cluster}{Cluster\,Overview}{Cluster\,Overviews}
-\crefname{subcluster}{Sub-Cluster\,Overview}{Sub-Cluster\,Overviews}
+%\crefname{figure}{Cluster\,Overview}{Cluster\,Overviews}
+%\crefname{subcluster}{Sub-Cluster\,Overview}{Sub-Cluster\,Overviews}
 \crefname{sublisting}{Listing}{Listings}
-\setcounter{cluster}{0}
-\setcounter{subcluster}{0}
+%\setcounter{figure}{0}
+%\setcounter{subcluster}{0}
 
 \lstset{%
 	autogobble=true,
@@ -1570,7 +1570,7 @@ To assess the quality of the quantitative clustering better and to aid support s
 The idea behind the relevance definition is the following: the larger the cluster (in terms of jobs) and the longer the jobs, the more potential load these jobs can produce.
 Therefore, it is worth investigating these clusters first.
 Note that the relevance could include the number of occupied nodes as well to effectively indicate the usage of all jobs on the supercomputer.
-In this article, we explored the listed definition of weighted relevance.
+We use the listed definition of weighted relevance as an example how it changes rankings.
 
 \begin{equation}
 \text{Relevance} = \text{ClusterSize} \cdot \text{MeanJobLength}
@@ -1578,10 +1578,9 @@ In this article, we explored the listed definition of weighted relevance.
 \end{equation}
 
 To give you an impression of cluster qualities for different SIM values, we visualize the Top 10 relevant clusters in \Cref{fig:top10_relevant_jobs}.
-
 The figure confirms that each algorithm creates different clusters as the length of the most relevant clusters and amount is dissimilar.
 For a small SIM value, the first few clusters contain a large quantity of shorter (but not so similar) jobs.
-However, due to our definition of the relevance metrics, we can observe that smaller clusters with longer jobs are often considered more relevant.
+However, due to our definition of the relevance metrics, we can observe that smaller clusters with longer jobs are more relevant.
 This can be as extreme as a cluster with average length of $>40$ segments is ranked next to one with average length of $1$ segment.
 We believe that clustering by relevance (potentially extended by the occupied node number) is useful for support staff to identify optimization potential.
 
@@ -1644,7 +1643,7 @@ The following general characteristic observations are made:
 	\label{tab:bin:largest_clusters}
 \end{table}
 
-\begin{cluster}
+\begin{figure}
 	\begin{subtable}{\textwidth}
 		\centering
 		\begin{tabular}{lr}
@@ -1686,7 +1685,7 @@ The following general characteristic observations are made:
 	\end{subfigure}
 	\caption{BIN algorithm: Information of the selected cluster (SIM=0.7).}
 	\label{cluster:bin_all}
-\end{cluster}
+\end{figure}
 
 \FloatBarrier
 \paragraph{BIN\_AGGZEROS}
@@ -1702,7 +1701,7 @@ The following is characteristic for this algorithm:
  \item I/O intensive clusters appear to be cleaner than BIN\_ALL.
 \end{enumerate}
 
-\begin{cluster}
+\begin{figure}
 	\begin{subtable}{\textwidth}
 		\centering
 		\begin{tabular}{ll}
@@ -1745,27 +1744,26 @@ The following is characteristic for this algorithm:
 	\end{subfigure}
 	\caption{BIN\_AGGZEROS algorithm: Information of the selected cluster (SIM=0.7).}
 	\label{cluster:bin_aggzeros}
-\end{cluster}
+\end{figure}
 
 
 \FloatBarrier
 \paragraph{HEX\_LEV}
 Due to the longer hexadecimal codings, smaller changes in the SIM value don't change the clusters as quickly,  compared to binary codings.
 Therefore, for this exploration, we chose a SIM value higher than for BIN algorithms.
-
-General cluster characteristics:
+We observe the following cluster characteristics:
 \begin{enumerate}
  \item Similar job lengths.
  \item Mostly clean clusters, but a cluster can contain outlier jobs.
 \end{enumerate}
 
-We observe that even with a high SIM value some jobs have a different I/O behavior than the centroid and the rest of the jobs.
+We observe that even with a high SIM value, some jobs have a different I/O behavior than the centroid and the rest of the jobs.
 The reason is for the Levenshtein distance the distance between value 1 and 2 is the same as for 1 and 8; however, we would consider the two jobs closer together.
 
 Information related to the selected cluster is provided in \Cref{cluster:hex_lev}.
 In the selected cluster, there is mostly one segment of I/O activity.
 
-\begin{cluster}
+\begin{figure}
 	\begin{subtable}{\textwidth}
 		\centering
 		\begin{tabular}{ll}
@@ -1810,7 +1808,7 @@ In the selected cluster, there is mostly one segment of I/O activity.
 	\end{subfigure}
 	\caption{HEX algorithm: Information of the selected cluster (SIM=0.9).}
 	\label{cluster:hex_lev}
-\end{cluster}
+\end{figure}
 
 
 \FloatBarrier
@@ -1827,39 +1825,9 @@ General cluster characteristics:
 \end{enumerate}
 
 Information related to the selected cluster is given in \Cref{cluster:hex_native}.
-In the selected cluster, jobs with a length of 4 have mostly 1 the activity of one segment in common.
+In the selected cluster, jobs with a length of 4 have mostly the activity of one segment in common.
 
-%\jk{Wie kann man das verstehen, obwohl sich der Kasten in zwei Kästen unterscheidet ist das immer noch 99\% ähnlich. Warum haben wir eigtl. nicht die selbe SIM gewählt? 99\% finde ich recht unglücklich für das Beispiel.}
-
-%\begin{myverbbox}[\tiny]{\verbA}
-%Gegeben sei zwei hexadecimale Codings fuer zwei Jobs:
-%job1 = \left[ 0\dots0], [0\dots0], [0\dots0], [0\dots0], [0\dots0], [0\dots0], [0\dots0], [0:0:1:0], [0:0:1:0]]
-%job2 = \left[ 0\dots0], [0\dots0], [0\dots0], [0\dots0], [0\dots0], [0\dots0], [0\dots0], [0:0:0:0], [0:0:2:0]]
-
-%Aenhlichkeit einzelner Metriken:
-%metric\_1 = 100%
-%metric\_2 = 100%
-%metric\_3 = 100%
-%metric\_4 = 100%
-%metric\_5 = 100%
-%metric\_6 = 100%
-%metric\_7 = 100%
-%md\_mod = (16-(0-0) + 16-(0-0) + 16-(1-0) + 16-(0-0))/(16*4) = 98,4%
-%md\_other = (16-(0-0) + 16-(0-0) + 16-(2-1) + 16-(0-0))/(16*4) = 98,4%
-
-%Die Gesamtaehnlichkeit ist dann die folgende:
-%similarity = (100*7 + 98,4*2)/9 = 99.65%
-%\end{myverbbox}
-
-%\eb{
-%  Beispiel: \\
-%  \begin{tiny}
-%    \verbA
-%  \end{tiny}
-%}
-
-
-\begin{cluster}
+\begin{figure}
 	\begin{subtable}{\textwidth}
 		\centering
 		\begin{tabular}{ll}
@@ -1903,7 +1871,7 @@ In the selected cluster, jobs with a length of 4 have mostly 1 the activity of o
 	\end{subfigure}
 	\caption{HEX\_NATIVE algorithm: Information of the selected cluster (SIM=0.99).}
 	\label{cluster:hex_native}
-\end{cluster}
+\end{figure}
 
 \FloatBarrier
 \paragraph{PM\_QUANT}
@@ -1922,7 +1890,7 @@ General cluster characteristics:
  \item I/O pattern of jobs in a cluster are similar.
 \end{enumerate}
 
-\begin{cluster}
+\begin{figure}
 	\begin{subtable}{\textwidth}
 	 \centering
 	 \begin{tabular}{ll}
@@ -1966,7 +1934,7 @@ General cluster characteristics:
 	\end{subfigure}
 	\caption{PM\_QUANT algorithm: Information of the selected cluster (SIM=0.7).}
 	\label{cluster:pm_quant}
-\end{cluster}
+\end{figure}
 
 \FloatBarrier
 \subsection{Use Case: Tracking an I/O-Intensive Job}
@@ -1975,7 +1943,7 @@ The demonstration in this section shows how this approach can be used to identif
 \begin{figure}
   \centering
   \includegraphics[width=2.84in,height=2.85in]{image1.png}
-  \caption{One high I/O intensity job running on 46 nodes.
+  \caption{One I/O-intense job running on 46 nodes.
 Score is the sum of all nodes stacked by the node.
 A color represents one of the nodes.}
   \label{fig:use_case}
@@ -1996,7 +1964,7 @@ Overall, we find this job leads to good conditions for all algorithms, i.e., all
 Information related to the cluster of the job is in \Cref{cluster:use_case:bin}.
 We find that the identified jobs in the cluster are sufficiently related.
 
-\begin{cluster}
+\begin{figure}
 	\begin{subtable}{\textwidth}
 		\centering
 		\begin{tabular}{ll}
@@ -2039,7 +2007,7 @@ We find that the identified jobs in the cluster are sufficiently related.
 	\end{subfigure}
 	\caption{BIN algorithm: Information of the selected cluster (SIM=0.7).}
 	\label{cluster:use_case:bin}
-\end{cluster}
+\end{figure}
 
 \FloatBarrier
 \paragraph{BIN\_AGGZEROS}
@@ -2054,7 +2022,7 @@ Compared to BIN, the cluster is smaller but the jobs have a more similar ending.
 %  Eine Look-up Operation wuerde dann nur wenige Millisekundne dauern.
 %}
 
-\begin{cluster}
+\begin{figure}
 	\begin{subtable}{\textwidth}
 		\centering
 		\begin{tabular}{ll}
@@ -2097,7 +2065,7 @@ Compared to BIN, the cluster is smaller but the jobs have a more similar ending.
 	\end{subfigure}
 	\caption{BIN\_AGGZEROS algorithm: Information of the selected cluster (SIM=0.7).}
 	\label{cluster:use_case:bin_aggzeros}
-\end{cluster}
+\end{figure}
 
 \FloatBarrier
 \paragraph{HEX\_LEV}
@@ -2108,9 +2076,9 @@ Notice that there is a discrepancy between the job visualization in \Cref{fig:us
 While in \Cref{cluster:use_case:hex_lev} we can see a less intensive phase in the beginning and a high intensive phase afterwards, the hexadecimal coding contains a more or less single high intensive I/O phase.
 The reason is that we use different reduction functions.
 While in the illustration we aggregate segments by the sum() function, for the coding we use mean() function for the same set of values.
-While sum() is better for visualization, the mean value allows us to build simple algorithms.
+While sum() is better for visualization, the mean value allows the algorithms to assess data independent of the number of nodes used in a job.
 
-\begin{cluster}
+\begin{figure}
 	\begin{subtable}{\textwidth}
 		\centering
 		\begin{tabular}{ll}
@@ -2154,14 +2122,14 @@ While sum() is better for visualization, the mean value allows us to build simpl
 	\end{subfigure}
 	\caption{HEX\_LEV algorithm: Information of the selected cluster (SIM=0.9).}
 	\label{cluster:use_case:hex_lev}
-\end{cluster}
+\end{figure}
 
 \FloatBarrier
 \paragraph{HEX\_NATIVE}
 Information related to the cluster is in \Cref{cluster:use_case:hex_native}.
-Again, the jobs look similar, however, the increase in performance and drop in segment\,5 is not captured.
+Again, the jobs look similar, however, for read calls the increase in performance and the drop in Segment\,5 is not captured.
 
-\begin{cluster}
+\begin{figure}
 	\begin{subtable}{\textwidth}
 		\centering
 		\begin{tabular}{ll}
@@ -2206,14 +2174,14 @@ Again, the jobs look similar, however, the increase in performance and drop in s
 	\end{subfigure}
 	\caption{HEX\_NATIVE algorithm: Information of the selected cluster (SIM=0.99).}
 	\label{cluster:use_case:hex_native}
-\end{cluster}
+\end{figure}
 
 \FloatBarrier
 \paragraph{PM\_QUANT}
 Information\ related to the cluster is in \Cref{cluster:use_case:pm_quant}.
 Even with a smaller SIM value, the jobs appear related while they cover a variety of job length as well.
 
-\begin{cluster}
+\begin{figure}
 	\begin{subtable}{\textwidth}
 		\centering
 		\begin{tabular}{ll}
@@ -2258,7 +2226,7 @@ Even with a smaller SIM value, the jobs appear related while they cover a variet
 	\end{subfigure}
 	\caption{PM\_QUANT algorithm: Information of the selected cluster (SIM=0.7).}
 	\label{cluster:use_case:pm_quant}
-\end{cluster}
+\end{figure}
 
 
 \FloatBarrier
@@ -2294,7 +2262,7 @@ The initial motivation behind the use of hexadecimal coding was to apply string 
 \medskip
 
 \paragraph{Lengths-invariance.}
-With the Levensthein distance, we attempted to resolve this issue allowing to assign jobs of different length into the same cluster.
+With the Levensthein distance, we attempted to resolve the issue of lengths-invariance allowing to assign jobs of different length into the same cluster.
 However, the Levenshtein distance cannot consider the performance of a segment.
 For example, the following three codings would be considered to be all different by one symbol, since they differ in one position only.
 
@@ -2304,7 +2272,7 @@ phase_coding_2 : [2:2:2:2:2:8:2:2]
 phase_coding_3 : [2:2:2:2:2:0:2:2]
 \end{lstlisting}
 
-Intuitively, we would say that {phase\_coding\_1 and{ phase\_coding\_2 are more similar than {phase\_coding\_2 and {phase\_coding\_3, because the difference at 6th position is smaller between Job\,8 and 9 is smaller than to Job\,3.
+Intuitively, we would say that {phase\_coding\_1 and{ phase\_coding\_2 are more similar than {phase\_coding\_2 and {phase\_coding\_3, because the difference at 6th position is smaller for 8 and 9 than to 8 to 0.
 Short runtimes lead to more polluted clusters.
 
 Here is another example that illustrated the issue of noise in clusters for Levensthein:
@@ -2313,8 +2281,7 @@ Even if in both cases the similarity between the cluster and the centroid is 75$
 We can easily construct another sequence, e.g., [0:389:0:0], where a similarity of 75$\%$  are justified.
 For this reason, we found that the Levenshtein distance is generally not suitable.
 
-\medskip
-
+\paragraph{I/O Phases.}
 The current version of the PM algorithm ignores NonIO parts (sequences of zeros) of the monitoring data, and  handles segment sequences like [0,0,0,0,1] and [1] equally:
 \begin{lstlisting}
 job1_metric1 : [0,0,0,0,1]
@@ -2322,9 +2289,9 @@ job1_metric1 : [1]
 \end{lstlisting}
 
 These sequences would produce different average I/O loads on the storage.
-Intuitively, we would judge these jobs have different I/O behaviour as the ratio between computational and I/O load is different.
+Depending on the use case, we would judge these jobs exhibit different I/O behaviour as the ratio between computational and I/O load is different.
 
-One could argue that the phase definition was chosen incorrectly.
+One could argue that the phase definition (of separating phases by idle phases) isn't capturing the behavior sufficiently.
 Currently, phases are defined for each metric individually, without consideration of the overall behavior on  other metrics.
 For illustration, consider the following two jobs:
 \begin{lstlisting}
@@ -2334,7 +2301,7 @@ job2_metric1 : [1:0]
 job2_metric2 : [1:0]
 \end{lstlisting}
 
-Currently, the algorithm recognizes the I/O patterns to be 100$\%$ similar.
+Currently, the algorithm recognizes the I/O patterns to be 100$\%$ similar as it extracts in all cases a phase of [1].
 Alternatively, one could say that running two metrics at the same time is another I/O pattern, as running them shifted, because on a storage system the jobs would produce different I/O loads.
 For jobs with many I/O phases, this situation is less likely but for shorter jobs, it may happen.
 The benefit of ignoring these aspects is simplicity; this clustering reduces the number of clusters and  results are easier to understand.
@@ -2345,6 +2312,7 @@ Depending on the use case, the relevant I/O-behavior and characteristics involve
 In our case, we discussed similarity based on profiles and time series data.
 We explored various variants for the handling of fluctuation in the time series data that consider time series of different length, omit empty phases, and allow some reordering of phases.
 To answer these questions, a discussion with the community about the use cases and a study of more use cases is necessary.
+It appears likely that multiple similarity metrics must be defined that serve different purposes.
 
 
 \section{Conclusion}%
@@ -2352,26 +2320,25 @@ To answer these questions, a discussion with the community about the use cases a
 
 In this work, we described various approaches to cluster 1 million jobs based on their I/O behavior.
 Clustering of jobs is important for data-center support staff to focus their effort on relevant jobs.
-Therefore, we pre-processed the periodically gathered node metrics by converting this fine-grained resolution into 10-minute segments using various pre-processing stacks.
+Therefore, we pre-processed the periodically gathered node metrics by converting this fine-grained resolution into 10-minute segments using various stacks.
 Our contribution is the systematic evaluation and discussion of various approaches for the clustering.
 The success of clustering algorithms depends on the right feature selection and data transformation.
 
-After a series of experiments with general purpose algorithms, we could not achieve suitable results.
-While we could have applied traditional approaches such as k-means on the data, we found that the large number of classes and unknown knowledge about the jobs doesn't suit this use case.
-One problem might be that we apply a combination of a clustering and a classification algorithm.
-The classification algorithm is trained by the potential erroneous output of the clustering algorithm and it can itself produce erroneous output, which multiples the total error.
-Even if a better solution would found there is no guarantee that the generated model could be applied on another system.
+After a series of experiments with general purpose algorithms on profile data, we could not achieve acceptable results for the clustering of originally time series data.
+While we could have applied traditional approaches such as k-means on profiles, we found that the large number of classes and unknown knowledge about the jobs doesn't suit this use case.
+We believe this is due to the nature of reducing the time series to flat job profiles, which isn't suitable to capture the behavior of the IO jobs.
+Even if a better solution would found, there is no guarantee that the generated model could be applied on another system.
 
 In the evaluation, we investigated the quantitative and qualitative behavior of different algorithms.
-The investigation of clusters shows that, particularly clusters with little I/O activity are noisy and do not meet our expectation.
+The investigation of clusters shows that particularly clusters with little I/O activity are noisy and do not meet our expectation.
 Depending on the similarity chosen by the user, there are many different clusters with phenotypes of jobs found.
 Thus, exceeding the ability for manual inspection and manual labeling.
 
 Our analysis shows that considering the relative I/O performance and I/O phases improves the clustering.
-The integration of the awareness of I/O performance produces better, but still not sophisticated results.
+The integration of the awareness of I/O performance produces better, but still not perfect results.
 Therefore, we found that the Levenshtein distance is generally not suitable for similarity of I/O behavior of jobs.
 
-Absolute coding aggregates three dimensions (Metric, Nodes, and FileSystems) resulting in a nine times shorter coding sequence than hexadecimal coding, which aggregates only two dimensions (Nodes, and FileSystems).
+Absolute coding aggregates three dimensions (Metric, Nodes, and FileSystems) result in a nine times shorter coding sequence than hexadecimal coding, which aggregates only two dimensions (Nodes, and FileSystems).
 Using hexadecimal coding is more precise than binary coding because hexadecimal coding sequences longer.
 However, using the actual native floating-point value is problematic for the developed algorithms as for high similarity it will generate too many clusters.
 Therefore, we consider the quantization of hexadecimal is appropriate for this use case.
@@ -2380,8 +2347,8 @@ The phase matching algorithm detects phases and differentiates performance value
 In our analysis, it produced even for smaller relative similarity good results.
 These algorithms can be used in practice to identify jobs similar to another.
 We defined the cluster relevance that aids data center employees to select jobs of relevance.
-%Due to the huge amount of clusters and lack of automatic evaluation tools, we can not prove this statement for all clustres.
-%This makes training of models a trial-and-error approach.
+
+We believe that the community must identify and define suitable similarity metrics for the different analysis purposes.
 
 
 \subsection{Future Work}
@@ -2392,7 +2359,6 @@ We will extend relevance to cover node count as well to represent the actual cos
 
 We see a high potential in the new clustering algorithms to apply them on the fly to jobs of interest.
 For this case, the jobs could be grouped based on distance to this particular job and allowing the user to modify the similarity online.
-Conducting a study about this approach is our next goal.
 
 
 \subsection*{Acknowledgment} %% Remove this section if not needed

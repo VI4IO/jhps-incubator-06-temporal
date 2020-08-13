@@ -108,9 +108,9 @@
 \Crefname{lstlisting}{Listing}{Listing}
 
 % Figure/Table placement
-\def\fps@figure{!pb}
-\def\fps@table{!pb}
-\newfloat{lstfloat}{!pb}{lop}
+\def\fps@figure{!pbt}
+\def\fps@table{!pbt}
+\newfloat{lstfloat}{!pbt}{lop}
 \floatname{lstfloat}{Listing}
 \def\lstfloatautorefname{Listing}
 
