@@ -332,7 +332,11 @@ It provides an overview of the current resource usage and a detailed view of the
 TimeRadar\footnote{\url{https://idatavisualizationlab.github.io/HPCC/TimeRadar}} is a part of the tool, which summaries the resource usage via radar charts, creating a kind of comprehensible profile for different user groups.
 
 Trace analysis tools such as Vampir~\cite{nagel1996vampir} offer clustering strategies to analyze the per-process time series of a single job, in particular to group similar time series and allow users to focus on the exceptional cases that may lead to slowdown of the parallel application.
-In \cite{weber2016structural}, a strategy is developed for determining such a clustering based on execution structure; the paper gives a good introduction for the comparison of two traces as well.
+In~\cite{weber2016structural}, a strategy is developed for determining such a clustering based on execution structure; the paper gives a good introduction for the comparison of two traces as well.
+The structural clustering algorithm processes function call traces from monitored processes in two stages.
+First, data reduction, is achieved by disregarding time information and mapping function call trees to compact matrix representations.
+Second, efficient clustering, is achieved by using concept lattices~\cite{ganter1999formal} instead of all-with-all comparison.
+The authors demonstrate quality improvement of existing analysis techniques, if data is pre-clustering with the introduced structural clustering strategy.
 
 In contrast to existing strategies, we compare a large number of jobs with individual properties.
 
