@@ -1497,7 +1497,7 @@ At the end, we include an illustration which describes the segment length distri
 \subsubsection{Algorithm characteristics}
 The SIM value selection strategy can vary from use case to use case.
 As criteria, we choose a SIM value that creates a moderate number of clusters (around 50\% of job phenotypes) and keeps its generalization capabilities (the number of clusters with more than 1 job is considerable).
-For the B-algorithms and Q\_PHASES we chose a SIM of 0.7, and the other Q-algorithms SIM of 0.9.
+For the B-algorithms and Q\_PHASES we chose a SIM $=$ 0.7, and the other Q-algorithms SIM $\geq$ 0.9.
 
 \FloatBarrier
 \paragraph{B\_ALL}
@@ -1539,10 +1539,6 @@ The following general characteristic observations are made:
 \begin{figure}
 	\begin{subtable}{\textwidth}
 		\centering
-		%\begin{tabular}{lr}
-		%  Number of jobs & 7615 \\
-		%  Number of job phenotypes & 3306 \\
-		%\end{tabular}
 		\begin{tabular}{lr}
 		 Number of jobs & 4378 \\
 		 Number of job phenotypes & 3332 \\
@@ -1576,7 +1572,6 @@ The following general characteristic observations are made:
 	\medskip
 	\begin{subfigure}{\textwidth}
 		\centering
-		%\includegraphics[width=4.61in]{image20.png}
 		\includegraphics[width=4.61in]{bin_all_top10.png}
 		\caption{Length distribution in the cluster.}
 		\label{cluster:bin_all:length}
@@ -1604,8 +1599,6 @@ The following is characteristic for this algorithm:
 		\centering
 		\begin{tabular}{ll}
 			\centering
-			%Number of jobs & 1295 \\
-			%Number of job phenotypes & 336 \\
 			Number of jobs & 2285 \\
 			Number of job phenotypes & 452 \\
 		\end{tabular}
@@ -1620,17 +1613,11 @@ The following is characteristic for this algorithm:
         \rowcolor{tblhead}
         B-coding of the centroid                                                                         &  Type     \\
         \hline
-        %272:272:272:272:272:278:286:272:272:272:272:272:272:272:272:272:272:272:272            &  centroid \\
         -:-:191:272:272:287:287:272:272:272:272:272:272:272:272:272:272:272:272:272:272 & centroid \\ 
         \multicolumn{2}{l}{}                                                                   \\
         \rowcolor{tblhead}
         B-coding of jobs in the cluster                                                                          &  Count    \\
         \hline
-        %272:272:272:272:272:278:286:272:272:272:272:272:272:272:272:272:272:272:272            &  528      \\
-        %272:272:272:272:272:406:286:272:272:272:272:272:272:272:272:272                        &  96       \\
-        %272:272:272:272:272:279:31:272:272:272:272:272:272:272:272:272:272:272:272:272:272:272 &  53       \\
-        %272:272:272:272:272:272:272:272:272:272:272:279:319:272:272:272:272:272:272:272:272    &  52       \\
-        %272:272:272:272:272:279:319:272:272:272:272:272:272:272:272:272:272:272:272:272:272    &  50       \\
         272:272:272:272:272:278:286:272:272:272:272:272:272:272:272:272:272 & 543 \\ 
         272:272:272:272:272:278:286:272:272:272:272:272:272:272:272:272:272:272:272 & 530 \\ 
         272:272:272:272:272:406:286:272:272:272:272:272:272:272:272:272 & 96 \\ 
@@ -1644,7 +1631,6 @@ The following is characteristic for this algorithm:
 	\medskip
 	\begin{subfigure}{\textwidth}
 		\centering
-		%\includegraphics[width=4.61in,height=1.38in]{image13.png}
 		\includegraphics[width=4.61in,height=1.38in]{bin_aggzeros_top10.png}
 		\caption{Job length distribution in the cluster.}
 		\label{cluster:bin_aggzeros:length}
@@ -1675,8 +1661,6 @@ In the selected cluster, there is mostly one segment of I/O activity.
 		\centering
 		\begin{tabular}{ll}
 			\centering
-			%Number of jobs & 5769 \\
-			%Number of job phenotypes & 2473 \\
       Number of jobs & 4453 \\
       Number of job phenotypes & 1955 \\
 		\end{tabular}
@@ -1687,23 +1671,6 @@ In the selected cluster, there is mostly one segment of I/O activity.
 	\begin{subtable}{\textwidth}
 		\centering
 		\begin{tiny}
-			%\begin{tabular}{llll|r}
-			%  \rowcolor{tblhead}
-			%  \multicolumn{4}{l|}{Q-coding} & \\
-			%  \rowcolor{tblhead}
-				%md\_file\_create  & md\_file\_delete  & md\_mod           & read\_calls       & Type     \\
-				%\hline
-				%-:...:-           & -:-:-:1:-:-:-:-:- & -:...:-           & -:...:-           & centroid \\
-				%\multicolumn{5}{l}{}\\
-				%\rowcolor{tblhead}
-				%md\_file\_create  & md\_file\_delete  & md\_mod           & read\_calls       & Count    \\
-				%\hline
-				%-:...:-           & -:-:-:-:-:-:1:-:- & -:...:-           & -:...:-           & 606      \\
-				%-:...:-           & -:-:-:-:-:-:-:-:1 & -:...:-           & -:...:-           & 562      \\
-				%-:...:-           & -:...:-           & -:...:-           & -:-:-:-:-:-:1:-:- & 429      \\
-				%-:...:-           & -:-:-:1:-:-:-:-:- & -:...:-           & -:...:-           & 185      \\
-				%-:-:-:-:-:-:1:1:1 & -:...:-           & -:-:-:-:-:-:1:-:- & -:...:-           & 75       \\
-
       \begin{tabular}{lll|r}
         \rowcolor{tblhead}
         \multicolumn{3}{l|}{Q-coding} & \\
@@ -1723,7 +1690,6 @@ In the selected cluster, there is mostly one segment of I/O activity.
         -:...:-                           & -:...:-                           & -:-:-:-:-:-:-:-:-:-:-:-:2:-:-:-   & 120      \\ 
         -:...:-                           & -:...:-                           & -:-:-:-:-:-:-:-:-:-:-:-:2:-:-:-:- & 87       \\ 
       \end{tabular}
-
 		\end{tiny}
 		\caption{Centroid and Top 5 job phenotypes. The metrics that have no I/O activity are not included in the table.}
 		\label{cluster:hex_lev:top_jobs}
@@ -1731,7 +1697,6 @@ In the selected cluster, there is mostly one segment of I/O activity.
 	\medskip
 	\begin{subfigure}{\textwidth}
 		\centering
-		%\includegraphics[width=4.61in,height=1.39in]{image5.png}
     \includegraphics[width=4.61in,height=1.39in]{hex_lev_top10.png}
 		\caption{Length distribution in the cluster.}
 		\label{cluster:hex_lev:length}
@@ -1744,10 +1709,10 @@ In the selected cluster, there is mostly one segment of I/O activity.
 \FloatBarrier
 \paragraph{Q\_NATIVE}
 The SIM value exploration shows that this algorithm works best with high SIM $\geq$ 0.9 values.
-Clustering with SIM=0.9 results in clusters that have equal job lengths.
-From the definition of the equation, for a similarity of 90\% the centroid must be longer than 10 segments to attract jobs with 9 or 11 length.
+Clustering with SIM=0.99 results in clusters that have equal job lengths.
+From the definition of the equation, for a similarity of 99\% the centroid must be longer than 100 segments to attract jobs with 99 or 101 length.
 Due to space restrictions, we could not visualize a representative example.
-Instead of that we take a short one, which doesn't include all the typical characteristics.
+Instead of that we take a short one, although it doesn't include all the typical characteristics.
 
 General cluster characteristics:
 \begin{enumerate}
@@ -1762,11 +1727,9 @@ In the selected cluster, jobs with a length of 4 have mostly the activity of one
 \begin{figure}
 	\begin{subtable}{\textwidth}
 		\centering
-			%Number of jobs & 20908 \\
-			%Number of job phenotypes & 11997 \\
 		\begin{tabular}{ll}
-			Number of jobs & 7902 \\
-			Number of job phenotypes & 4339 \\
+			Number of jobs & 6246 \\
+			Number of job phenotypes & 23 \\
 		\end{tabular}
 		\caption{Cluster statistics.}
 		\label{cluster:hex_native:stats}
@@ -1775,43 +1738,23 @@ In the selected cluster, jobs with a length of 4 have mostly the activity of one
 	\begin{subtable}{\textwidth}
 		\centering
 		\begin{tiny}
-			%\begin{tabular}{llll|r}
-				%\rowcolor{tblhead}
-				%\multicolumn{4}{l|}{Q-coding} &            \\
-				%\rowcolor{tblhead}
-				%md\_file\_delete     &  md\_mod   & md\_other & Type     \\
-				%\hline
-				%-:\dots:-            &  -:-:1:-   & -:-:1:-   & centroid \\
-				%\multicolumn{4}{l}{} \\
-				%\rowcolor{tblhead}
-				%md\_file\_delete     &  md\_mod   & md\_other & Count    \\
-				%\hline
-				%-:\dots:-            &  -:\dots:- & -:-:1:-   & 5,010    \\
-				%-:\dots:-            &  -:\dots:- & -:-:2:-   & 1,963    \\
-				%-:-:1:-              &  -:\dots:- & -:\dots:- & 1,099    \\
-				%-:\dots:-            &  -:\dots:- & -:1:-:-   & 911      \\
-				%-:-:1:-              &  -:-:1:-   & -:\dots:- & 676      \\
-			%\end{tabular}
-
-      \begin{tabular}{ll|r}
+      \begin{tabular}{llll|r}
         \rowcolor{tblhead}
-        \multicolumn{2}{l|}{Q-coding} & \\
+        \multicolumn{4}{l|}{Q-coding} &            \\
         \rowcolor{tblhead}
-        md\_file\_delete     &  md\_other & Type     \\ 
+        md\_file\_delete & md\_mod & md\_other & read\_bytes & Type \\ 
         \hline
-        -:...:-              &  -:-:1:-   & centroid \\ 
-        \multicolumn{3}{l}{} \\ 
+        -:...:-               & -:...:-      & -:-:1:-        & -:...:-          & centroid \\ 
+        \multicolumn{5}{l}{} \\
         \rowcolor{tblhead}
-        md\_file\_delete     &  md\_other & Count    \\ 
+        md\_file\_delete & md\_mod & md\_other & read\_bytes & Count    \\ 
         \hline
-        -:...:-              &  -:-:1:-   & 6,115     \\ 
-        -:...:-              &  -:-:2:-   & 1,467     \\ 
-        -:...:-              &  -:1:-:-   & 1,070     \\ 
-        -:-:1:-              &  -:...:-   & 772      \\ 
-        -:...:-              &  1:-:-:-   & 616      \\ 
-        \hline
+        -:...:-               & -:...:-      & -:-:1:-        & -:...:-          & 6115     \\ 
+        -:...:-               & -:-:1:-      & -:-:1:-        & -:...:-          & 31       \\ 
+        -:...:-               & -:...:-      & -:-:1:-        & -:-:1:-          & 25       \\ 
+        -:1:-:-               & -:...:-      & -:-:1:-        & -:...:-          & 12       \\ 
+        -:...:-               & -:1:-:-      & -:-:1:-        & -:...:-          & 10       \\ 
       \end{tabular}
-
 		\end{tiny}
 		\caption{Centroid and Top 5 job phenotypes.}
 		\label{cluster:hex_native:top_jobs}
@@ -1819,12 +1762,11 @@ In the selected cluster, jobs with a length of 4 have mostly the activity of one
 	\medskip
 	\begin{subfigure}{\textwidth}
 		\centering
-		%\includegraphics[width=4.61in,height=1.39in]{image8.png}
 		\includegraphics[width=4.61in,height=1.39in]{hex_native_top10.png}
 		\caption{Length distribution in the cluster.}
 		\label{cluster:hex_native:length}
 	\end{subfigure}
-	\caption{Q\_NATIVE algorithm: Information of the selected cluster (SIM=0.9).}
+	\caption{Q\_NATIVE algorithm: Information of the selected cluster (SIM=0.99).}
 	\label{cluster:hex_native}
 \end{figure}
 
@@ -1859,23 +1801,6 @@ General cluster characteristics:
 	\begin{subtable}{\textwidth}
 	 \centering
 	 \begin{tiny}
-		 %\begin{tabular}{ll|r}
-		 %  \rowcolor{tblhead}
-		 %  \multicolumn{2}{l|}{Q-coding} &              \\
-		 %  \rowcolor{tblhead}
-		 %  md\_file\_delete     &  md\_mod     & Type     \\
-		 %  \hline
-		 %  4:-:-:-:-:-          &  4:-:-:-:-:- & centroid \\
-		 %  \multicolumn{3}{l}{} \\
-		 %  \rowcolor{tblhead}
-		 %  md\_file\_delete     &  md\_mod     & Count    \\
-		 %  \hline
-		 %  4                    &  4           & 2329     \\
-		 %  4:-:-:-:-:-          &  4:-:-:-:-:- & 1773     \\
-		 %  4:-                  &  4:-         & 224      \\
-		 %  2                    &  4           & 65       \\
-		 %  -:4                  &  -:4         & 57       \\
-		 %\end{tabular}
      \begin{tabular}{ll|r}
        \rowcolor{tblhead}
        \multicolumn{2}{l|}{Q-coding} &              \\
@@ -1893,7 +1818,6 @@ General cluster characteristics:
        -:-:2:-                                         & -:-:2:-                                          & 140      \\ 
        2:-                                             & 2:-                                              & 95       \\ 
      \end{tabular}
-
 	 \end{tiny}
 	 \caption{Centroid and Top 5 job phenotypes.}
 	 \label{cluster:pm_quant:top_jobs}
@@ -2011,22 +1935,6 @@ We find that the identified jobs in the cluster are sufficiently related.
 	\begin{subtable}{\textwidth}
 		\centering
 		\begin{tiny}
-			%\begin{tabular}{l|r}
-			%  \rowcolor{tblhead}
-			%  B-coding                                                                                          &  Type     \\
-			%  \hline
-			%  192:192:192:192:192:192:196:192:192:192:192:192:192:192:192:192:192:192:192:192:192:192:64:64:64:64:64 &  job      \\
-			%  192:192:192:192:192:192:192:192:192:192:192:454:230:192:192:192:192:192:192:192:192:192:192:192        &  centroid \\
-			%  \multicolumn{2}{l}{}                                                                                   \\
-			%  \rowcolor{tblhead}
-			%  B-coding                                                                                          &  Count    \\
-			%  \hline
-			%  192:192:192:192:192:454:198:192:192:192:192:192:192:192:192:192:192:192:192:192:192:192:192:192        &  5        \\
-			%  192:192:192:192:192:192:192:192:192:192:192:454:230:192:192:192:192:192:192:192:192:192:192:192        &  3        \\
-			%  192:192:192:192:192:454:230:192:192:192:192:192:192:192:192:192:192:192:192:192:192:192:192:192        &  3        \\
-			%  192:192:192:192:192:192:192:192:192:192:192:454:230:192:192:192:192:192:192:192:192:192:192            &  2        \\
-			%  228:192:192:192:192:192:192:192:192:192:192:192:192:192:192:192:192:192                                &  2        \\
-			%\end{tabular}
       \begin{tabular}{l|r}
        \rowcolor{tblhead}
        B-coding                                                                                                    & Type     \\ 
@@ -2050,7 +1958,6 @@ We find that the identified jobs in the cluster are sufficiently related.
 	\medskip
 	\begin{subfigure}{\textwidth}
 		\centering
-		%\includegraphics[width=4.61in,height=1.39in]{image9.png}
 		\includegraphics[width=4.61in,height=1.39in]{bin_aggzeros_use_case.png}
 		\caption{Length distribution in the cluster.}
 		\label{cluster:use_case:bin_aggzeros:length}
@@ -2075,8 +1982,6 @@ While sum() is better for visualization, the mean value allows the algorithms to
 	\begin{subtable}{\textwidth}
 		\centering
 		\begin{tabular}{ll}
-			%Number of jobs & 209 \\
-			%Number of job phenotypes & 189 \\
 			Number of jobs & 225 \\
 			Number of job phenotypes & 205 \\
 		\end{tabular}
@@ -2087,24 +1992,6 @@ While sum() is better for visualization, the mean value allows the algorithms to
 	\noindent\begin{subtable}{\textwidth}
 		\centering
 		\begin{tiny}
-			%\begin{tabular}{ll|r}
-			%  \rowcolor{tblhead}
-			%  \multicolumn{2}{l|}{Q-coding} & \\
-			%  \rowcolor{tblhead}
-			%  md\_other                                           &  read\_calls                                           & Type     \\
-			%  \hline
-			%  -:\dots:-                                           &  3:3:8:8:8:5:6:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8 & job      \\
-			%  -:\dots:-                                           &  8:8:8:8:8:2:6:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8 & centroid \\
-			%  \multicolumn{3}{l}{}                                \\
-			%  \rowcolor{tblhead}      md\_other                   &  read\_calls                                           & Count    \\
-			%  \hline
-			%  -:\dots:-                                           &  -:-:-:-:-:-:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8   & 4        \\
-			%  -:\dots:-                                           &  8:8:8:8:8:2:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8   & 4        \\
-			%  -:-:-:4:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:- &  -:-:-:-:-:-:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8   & 4        \\
-			%  -:\dots:-                                           &  8:8:8:8:8:3:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8 & 3        \\
-			%  -:\dots:-                                           &  -:-:-:-:-:-:2:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8   & 2        \\
-			%\end{tabular}
-
 			\begin{tabular}{ll|r}
 				\rowcolor{tblhead}
 				\multicolumn{2}{l|}{Q-coding} & \\
@@ -2122,7 +2009,6 @@ While sum() is better for visualization, the mean value allows the algorithms to
         -:...:-                                             & 8:8:8:8:8:5:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8   & 3        \\ 
         -:-:-:3:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:- & -:-:-:-:-:-:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8   & 3        \\ 
       \end{tabular}
-
 		\end{tiny}
 		\caption{Job, centroid and Top 5 job phenotypes.}
 		\label{cluster:use_case:hex_lev:top_jobs}
@@ -2130,7 +2016,6 @@ While sum() is better for visualization, the mean value allows the algorithms to
 	\medskip
 	\begin{subfigure}{\textwidth}
 		\centering
-		%\includegraphics[width=4.61in]{image17.png}
 		\includegraphics[width=4.61in]{hex_lev_use_case.png}
 		\caption{Length distribution in the cluster.}
 		\label{cluster:use_case:hex_lev:length}
@@ -2148,8 +2033,6 @@ Again, the jobs look similar, however, for read calls the increase in performanc
 	\begin{subtable}{\textwidth}
 		\centering
 		\begin{tabular}{ll}
-			%Number of jobs & 20 \\
-			%Number of job phenotypes & 20 \\
 			Number of jobs & 95 \\
 			Number of job phenotypes & 94 \\
 		\end{tabular}
@@ -2160,26 +2043,6 @@ Again, the jobs look similar, however, for read calls the increase in performanc
 	\begin{subtable}{\textwidth}
 		\centering
 		\begin{tiny}
-			%\begin{tabular}{l|r}
-			%  \rowcolor{tblhead}
-			%  Q-coding & \\
-			%  \rowcolor{tblhead}
-			%  read\_calls                                           & Type     \\
-			%  \hline
-			%  3:3:8:8:8:5:6:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8 & job      \\
-			%  8:8:8:8:8:2:4:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8 & centroid \\
-			%  \multicolumn{2}{l}{}\\
-			%  \rowcolor{tblhead}
-			%  read\_calls                                           & Count    \\
-			%  \hline
-			%  8:8:8:8:8:3:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8 & 3        \\
-			%  8:8:8:8:8:5:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8 & 2        \\
-			%  3:3:8:8:8:5:6:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8 & 1        \\
-			%  3:6:6:7:7:7:7:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8 & 1        \\
-			%  6:5:6:7:6:2:7:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8 & 1        \\
-			%\end{tabular}
-
-
       \begin{tabular}{l|r}
         \rowcolor{tblhead}
         Q-coding & \\
@@ -2205,7 +2068,6 @@ Again, the jobs look similar, however, for read calls the increase in performanc
 	\medskip
 	\begin{subfigure}{\textwidth}
 		\centering
-		%\includegraphics[width=4.61in]{image2.png}
 		\includegraphics[width=4.61in]{hex_native_use_case.png}
 		\caption{Length distribution in the cluster.}
 		\label{cluster:use_case:hex_native:length}
@@ -2233,25 +2095,6 @@ Even with a smaller SIM value, the jobs appear related while they cover a variet
 	\begin{subtable}{\textwidth}
 		\centering
 		\begin{tiny}
-			%\begin{tabular}{l|r}
-			%  \rowcolor{tblhead}
-			%  Q-coding & \\
-			%  \rowcolor{tblhead}
-			%  read\_calls                                           & Type     \\
-			%  \hline
-			%  3:3:8:8:8:5:6:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8 & job      \\
-			%  8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8   & centroid \\
-			%  \multicolumn{2}{l}{}\\
-			%  \rowcolor{tblhead}
-			%  read\_calls                                           & Count    \\
-			%  \hline
-			%  8:8:8:8:8:2:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8   & 4        \\
-			%  8:8:8:8:8:3:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8 & 3        \\
-			%  7:7:7:7:7:2:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8   & 2        \\
-			%  8:8:8:8:8:5:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8   & 2        \\
-			%  8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8   & 2        \\
-			%\end{tabular}
-
       \begin{tabular}{ll|r}
        \rowcolor{tblhead}
        \multicolumn{2}{l|}{Q-coding} & \\
@@ -2270,7 +2113,6 @@ Even with a smaller SIM value, the jobs appear related while they cover a variet
        -:...:-                                             &  8:8:8:8:8:5:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8   & 3        \\ 
        -:-:-:3:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:- &  -:-:-:-:-:-:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8   & 3        \\ 
       \end{tabular}
-
 		\end{tiny}
 		\caption{Job, centroid and Top 5 job phenotypes.}
 		\label{cluster:use_case:pm_quant:top_jobs}
