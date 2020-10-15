@@ -102,7 +102,6 @@ Even re-running the same simulation may lead to different behavior.
 We can distinguish between a temporal behavior, i.e., the operations performed over time such as long read/write phases, bursty I/O pattern, and concurrent metadata operations, and spatial access pattern of individual processes of the application as they can be, e.g., sequential or random.
 
 On different supercomputers, the same I/O patterns may result in different application runtimes depending on the nature of the access pattern.
-
 For example, machines equipped with burst buffers \cite{10.1007/978-3-030-02465-9_9, 7004215} may significantly reduce application runtimes by absorbing bursty I/O traffic.
 I/O congestion and file system performance degradation can occur when several I/O intensive jobs are running on the same machine at the same time.
 I/O aware schedulers, like CARS~\cite{LIANG201925} and Flux~\cite{flux}, implement new scheduling strategies that utilize I/O metrics.
@@ -145,11 +144,11 @@ Finally, in \Cref{sec:conclusion} we summarize the results.
 The German Climate Computing Center (DKRZ) maintains a monitoring system that gathers various statistics from the Mistral HPC system.
 Mistral has 3,340 compute nodes, 24 login nodes, and two Lustre file systems (lustre01 and lustre02) that provide a capacity of 52 Petabytes.
 The deployed monitoring system is made up of open source components such as Grafana, OpenTSDB, and Elasticsearch.
-It includes a lightweight self-developed data collector that captures continuously node statistics -- we decided to implement an own lightweight collector since the overhead of existing approaches was much higher.
+It includes a lightweight self-developed data collector that captures node statistics continuously -- we decided to implement our own lightweight collector since the overhead of existing approaches was much higher.
 Additionally, the system retrieves various job meta-information from the Slurm workload manager and injects selected log files.
 
 Our motivation for automatic analysis of parallel jobs is the monitoring situation at DKRZ.
-Mistral runs around 10,000 jobs a day, which is too much for manual analysis.
+Mistral runs around 10,000 jobs a day, which is too many for manual analysis.
 In our previous work~\cite{iocats2020}, we found a way to identify I/O intensive jobs and jobs with inefficient usage by deriving statistics from the node-level statistics.
 This information can aid the procurement of new HPC systems or support the extension of an existing one.
 While this approach helps to find individual jobs, it doesn't provide a global overview, which might be more important for making decisions at the data center perspective.
@@ -178,7 +177,7 @@ The creation and deletion of files are very important and not aggregated.
 \end{figure}
 
 \paragraph{Segmentation.}
-We split the time series of each I/O metric into equal-sized time intervals (segments) and computes a mean performance for each segment.
+We split the time series of each I/O metric into equal-sized time intervals (segments) and compute a mean performance for each segment.
 This stage preserves the performance units (e.g., Op/s, MiB/s) for each I/O metric.
 The example in \Cref{fig:generic_example} creates segments out of three successive time points just for illustration purposes.
 Depending on aggregation function, segments can be created of metrics (green boxes), of file systems (yellow boxes), of nodes (red boxes), or even over all dimensions (blue box).
@@ -2271,21 +2270,62 @@ For this case, the jobs could be grouped based on distance to this particular jo
 \bibliography{bibliography.bib}
 
 \reviews   % The review section
+\subsection*{Reviewer: JT Acquaviva, Date: 2020-10-07}
 
+\paragraph{Overall summary and proposal for acceptance}
+
+The paper address a key topic in I/O analysis. As instrumentation and profiling are starting to get in place in  data centers the amount of information generated in unmanageable at the human scale and methods need to be developed to summarize the I/O profile ad provide insight. Taking this problem at its inception the article proposes, discuss and compares several ways to describe an job in respect of its I/O characteristics. Not only the metrics are discussed but also the level of accuracy for the measurements. Thus the authors explore the trade-off between accurate description and the need to accept loss of information to build clusters.
+The quality of the clustering is analyzed and overall the authors are able to summarize 100.000 jobs in a limited amount of clusters. Some qualitative analysis is performed on the clustering. Overall the paper address an important problem, with broad implications for I/O architectures, job scheduling and work-flow organization in a data center. The paper is well written and clear. The data set is large enough to back-up the relevance of the method. It remains that data are all coming from a single site (DKRZ) which is OK to assess the method but somehow limit the scope of the findings.
+
+\paragraph{Scope}   % in regards to the journal, i.e., does the topic fit?
+Yes, it’s a good fit.
+\paragraph{Significance}   % of the research, minor vs. major
+Above average
+\paragraph{Readability}   % English and structure appropriate?
+Good
+\paragraph{Presentation}
+Good
+\paragraph{References}   % Correctly formatted?
+Yes
+\paragraph{Correctness}   % Is the research correct
+Yes
+
+\subsection*{Reviewer: Suren Byna, Date: 2020-07-07}
+
+\paragraph{Overall summary and proposal for acceptance}
+This paper describes an exploration to cluster one million jobs that ran on the Mistral system at DKRZ. The authors used 10,000 jobs for training and then used the 1 million jobs for clustering. It was found that general purpose clustering algorithms were not creating meaningful clusters, hence, the authors explored quantitative and qualitative analysis of clusters using knowledge of I/O patterns. 
+
+What does the “score” mean in Figure 2.2? Please define it as it is not obvious based on the figure’s caption. 
+
+In general, the motivation of this paper is interesting. One thing I wasn’t clear at the end, may be due to my lack of expertise in clustering, which clustering method should a data center use. Understandably, clustering depends heavily on similarity, but selection of a similarity could be a daunting task for users. 
+
+Overall, this paper is interesting to the I/O community, as the effort is attempting to find clustering of jobs based on I/O, which is difficult, and defining similarity requires more work. 
+Added minor edits as suggestions in the text.
+
+The paper could be accepted for publication after the authors address minor editing suggestions and adding some minor details. 
+\paragraph{Scope}   % in regards to the journal, i.e., does the topic fit?
+Yes, it’s a good fit.
+\paragraph{Significance}   % of the research, minor vs. major
+Above average
+\paragraph{Readability}   % English and structure appropriate?
+Good
+\paragraph{Presentation}
+Good
+\paragraph{References}   % Correctly formatted?
+Yes
+\paragraph{Correctness}   % Is the research correct
+Yes
+
+
+% Reviewers, please duplicate this section:
 \subsection*{Reviewer: \href{Optional URL to reviewer page}{Firstname LastName}, Date: 2020-07-07}
 
 \paragraph{Overall summary and proposal for acceptance}
 
 \paragraph{Scope}   % in regards to the journal, i.e., does the topic fit?
-
 \paragraph{Significance}   % of the research, minor vs. major
-
 \paragraph{Readability}   % English and structure appropriate?
-
 \paragraph{Presentation}
-
 \paragraph{References}   % Correctly formatted?
-
 \paragraph{Correctness}   % Is the research correct
-
 \end{document}
