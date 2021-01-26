@@ -102,7 +102,7 @@ Even re-running the same simulation may lead to different behavior.
 We can distinguish between a temporal behavior, i.e., the operations performed over time such as long read/write phases, bursty I/O pattern, and concurrent metadata operations, and spatial access pattern of individual processes of the application as they can be, e.g., sequential or random.
 
 On different supercomputers, the same I/O patterns may result in different application runtimes depending on the nature of the access pattern.
-For example, machines equipped with burst buffers \cite{10.1007/978-3-030-02465-9_9, 7004215} may significantly reduce application runtimes by absorbing bursty I/O traffic.
+For example, machines equipped with burst buffers \cite{10.1007/978-3-030-02465-9_9, 7004215,Landsteiner2016ArchitectureAD} may significantly reduce application runtimes by absorbing bursty I/O traffic.
 I/O congestion and file system performance degradation can occur when several I/O intensive jobs are running on the same machine at the same time.
 I/O aware schedulers, like CARS~\cite{LIANG201925} and Flux~\cite{flux}, implement new scheduling strategies that utilize I/O metrics.
 The analysis of I/O is important not only when I/O begins to take a considerable amount of application runtime but when I/O patterns begin to degrade the performance of the shared file system affecting runtimes of other applications and worsening user experience by unresponsive file systems~\cite{10.1007/978-3-030-02465-9_5}.
@@ -185,7 +185,7 @@ The raw monitoring data is converted into a time series of ten minute segments, 
 
 \paragraph{Categorization.}
 Next, to get rid of specific units of individual metrics, and to allow calculations between different I/O metrics, we introduced a categorization pre-processing step that takes into account the performance of the underlying HPC system and assigns a unitless ordered category to each metric segment.
-For example, how could we compare the metric that reports 10k\,file opens with another metric that reports 100\,MB data was accessed?
+For example, how could we compare the metric that reports 10k\,file opens with another metric that reports 100\,MB data access?
 We use three categories, which are the LowIO=0, HighIO=1 and CriticalIO=4 categories.
 The category split points are based on the histogram of the indivudual metrics.
 For any metrics, a segment with a value up to the 99\%-Quantile it is considered to be LowIO, larger than the 99.9\%-Quantile indicates CriticalIO, and between it is HighIO~(see \cite{iocats2020}).
@@ -268,7 +268,7 @@ Score is the sum of individual node scores.}
          \label{fig:typ_io:all}
 \end{figure}
 
-Typical sources of variability when observing performance metrics are: The concurrent usage of the shared storage, a shift between observed I/O phases due to network congestion or CPU throttling for power/heat reasons.
+Typical sources of variability when observing performance metrics are: The concurrent usage of the shared storage, a shift between observed I/O phases due to network congestion or CPU throttling for power/heat reasons, and depending on the location of the data in a multi-tier storage system.
 The same application using a different input configuration may need more compute time, resulting in longer phases between typical I/O patterns; moreover, it may change the I/O pattern.
 A well-known pattern exhibited by a shorter running application may appear as well in a long-running application.
 The similarity measure between two jobs should consider those sources of variability and allow us to provide a robust clustering of jobs depending on the user question.
@@ -284,7 +284,7 @@ There are many tracing and profiling tools that are able to record I/O informati
 Most of them focus on individual jobs, and only a few of them apply machine learning for data analysis, in particular across jobs.
 As the purpose of applications is computation and, thus, I/O is just a byproduct, applications often spend less than 10\% time with I/O.
 The issue of performance profiles is that they remove the temporal dimension and make it difficult to identify relevant I/O phases.
-The Ellexus tools\footnote{\url{https://www.ellexus.com/products/}} include Breeze, a user-friendly offline I/O profiling software, an automatic I/O report generator Healthcheck, and command line tool Mistral which purpose is to report on and resolve I/O performance issues when running complex Linux applications on high performance compute clusters.
+The Altair tools\footnote{https://www.altair.com/product-showcase, former Ellexus tools  \url{https://www.ellexus.com/products/}} include Breeze, a user-friendly offline I/O profiling software, an automatic I/O report generator Healthcheck, and command line tool Mistral which purpose is to report on and resolve I/O performance issues when running complex Linux applications on high performance compute clusters.
 Mistral is a small program that allows you to monitor application I/O patterns in real time, and log undesirable behaviour using rules defined in a configuration file called a contract.
 
 Darshan~\cite{carns2011understanding-toc,hpcdarshan} is an open source I/O characterization tool for post-mortem analysis of HPC applications' I/O behavior.
@@ -292,6 +292,9 @@ Its primary objective is to capture concise but useful information with minimal 
 Darshan accomplishes this by eschewing end-to-end tracing in favor of compact statistics such as elapsed time, access sizes, access patterns, and file names for each file opened by an application.
 These statistics are captured in a bounded amount of memory per process as the application executes.
 When the application shuts down, this data is reduced, compressed, and stored in a unified log file.
+The Darshan eXtended Tracing (DXT) module can be enabled at runtime to increase fidelity by recording a complete trace of all MPI-I/O and POSIX I/O operations.
+
+This technique allows an application to be traced without modification and with reasonably low overhead.
 Utilities included with Darshan can then be used to analyze, visualize, and summarize the Darshan log information.
 Because of Darshan's low overhead, it is suitable for system-wide deployment on large-scale systems.
 In this deployment model, Darshan can be used not just to investigate the I/O behavior of individual applications but also to capture a broad view of system workloads for use by facility operators and I/O researchers.
@@ -318,7 +321,7 @@ An increase of response times correlates to the overloading of the file system.
 This approach allows the calculation of a slow-down factor identification of the slow-down time period.
 This approach is able to detect a file system slow-down, but cannot detect the jobs that cause the slow-down.
 
-The Nextgenio monitoring system~\cite{nextgenio2016}, has four main collectors.
+The NEXTGgenIO monitoring system~\cite{nextgenio2016}, has four main collectors.
 The first two, the PBS and ALPS tools, collect job scheduling information.
 The proprietary Cray I/O monitoring tool exploits Lustre I/O counters to capture file system usage on OSTs of all OSSs and allocated compute nodes.
 The MAP component provides information about CPU, memory and network usage.
@@ -333,8 +336,8 @@ TimeRadar\footnote{\url{https://idatavisualizationlab.github.io/HPCC/TimeRadar}}
 Trace analysis tools such as Vampir~\cite{nagel1996vampir} offer clustering strategies to analyze the per-process time series of a single job, in particular to group similar time series and allow users to focus on the exceptional cases that may lead to slowdown of the parallel application.
 In~\cite{weber2016structural}, a strategy is developed for determining such a clustering based on execution structure; the paper gives a good introduction for the comparison of two traces as well.
 The structural clustering algorithm processes function call traces from monitored processes in two stages.
-First, data reduction, is achieved by disregarding time information and mapping function call trees to compact matrix representations.
-Second, efficient clustering, is achieved by using concept lattices~\cite{ganter1999formal} instead of all-with-all comparison.
+First, data reduction is achieved by disregarding time information and mapping function call trees to compact matrix representations.
+Second, efficient clustering is achieved by using concept lattices~\cite{ganter1999formal} instead of all-with-all comparison.
 The authors demonstrate quality improvement of existing analysis techniques, if data is pre-clustering with the introduced structural clustering strategy.
 
 In contrast to existing strategies, we compare a large number of jobs with individual properties.
@@ -358,11 +361,11 @@ We are listing and briefly discussing potential alternatives.
 The list of alternatives does not intend to be complete but shows a variety of options.
 
 \subsubsection{Data pre-processing}
-The 4-dimensional data from our monitoring system is too fine-grained for mass analysis,
-to be able to analyze millions of jobs, we must apply some data reduction technique.
+The 4-dimensional data from our monitoring system is too fine-grained for mass analysis.
+To be able to analyze millions of jobs, we must apply some data reduction techniques.
 The result of the data-preprocessing is a coding of the initial time series data into one or multiple vectors.
 
-We first convert the time series into segments of ten minutes which we found previously is a good trade-off to represent the temporal behavior of the application while it reduces the size of the time series.
+We first convert the time series into segments of ten minutes which we found previously in \cite{iocats2020} is a good trade-off to represent the temporal behavior of the application while it reduces the size of the time series.
 Hence, for a job and for each of our nine client-side recorded metrics, we obtain a coarse-grained time series.
 To simplify the interpretation of results and the choice of the distance metrics, it is beneficial to have the same unit for all features which is why we use our category classification which creates a unitless order.
 For example, when reduced by node, file system, and across metrics, a point may represent the mean value across all time series for the job for the ten minutes interval.
@@ -373,7 +376,7 @@ On the high-level, the following strategies for data reduction could be consider
 		A drawback of this simplification is that any temporal pattern is lost.
 	\item \textbf{Segment statistics} compute for each segment a fixed statistics, such as the mean value across all nodes.
 		This basically preserves the time series and depends on the job-length.
-	\item \textbf{Phase statistics} computes high-level statistics by analyzing the temporal behavior of I/O phases further, e.g., compute the average length of IO segments with CriticalIO.
+	\item \textbf{Phase statistics} computes high-level statistics by analyzing the temporal behavior of I/O phases further, e.g., computes the average length of IO segments with CriticalIO.
 		This approach is independent of the job length but requires identifying phases and determining meaningful job metrics.
 \end{itemize}
 
@@ -383,7 +386,7 @@ For one dimension, you could compute various statistics; we decided to use mean 
 Any data reduction is performed in this order across the dimensions: first File System, Node, and last by Metric.
 Thus, a time series of encoded segments remain.
 The time series of segments can be reduced differently in each dimension; alternatives that we apply in this paper are listed in \Cref{tab:reduction_techniques}.
-By reducing along all dimension, you obtain basically a job profile (as discussed above).
+By reducing along all dimensions, you obtain basically a job profile (as discussed above).
 
 \begin{table}
 	\centering
@@ -407,6 +410,7 @@ By reducing along all dimension, you obtain basically a job profile (as discusse
 
 
 Segmented data contains a numeric floating-point value for each data, which can be still too much information for the analysis.
+Further, we need appropriate data representation for similarity computation between time series.
 Therefore, we introduce two condensed data representations called binary and quantum coding.
 Additionally, we introduce two operations on the coding:
 the first extracts I/O phases -- a phase is a consecutive non-zero series of segments;
@@ -506,8 +510,7 @@ After coding each segment, the jobs can be represented as a sequence of numbers,
 [1:5:-:-:-:-:-:-:96:96:96:96:96:96:96]
 \end{lstlisting}
 
-The monitoring dataset doesn't provide information about what happens during the zero segments.
-It can be anything, like a job is waiting for resources, or computing something.
+The monitoring dataset doesn't provide information about what happens during the zero segments, it could be idle time, computational work, or other non-I/O operations.
 It can also be that the job script cannot start immediately or run on a slow network.
 To catch such jobs, we aggregate multiple consecutive zero segments into one zero segment, thus the coding of the previous job would replace all 0:...:0 sequences just with one 0.
 
@@ -515,12 +518,12 @@ To catch such jobs, we aggregate multiple consecutive zero segments into one zer
 [1:5:-:96:96:96:96:96:96:96]
 \end{lstlisting}
 
-Note, that the actual job length is kept for analysis purpose, thus, only the length of the encoded sequence changes.
+Note, that the actual job length is kept for analysis purposes, thus, only the length of the encoded sequence changes.
 
 \paragraph*{Q-coding}
 Quantum coding preserves monitoring data for each metric and each segment.
 As the name suggests, the value of a segment is quantized into a number to allow creation of a string representing the I/O behavior.
-We use uniform quantization to convert monitoring data to to time series of 16 levels, [0,0.25) $\rightarrow$ 0, [0.25, 0.5) $\rightarrow$ 1, \dots, [3.75,4] $\rightarrow$ F.
+We use uniform quantization to convert monitoring data to time series of 16 levels, [0,0.25) $\rightarrow$ 0, [0.25, 0.5) $\rightarrow$ 1, \dots, [3.75,4] $\rightarrow$ F.
 
 %The quantum intervals are allowed to be non-uniform, i.e., to be of different size.
 %Theoretically, by shrinking or extending some intervals we can investigate particular performance ranges in more detail (not covered in this work).
@@ -580,17 +583,17 @@ The example below shows Q-coding for a job containing 6 segments.
 
 \subsubsection{Similarity Metrics}
 Determining the resemblance between two jobs is the main task of this work.
-Clustering algorithms need a distance metrics to allow organizing them together.
+Clustering algorithms need distance metrics to enable construction of the clusters from individual components.
 There are various variants, a selection is listed in \Cref{tab:sim_funcs}.
-The Eucledian distance for two vectors can naturally only be applied to vectors of the same length.
+The Euclidean distance for two vectors can naturally only be applied to vectors of the same length.
 The Levenshtein distance is the number of modifications (inserts, deletes, changes) of individual characters that need to be made to transform one string to another.
-It can also by applied on other data types such as vector and time series.
+It can also be applied on other data types such as vectors and time series.
 
 The Normalized-Difference and Relative-Change distances work with single values, and can not be applied directly on time series.
 To make them work with time series we use the following approach.
 Firstly, we introduce in \Cref{tab:matching_strategies} two additional operations that transform time series to the same length.
 The first operation, Trimming, can remove segments at the beginning, or/and at the end of the longer job.
-The second operation, Zeros-Insertions, can insert zero-segmens at the beginning, between, or/and at the end of I/O phases of both jobs.
+The second operation, Zeros-Insertions, can insert zeros (LowIO segments) at the beginning, between, or/and at the end of I/O phases of both jobs.
 Both operations create equal sized time series with the highest possible similarity.
 Finally, we use a Normalized-Difference-based or Relative-Change-based similarity functions to compute similarity between segments, and obtain the overall similarity by computing the mean.
 
@@ -680,7 +683,7 @@ Hence, the result depends on the processing order of the jobs, though it is dete
 
 \subsubsection{Clustering Stacks}
 There are various combinations of the different strategies possible.
-For simplicity, we refer to one clustering stack just as algorithm.
+For simplicity, we refer to one clustering stack just as an algorithm.
 During our research, we explored various combinations out of the possible combinations, but we found that these do not perform well and are not interesting to discuss.
 The operation stack which we describe in this article is visualized in \Cref{fig:clustering_stacks}.
 In brief, the algorithms can be characterized like in \Cref{tab:alg_character}.
@@ -717,7 +720,7 @@ This section describes the evaluated algorithms in detail.
 To apply existing clustering algorithms, first, a job-profile is created in the pre-processing.
 The 4d time series can be transformed into the required fixed-size input format accepted by the general-purpose ML clustering algorithms.
 In the pre-processing step, the MinMaxScaler scales the features to values between 0 and 1 using MinMax normalization.
-The Eucledian distance is used; therefore, the highest distance between two points can be at most \(\epsilon_\text{max} = d^{1/d}\), where d is the dimension of the dataset.
+The Euclidean distance is used; therefore, the highest distance between two points can be at most \(\epsilon_\text{max} = d^{1/d}\), where d is the dimension of the dataset.
 
 We explored two job profiles: IO-metric and IO-duration.
 The \textbf{IO-metric job profile} utilizes three features, Job-IO-Balance, Job-IO-Utilization, and Job-IO-Problem-Time (as defined in \cite{iocats2020}).
@@ -728,13 +731,16 @@ The \textbf{IO-duration job profile} contains the fraction of runtime, a job spe
 The columns are named according to the following scheme: metric\_category, e.g, bytes\_read\_0 or md\_file\_delete\_4.
 The first part is the one of the nine metric names and the second part is the category number (LowIO=0, HighIO=1 and CriticalIO=4).
 These columns are used for machine learning as input features.
-There is a constraint for each metric (metric\_0 + metric\_1 + metric\_4 = 1), that makes 9 features redundant, because they can be computed from the other features.
+There is a constraint for each metric (metric\_0 + metric\_1 + metric\_4 = 1), which we can use to reduce the number of features by 9, because one feature in each metric is redundant.
+Consider an example where 20\% of application runtime has low write performance (write\_bytes\_0 = 0.2) and 70\% of application runtime the write performance is high (write\_bytes\_1=0.7).
+Then, we can conclude that the remaining 10\% of write performance was critical (write\_bytes\_4 = 0.1).
+A similar computation we can do for other metrics, which makes 9 features redundant, because they can be computed from the other features.
 So we have to deal with 18 features; $\epsilon_{max}$ is 1.17.
 
 \paragraph{Clustering algorithm}
 %We apply agglomerative clustering.
 %\jk{Könnte noch bissl unklar sein}
-We found that the size of our datasets is the first obstacle to the suitable clustering algorithms.
+We found that the size of our datasets is the one of the obstacles to selecting and using the suitable clustering algorithms.
 For example, the scaling behavior of the agglomerative clustering algorithm that is used in this work can handle around 10,000 jobs in a reasonable amount of time as the complexity is at least $O(N^{2})$.
 
 The agglomerative clustering algorithm uses Euclidean distance as a similarity measure, i.e., if the component wise distance between two job vectors is shorter than the defined distance ($\epsilon$), then these jobs belong to the same cluster.
@@ -749,7 +755,7 @@ This workaround involves three steps:
 \end{enumerate}
 
 \subsubsection{B\_ALL}
-This algorithm converts the time series data via B-coding to a string and then determine the relative similarity using the Levenshtein distance.
+This algorithm converts the time series data via B-coding to a string and then determines the relative similarity using the Levenshtein distance.
 The Levenshtein based similarity between two jobs is determined using \Cref{eq:sim:bin_all}.
 
 \begin{equation}
@@ -823,7 +829,7 @@ The example below shows the reduced codings from the previous example.
 
   \subsubsection{Q\_LEV}
 This algorithm works on the same principle as the B algorithms, with the difference that it applies a Q-coding and then computes the mean similarity across all metrics using Levenshtein.
-This adaption allows a comparison of time series where one metrics differs as only one metric string would differ while with binary coding the overall string would be different.
+This adaption allows a comparison of time series where one metric differs as only one metric string would differ while with binary coding the overall string would be different.
 
 \begin{equation}
 	\text{similarity}\left(\text{job}_{A},\text{job}_{B} \right) = 1 - \frac{ \sum_{m \in Metrics}^{} \text{levenshtein} \left(\text{job}_{A,m},\text{\text{job}}_{B,m} \right) }{|\text{Metrics}| \cdot \max(|job_A|, |job_{B}|)}
@@ -880,7 +886,7 @@ This function maps the differences between performance levels of the same segmen
 \end{equation}
 
 For illustration, we apply the approach to compute similarity between two jobs listed in \Cref{lst:sim:hex_native:jobs}.
-First, we determine and trim the I/O intensive metrics and use the \Cref{eq:slicesim} to computed individual metrics similarities.
+First, we determine and trim the I/O intensive metrics and use the \Cref{eq:slicesim} to compute individual metrics similarities.
 The results are listed in \Cref{tab:hex_native:compute_slice_sim}.
 Then, we compute the mean in \Cref{tab:hex_native:compute_sim}.
 According to this algorithm, the two jobs in the table are similar to 73\% as the performance values of the I/O metrics are actually close to each other.
@@ -1214,7 +1220,7 @@ Unfortunately, it is not feasible to analyze all of them qualitatively with reas
 
 Therefore, for the assessment, we look inside clusters and inspect segment sequences of the corresponding jobs.
 For the quantitative analysis, we attempted to find clusters that show the characteristic weakness of the algorithm and discuss them.
-We also define \textit{cluster relevance} as a metrics that assists in determining which cluster bears the best optimization potential and, hence, could be investigated first by the support staff.
+We also define \textit{cluster relevance} as a metric that assists in determining which cluster bears the best optimization potential and, hence, could be investigated first by the support staff.
 
 For the qualitative analysis, we start by looking into a job that is given to user support, then similar jobs need to be found.
 In the same cluster, we expect the sequences to be similar.
@@ -1235,7 +1241,7 @@ For clustering of B-codings and Q-codings we use a clustering algorithm implemen
 
 \subsection{Description of Our Data Set}
 This section describes the job data extracted from Mistral, originally we gathered 1\,million jobs from a period of 203 days.
-Mostly jobs are allowed to run up to 8-hours, leading to time series with up to 48 segments.
+Mostly, jobs are allowed to run up to 8-hours, leading to time series with up to 48 segments.
 From the perspective of this work, analysis of non-I/O-intensive jobs (jobs with zero in all segments) is irrelevant, these jobs can be grouped into one class easily.
 For that reason, we detect zero-jobs early and remove them from the dataset; these are about 40\% of jobs.
 
@@ -1264,7 +1270,7 @@ Interestingly, it affects around 14$\%$ of jobs.
 I/O phases are, according to our definition, contiguous sequences of I/O-intensive segments.
 The statistics of the number phases for each different metric are visualized in \Cref{fig:phases_stats}.
 These histograms show for one metric how many I/O phases a job has.
-Most jobs exhibit up to 5-phases in one metrics.
+Most jobs exhibit up to 5-phases in one metric.
 The metrics (md\_bytes, md\_mod, and md\_file\_delete) have the longest tail; some job use up to 22-phases, meaning that almost every other segment the value is zero or $\geq 1$.
 
 %We suppose these  can be exploited in clustering algorithms to achieve better results.
@@ -1315,11 +1321,11 @@ The Top 20 largest clusters and total number of clusters is visualized in \Cref{
 \end{figure}
 
 We can see that IO-duration generated two very large clusters regardless of $\epsilon$.
-From Cluster\,3 of IO-duration, the number of jobs inside looks then similar as for IO-metric.
-In IO-metric, we can see that with increasing $\epsilon$, the number of jobs per cluster increase (as expected).
+From Cluster\,3 of IO-duration, the number of jobs inside looks similar as for IO-metric.
+In IO-metric, we can see that with increasing $\epsilon$, the number of jobs per cluster increases (as expected).
 
 A look inside clusters reveals chaotic clustering results.
-For both datasets and for all $\epsilon$ values we could find many coding sequences in a cluster that we wouldn't locate together -- while the job profiles are similar, the time lines are absolutely different.
+For both datasets and for all $\epsilon$ values we could find many coding sequences in a cluster that we wouldn't locate together -- while the job profiles are similar, the timelines are absolutely different.
 The examples in \Cref{tab:ml_examples} show some jobs in one cluster for a high similarity ($\epsilon = 0.03$).
 
 \npdecimalsign{.}
@@ -1361,19 +1367,19 @@ The examples in \Cref{tab:ml_examples} show some jobs in one cluster for a high 
 \end{table}
 
 We looked in the Top 10 largest clusters and a random selection of clusters to find the same picture:
-Even with low $\epsilon$ values the algorithms appears to produce polluted clusters, i.e, with samples from other clusters.
+Even with low $\epsilon$ values the algorithms appear to produce polluted clusters, i.e, with samples from other clusters.
 Generally, the algorithm does the intended job -- clustering jobs with similar profiles together.
 However, it becomes apparent that the time series data is very important and the two job profiles are not enough to define similarity.
 %Like in the example above, we couldn't understand the logic behind the results.
 %Probably, the particular random datasets used for training does not represent the specifics of parallel jobs  well enough for proper clustering.
 However, even with a good feature set that works on our test system, it is unlikely that the strategy and trained model will be portable to other systems.
-Therefore, we conclude that this adapted version of hierarchical clustering based on job profiles isn't suitable to analyze the I/O time series data of jobs and we must compare time series to obtain a suitable similarity metrics.
+Therefore, we conclude that this adapted version of hierarchical clustering based on job profiles isn't suitable to analyze the I/O time series data of jobs and we must compare time series to obtain suitable similarity metrics.
 
 \subsection{Quantitative Evaluation}
 This section contains data statistics, clustering progress, and clustering results when applying the five customized algorithms: B\_ALL,  B\_AGGZEROS, Q\_LEV, Q\_NATIVE, Q\_PHASES.
 
 \subsubsection{Impact of the User-Defined Similarity}
-In the introduced algorithms, the user-defined similarity (SIM) that the jobs in a cluster must fullfill to the cluster centroid controls the cluster formation.
+In the introduced algorithms, the user-defined similarity (SIM) that the jobs in a cluster must fulfill to the cluster centroid controls the cluster formation.
 It is expected that low SIM values produce a smaller number of noisy clusters and a high SIM value produces a large number of clean clusters.
 We suppose the optimal value is application dependent.
 Although an optimal SIM value depends on use case and dataset, a parameter exploration may provide important hints to find a good value and achieve optimal cluster qualities.
@@ -1381,7 +1387,7 @@ Although an optimal SIM value depends on use case and dataset, a parameter explo
 \Cref{fig:clustering_progress} shows the number of clusters created when clustering an increasing total number of jobs for different SIM values; each point represents the number for an analyzed number of jobs in increments of 10,000 jobs.
 For all algorithms, we can see that with an increase in SIM value, the number of clusters created increases, and the number of total clusters created slows down the more jobs have been processed as jobs are allocated to existing clusters.
 B\_ALL creates most clusters while Q\_NATIVE creates the least and Q\_PHASES is in between.
-For SIM of 99\%, B and Q\_LEV can barely group jobs together.
+For SIM of 99\%, B* and Q\_LEV can barely group jobs together.
 
 
 \Cref{fig:alg_runtimes} shows the clustering runtimes for the same experiment.
@@ -1421,7 +1427,7 @@ When looking for an optimal SIM, we consider the following criteria:
 we need to select a SIM value where a further increase of it doesn't increase the number of clusters significantly, i.e., we can see a flattening curve with increasing numbers of jobs, which indicates that more jobs are placed in clusters and less clusters are created.
 Q\_PHASES and B* algorithms work best for SIM values between 0.7 and 0.9, and for other Q-algorithms the SIM value between 0.90 and 0.99.
 
-Another strategy could be to start with a high SIM value and then decrease it until the clusters are big enough while appear to be sufficiently similar for the current analysis.
+Another strategy could be to start with a high SIM value and then decrease it until the clusters are big enough while appearing to be sufficiently similar for the current analysis.
 
 \begin{figure}
   \centering
@@ -1491,7 +1497,7 @@ After manual exploration of selected clusters, we noticed some show a SIM-value 
 To explain them, for each algorithm we investigate one cluster of these in detail.
 
 For the presentation of the clusters, we provide a description of particular observations followed by a table containing statistics, then the codings for centroid and most frequent unique jobs in the cluster -- we call such a unique representation a \textit{job phenotype}.
-At the end, we include an illustration which describes the segment length distribution of jobs in the cluster that indicates how much the algorithm groups across different job runtime.
+At the end, we include an illustration which describes the segment length distribution of jobs in the cluster that indicates how much the algorithm groups across different job runtimes.
 
 \subsubsection{Algorithm characteristics}
 The SIM value selection strategy can vary from use case to use case.
@@ -1505,7 +1511,7 @@ Looking at \Cref{tab:bin:largest_clusters}, the six largest clusters contain the
 In each cluster, all jobs have the identical coding; these short running jobs are likely pre/post-processing jobs.
 
 Therefore, the selected cluster for inspection is further down in the Top 5, information is shown in \Cref{cluster:bin_all}.
-There are about 3300 different types of unique jobs, it contains jobs with a length between 41 and 60.
+There are about 3300 different types of unique jobs, it contains jobs with a length between 38 and 67.
 Most jobs in the cluster are shorter than 49 segments, because the main Mistral partitions can allocate jobs for at most 8 hours, and that is the majority of jobs.
 Since each segment is ten minutes long, the runtime of jobs with 49 segments is about 8.16 hours.
 The other jobs must be special allocations.
@@ -2163,7 +2169,7 @@ The initial motivation behind the use of quantum coding was to apply string meth
 \medskip
 
 \paragraph{Lengths-invariance.}
-With the Levensthein distance, we attempted to resolve the issue of lengths-invariance allowing to assign jobs of different length into the same cluster.
+With the Levenshtein distance, we attempted to resolve the issue of lengths-invariance allowing the assignment of jobs of different length into the same cluster.
 However, the Levenshtein distance cannot consider the performance of a segment.
 For example, the following three codings would be considered to be all different by one symbol, since they differ in one position only.
 
@@ -2176,7 +2182,7 @@ phase_coding_3 : [2:2:2:2:2:-:2:2]
 Intuitively, we would say that {phase\_coding\_1 and{ phase\_coding\_2 are more similar than {phase\_coding\_2 and {phase\_coding\_3, because the difference at 6th position is smaller for 8 and 9 than to 8 to 0.
 Short runtimes lead to more polluted clusters.
 
-Here is another example that illustrated the issue of noise in clusters for Levensthein:
+Here is another example that illustrated the issue of noise in clusters for Levenshtein:
 Suppose two jobs [-:6:-:-] and [-:388:174:-] are in the same cluster with the centroid [-:388:-:-].
 Even if in both cases the similarity between the cluster and the centroid is 75$\%$  (only one change is required), we would intuitively say that these jobs are completely different, not even close to the 75$\%$  mark.
 We can easily construct another sequence, e.g., [-:389:-:-], where a similarity of 75$\%$  are justified.
@@ -2239,14 +2245,14 @@ Our analysis shows that considering the relative I/O performance and I/O phases 
 The integration of the awareness of I/O performance produces better, but still not perfect results.
 Therefore, we found that the Levenshtein distance is generally not suitable for similarity of I/O behavior of jobs.
 
-Absolute coding aggregates three dimensions (Metric, Nodes, and FileSystems) result in a nine times shorter coding sequence than quantum coding, which aggregates only two dimensions (Nodes, and FileSystems).
-Using quantum coding is more precise than binary coding because quantum coding sequences longer.
+Absolute coding aggregates three dimensions (Metric, Nodes, and FileSystems) resulting in a nine times shorter coding sequence than quantum coding, which aggregates only two dimensions (Nodes, and FileSystems).
+Using quantum coding allows a more precise job comparison than binary coding because it contains information for all metrics.
 However, using the actual native floating-point value is problematic for the developed algorithms as for high similarity it will generate too many clusters.
 Therefore, we consider the quantization is appropriate for this use case.
 
 The phase matching algorithm detects phases and differentiates performance values.
-In our analysis, it produced even for smaller relative similarity good results.
-These algorithms can be used in practice to identify jobs similar to another.
+In our analysis, even small SIM values produced good results.
+These algorithms can be used in practice to identify jobs similar jobs.
 We defined the cluster relevance that aids data center employees to select jobs of relevance.
 
 We believe that the community must identify and define suitable similarity metrics for the different analysis purposes.
@@ -2263,7 +2269,7 @@ For this case, the jobs could be grouped based on distance to this particular jo
 
 
 \subsection*{Acknowledgment} %% Remove this section if not needed
-\textit{We thank the reviewers XX and YY for the feedback.}
+\textit{We thank the reviewers Jean-Thomas Acquaviva, …, for their constructive feedback.}
 
   % The bibliography
 \addcontentsline{toc}{section}{Bibliography}
@@ -2315,6 +2321,51 @@ Good
 Yes
 \paragraph{Correctness}   % Is the research correct
 Yes
+
+
+
+	 	 	 	
+\subsection*{Reviewer: George Markomanolis, Date: 2020-11-19}
+\paragraph{Overall summary and proposal for acceptance}
+During the profiling of the I/O on a supercomputer to analyze data, a scientist has to handle a problem, there are a lot of data from various jobs. New methodologies need to be developed for more efficient analysis. The authors propose an approach that is applied on Mistral system at DKRZ to map the I/O on some specific metrics where they can apply clustering techniques to avoid having a million different profiling data to analyze. Moreover, the authors did quantitative and qualitative analysis regarding their approach. They evaluated many algorithms and the coding technique helped them to use the time series data to study the similarity. The outcome was to have a small number of clusters that could analyze. There are many frameworks that produce a lot of data, thus this work is really important and could potentially be also used on other big systems.
+The paper is lengthy but needs to provide a lot of details for the reader to understand better. It would be great if more sites were included in these experiments but this could be future work.
+\paragraph{Scope}   % in regards to the journal, i.e., does the topic fit?Yes.
+\paragraph{Significance}   % of the research, minor vs. majorAbove average
+\paragraph{Readability}   % English and structure appropriate?Good
+\paragraph{Presentation}Good
+\paragraph{References}   % Correctly formatted?Yes
+\paragraph{Correctness}   % Is the research correctYes
+
+\subsection*{Reviewer: Adrian Jackson, Date: 2021-01-25}
+
+\paragraph{Overall summary and proposal for acceptance}
+This paper, outlining as it does a study of I/O job metrics and methods for automatically analysing I/O usage data on large scale systems, is generally of publishable quality, and presents interesting research. 
+
+There are some places where the language or the discussion in the paper needs to be addressed, and this has been added in comments in the paper. Of most importance are the figures \Cref{cluster:use_case:bin_aggzeros} and \Cref{cluster:use_case:bin_all} where I think the labels are the wrong way around at the moment. There are also some issues around how levenshtein distance has been used in the research that could be improved or at least clarified, because it is not currently clear how text manipulations are being undertaken, i.e. in the example [-:6:-:-] -> [-:388:-:-] is described as requiring one change, but for classical Levenshtein distance that should be a minimum of 3 changes.
+
+There are other minor areas where the text could be improved, but in general the rest of the paper is good.
+
+I would suggest this paper can be accepted provided the corrections outlined in the comments have been sufficiently addressed.
+
+\paragraph{Scope}   % in regards to the journal, i.e., does the topic fit?
+Yes, the investigation of I/O monitoring metrics and analysis is a good fit to the journal
+
+\paragraph{Significance}   % of the research, minor vs. major
+The work has good significance in the topic of I/O metrics and analysis
+
+\paragraph{Readability}   % English and structure appropriate?
+In general the readability is good, although there are a number of places where the language could be improved or where text is not completely understandable. Comments have been added in the text outlining these issues.
+
+\paragraph{Presentation}
+Good
+
+\paragraph{References}   % Correctly formatted?
+Good
+
+\paragraph{Correctness}   % Is the research correct
+The research is thorough and well documented.
+
+\end{document}
 
 
 % Reviewers, please duplicate this section:
