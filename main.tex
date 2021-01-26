@@ -62,7 +62,7 @@
 
 \begin{document}
 
-\JHPSissue{0}   % keep 0 until the issue is assigned
+\JHPSissue{1}   % keep 0 until the issue is assigned
 \JHPSkeywords{I/O fingerprinting, performance analysis, monitoring}
 
   % Author macro takes Name, Institution, Optional Link to the person, Optional Email
@@ -630,8 +630,9 @@ Often, the k-means algorithm is applied which utilizes a random strategy to init
 However, as it requires us to define a fixed number of clusters, it is problematic as the number of actual clusters are unknown.
 The large class of density clustering algorithms such as DBSCAN groups objects that are “close” together into one class; a user defines the maximum distance of objects that belong to the same class by setting an $\epsilon$ which represents the similarity value.
 Agglomerative strategies group similar elements together to form a hierarchy of some sort, e.g., a tree.
-Unfortunately, their complexity is quadratic at least.
-To handle millions of jobs, an algorithm must be performant.
+One of the challenges for algorithms like this is that they have a computational complexity that is quadratic or greater, meaning the computational cost of their implementations increases very quickly with increases in the size of the input dataset.
+One of the requirements we have for the techniques we are defining is that it should be able to complete the analysis in a reasonable amount of time.
+
 
 We developed two strategies that address the performance issue and the other limitations, the Clustering-Tree algorithm and the SimplifiedDensity algorithm.
 These algorithms are able to handle the large number of jobs but aim to preserve the core ideas of k-means/density algorithms.
@@ -1656,7 +1657,7 @@ We observe the following cluster characteristics:
 \end{enumerate}
 
 We observe that even with a high SIM value, some jobs have a different I/O behavior than the centroid and the rest of the jobs.
-The reason is that for the Levenshtein distance the distance between value 1 and 2 is the same as for 1 and 8; however, we would consider the two jobs closer together.
+The reason is that for the Levenshtein distance the distance between value 1 and 2 is the same as for 1 and 8; however, in the former case the performance is more similar than in the latter case.
 
 Information related to the selected cluster is provided in \Cref{cluster:hex_lev}.
 In the selected cluster, there is mostly one segment of I/O activity.
@@ -1781,9 +1782,8 @@ Information related to the selected cluster is shown in \Cref{cluster:pm_quant}.
 The first thing to mention are the high generalization capabilities of the algorithm, i.e., that many jobs are mapped to a relatively low number of types.
 The next typical property is shown in \Cref{cluster:pm_quant:length}, where we can see that almost the full range of job lengths is represented in the cluster.
 This happens, because the Q\_PHASES ignores zero segments.
-The aggregation of zero segments is important as most jobs have few I/O phases, in contrast to B\_AGGZEROS, it works more efficient.
-For example, for Q\_PHASES, the job phenotypes in \Cref{cluster:pm_quant:top_jobs} in the row one and two are 100$\%$ similar.
-The centroid and the jobs contain quite similar I/O patterns.
+For example, for Q\_PHASES, the job phenotypes in \Cref{cluster:pm_quant:top_jobs} in the row one and two are 100$\%$ similar, despite of different lengths.
+The centroid and other jobs contain very quite similar I/O patterns.
 
 General cluster characteristics:
 \begin{enumerate}
@@ -1915,7 +1915,7 @@ Compared to B\_AGGZEROS, the cluster is smaller but the jobs have a more similar
 		\caption{Length distribution in the cluster.}
 		\label{cluster:use_case:bin_all:length}
 	\end{subfigure}
-	\caption{B\_AGGZEROS algorithm: Information of the selected cluster (SIM=0.7).}
+	\caption{B\_ALL algorithm: Information of the selected cluster (SIM=0.7).}
 	\label{cluster:use_case:bin_all}
 \end{figure}
 
@@ -1967,7 +1967,7 @@ We find that the identified jobs in the cluster are sufficiently related.
 		\caption{Length distribution in the cluster.}
 		\label{cluster:use_case:bin_aggzeros:length}
 	\end{subfigure}
-	\caption{B\_ALL algorithm: Information of the selected cluster (SIM=0.7).}
+	\caption{B\_AGGZEROS algorithm: Information of the selected cluster (SIM=0.7).}
 	\label{cluster:use_case:bin_aggzeros}
 \end{figure}
 
@@ -2184,8 +2184,10 @@ Short runtimes lead to more polluted clusters.
 
 Here is another example that illustrated the issue of noise in clusters for Levenshtein:
 Suppose two jobs [-:6:-:-] and [-:388:174:-] are in the same cluster with the centroid [-:388:-:-].
-Even if in both cases the similarity between the cluster and the centroid is 75$\%$  (only one change is required), we would intuitively say that these jobs are completely different, not even close to the 75$\%$  mark.
-We can easily construct another sequence, e.g., [-:389:-:-], where a similarity of 75$\%$  are justified.
+After applying one replacement operation (replace 6 by 388) on the first job [-:6:-:-] we can obtain the centroid [0:388:0:0].
+Similarly, we can replace one element in the second job (replace 174 by -) to obtain the same centroid
+According to the algorithm we obtain a similarity of 75\% in both cases, but intuitively we would say that these jobs are completely different, not even close to the 75$\%$  mark.
+We can also easily construct another sequence, e.g., [-:389:-:-], where a similarity of 75$\%$  is justified.
 For this reason, we found that the Levenshtein distance is generally not suitable.
 
 \paragraph{I/O Phases.}
@@ -2252,8 +2254,8 @@ Therefore, we consider the quantization is appropriate for this use case.
 
 The phase matching algorithm detects phases and differentiates performance values.
 In our analysis, even small SIM values produced good results.
-These algorithms can be used in practice to identify jobs similar jobs.
-We defined the cluster relevance that aids data center employees to select jobs of relevance.
+We found that this algorithm identifies similar jobs sufficiently good to be usable on production systems.
+The cluster relevance computation makes the algorithm even more valuable, since it aids data center employees to select jobs of relevance.
 
 We believe that the community must identify and define suitable similarity metrics for the different analysis purposes.
 
@@ -2269,7 +2271,7 @@ For this case, the jobs could be grouped based on distance to this particular jo
 
 
 \subsection*{Acknowledgment} %% Remove this section if not needed
-\textit{We thank the reviewers Jean-Thomas Acquaviva, …, for their constructive feedback.}
+\textit{We thank the reviewers Jean-Thomas Acquaviva, Adrian Jackson, and Suren Byna, for their constructive feedback.}
 
   % The bibliography
 \addcontentsline{toc}{section}{Bibliography}
