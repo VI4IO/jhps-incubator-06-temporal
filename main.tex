@@ -686,6 +686,7 @@ Hence, the result depends on the processing order of the jobs, though it is dete
 There are various combinations of the different strategies possible.
 For simplicity, we refer to one clustering stack just as an algorithm.
 During our research, we explored various combinations out of the possible combinations, but we found that these do not perform well and are not interesting to discuss.
+We don’t mention them in the paper.
 The operation stack which we describe in this article is visualized in \Cref{fig:clustering_stacks}.
 In brief, the algorithms can be characterized like in \Cref{tab:alg_character}.
 
@@ -2236,7 +2237,7 @@ The success of clustering algorithms depends on the right feature selection and 
 After a series of experiments with general purpose algorithms on profile data, we could not achieve acceptable results for the clustering of originally time series data.
 While we could have applied traditional approaches such as k-means on profiles, we found that the large number of classes and unknown knowledge about the jobs doesn't suit this use case.
 We believe this is due to the nature of reducing the time series to flat job profiles, which isn't suitable to capture the behavior of the IO jobs.
-Even if a better solution would found, there is no guarantee that the generated model could be applied on another system.
+Even if a better solution would be found, there is no guarantee that the generated model could be applied on another system.
 
 In the evaluation, we investigated the quantitative and qualitative behavior of different algorithms.
 The investigation of clusters shows that particularly clusters with little I/O activity are noisy and do not meet our expectation.
