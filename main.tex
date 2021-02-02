@@ -166,7 +166,8 @@ The other dimensions may be fixed for particular HPC systems; here we assume the
 On Mistral data is gathered every five seconds, for two Lustre file system, and for nine I/O metrics~\footnote{A difference to previously utilized job statistics is that the Lustre proc files on Mistral doesn't offer Object Storage Client (osc) counters after a major upgrade of Lustre file system from version 2.7 to 2.11.
 Thus, instead of 13 metrics, this time our data contains only 9 metrics.}.
 Five of them (md\_read, md\_mod, md\_file\_create, md\_file\_delete, md\_other) are aggregates of metadata activities and the remaining four (read\_bytes, read\_calls, write\_bytes, write\_calls) capture data access.
-The md\_read covers metadata read-only operations while md\_mod covers modifying operations and md\_other aggregates rarely used operations such as mknod. 
+The md\_read covers metadata read-only operations while md\_mod covers modifying operations and md\_other aggregates rarely used operations such as mknod.
+
 The creation and deletion of files are very important and not aggregated.
 
 \begin{figure}[bt]
@@ -602,8 +603,10 @@ Finally, we use a Normalized-Difference-based or Relative-Change-based similarit
   \begin{tabularx}{\textwidth}{lllX}
     Distance              & Formula                                       & Domain                  & Description                                                                                    \\
     \midrule
-    Euclidean             & $d_{\text{e}} =\sqrt{(\sum_i^n (a_i - b_i))}$ & $a, b \in \mathbb{R}^n$ & The Euclidean distance between two vectors.                                                    \\
-    Levenshtein           & $d_{\text{lev}} = \text{lev}(a, b)$           & $a, b \in$ Time Series  & Number of operation (inserts, deletes, and changes) requires to convert one coding in another. \\
+    Euclidean             & $d_{\text{e}} =\sqrt{(\sum_i^n (a_i - b_i))}$ & $a, b \in \mathbb{R}^n$ & The Euclidean distance between two vectors.
+\\
+    Levenshtein           & $d_{\text{lev}} = \text{lev}(a, b)$           & $a, b \in$ Time Series  & Number of operation (inserts, deletes, and changes) requires to convert one coding in another.
+\\
     Normalized-Difference & $d_{\text{nd}} = \frac{|a - b|}{16}$          & $0 \le a, b \le 16$     & A change from level 2 to level 6 on a 16 level system would be (6 - 2) / 16 = 0.25.            \\
     Relative-Change       & $d_{\text{rc}} = \frac{\min(a,b)}{\max(a,b)}$ & $a, b \in \mathbb{R}^+$ & A change from level 2 to level 6 system would be 2/6 = 0.66.                                   \\
   \end{tabularx}
@@ -616,8 +619,10 @@ Finally, we use a Normalized-Difference-based or Relative-Change-based similarit
     \begin{tabularx}{\textwidth}{lX}
       Operation       & Description                                                                                  \\
       \midrule
-      Trimming        & Remove segments at the beginning or/and at the end of the longest time series. \\
-      Zeros-Insertion & Insert zero-segments at the beginning, between I/O phases, or/and at the end of time series. \\
+      Trimming        & Remove segments at the beginning or/and at the end of the longest time series.
+\\
+      Zeros-Insertion & Insert zero-segments at the beginning, between I/O phases, or/and at the end of time series.
+\\
     \end{tabularx}
     \caption{Potential length adjustment strategies create time series with the same length.}
   \label{tab:matching_strategies}
@@ -702,12 +707,17 @@ In brief, the algorithms can be characterized like in \Cref{tab:alg_character}.
   \begin{tabularx}{\textwidth}{lX}
     Algorithm & Characterization \\
     \midrule
-    ML            & a set of \textbf{traditional machine learning} techniques on job profiles.                                                        \\
+    ML            & a set of \textbf{traditional machine learning} techniques on job profiles.
+\\
     B\_ALL      & \textbf{Levenshtein} distance applied on \textbf{B-codings.}                                                                 \\
-    B\_AGGZEROS & \textbf{Levenshtein} distance applied on \textbf{B-codings}, but with \textbf{zero aggregation} of contiguous zero segments. \\
-    Q\_LEV      & \textbf{Levenshtein} distance applied on \textbf{Q-coding}.                                                             \\
-    Q\_NATIVE   & A \textbf{performance-aware} algorithm operating on Q-coding.                                                                                           \\
-    Q\_PHASES     & A \textbf{performance-aware} and \textbf{I/O phase-aware} algorithm.                                                              \\
+    B\_AGGZEROS & \textbf{Levenshtein} distance applied on \textbf{B-codings}, but with \textbf{zero aggregation} of contiguous zero segments.
+\\
+    Q\_LEV      & \textbf{Levenshtein} distance applied on \textbf{Q-coding}.
+\\
+    Q\_NATIVE   & A \textbf{performance-aware} algorithm operating on Q-coding.
+\\
+    Q\_PHASES     & A \textbf{performance-aware} and \textbf{I/O phase-aware} algorithm.
+\\
   \end{tabularx}
   \caption{Algorithm characterization}
   \label{tab:alg_character}
@@ -931,7 +941,6 @@ According to this algorithm, the two jobs in the table are similar to 73\% as th
 \end{listing}
 
 
-
 %1 5 -> 0.75
 %1 5 -> 0.75
 %0 0 -> 1
@@ -1088,7 +1097,6 @@ We will discuss the details of each step on the example jobs in \Cref{lst:sim:pm
 \end{listing}
 
 
-
 \paragraph{Phase detection}
 According to our I/O phase definition, phases are separated by zeros.
 This definition makes the detection of individual phases to a trivial task.
@@ -1229,7 +1237,6 @@ In the same cluster, we expect the sequences to be similar.
 If not, the clustering algorithm is not effective.
 
 
-
 \section{Evaluation}%
 \label{sec:evaluation}
 
@@ -1364,7 +1371,8 @@ The examples in \Cref{tab:ml_examples} show some jobs in one cluster for a high 
      \end{tabular}
    \caption{IO-duration job profiles}
  \end{subtable}
- \caption{Jobs found in the same cluster with their profiles coding ($\epsilon = 0.03$). Columns containing zeros only are omitted.}
+ \caption{Jobs found in the same cluster with their profiles coding ($\epsilon = 0.03$).
+Columns containing zeros only are omitted.}
  \label{tab:ml_examples}
 \end{table}
 
@@ -1698,7 +1706,8 @@ In the selected cluster, there is mostly one segment of I/O activity.
         -:...:-                           & -:...:-                           & -:-:-:-:-:-:-:-:-:-:-:-:2:-:-:-:- & 87       \\ 
       \end{tabular}
 		\end{tiny}
-		\caption{Centroid and Top 5 job phenotypes. The metrics that have no I/O activity are not included in the table.}
+		\caption{Centroid and Top 5 job phenotypes.
+The metrics that have no I/O activity are not included in the table.}
 		\label{cluster:hex_lev:top_jobs}
 	\end{subtable}
 	\medskip
@@ -1919,7 +1928,6 @@ Compared to B\_AGGZEROS, the cluster is smaller but the jobs have a more similar
 	\caption{B\_ALL algorithm: Information of the selected cluster (SIM=0.7).}
 	\label{cluster:use_case:bin_all}
 \end{figure}
-
 
 
 \FloatBarrier
@@ -2283,8 +2291,17 @@ For this case, the jobs could be grouped based on distance to this particular jo
 
 \paragraph{Overall summary and proposal for acceptance}
 
-The paper address a key topic in I/O analysis. As instrumentation and profiling are starting to get in place in  data centers the amount of information generated in unmanageable at the human scale and methods need to be developed to summarize the I/O profile ad provide insight. Taking this problem at its inception the article proposes, discuss and compares several ways to describe an job in respect of its I/O characteristics. Not only the metrics are discussed but also the level of accuracy for the measurements. Thus the authors explore the trade-off between accurate description and the need to accept loss of information to build clusters.
-The quality of the clustering is analyzed and overall the authors are able to summarize 100.000 jobs in a limited amount of clusters. Some qualitative analysis is performed on the clustering. Overall the paper address an important problem, with broad implications for I/O architectures, job scheduling and work-flow organization in a data center. The paper is well written and clear. The data set is large enough to back-up the relevance of the method. It remains that data are all coming from a single site (DKRZ) which is OK to assess the method but somehow limit the scope of the findings.
+The paper address a key topic in I/O analysis.
+As instrumentation and profiling are starting to get in place in  data centers the amount of information generated in unmanageable at the human scale and methods need to be developed to summarize the I/O profile ad provide insight.
+Taking this problem at its inception the article proposes, discuss and compares several ways to describe an job in respect of its I/O characteristics.
+Not only the metrics are discussed but also the level of accuracy for the measurements.
+Thus the authors explore the trade-off between accurate description and the need to accept loss of information to build clusters.
+The quality of the clustering is analyzed and overall the authors are able to summarize 100.000 jobs in a limited amount of clusters.
+Some qualitative analysis is performed on the clustering.
+Overall the paper address an important problem, with broad implications for I/O architectures, job scheduling and work-flow organization in a data center.
+The paper is well written and clear.
+The data set is large enough to back-up the relevance of the method.
+It remains that data are all coming from a single site (DKRZ) which is OK to assess the method but somehow limit the scope of the findings.
 
 \paragraph{Scope}   % in regards to the journal, i.e., does the topic fit?
 Yes, it’s a good fit.
@@ -2302,16 +2319,25 @@ Yes
 \subsection*{Reviewer: Suren Byna, Date: 2020-07-07}
 
 \paragraph{Overall summary and proposal for acceptance}
-This paper describes an exploration to cluster one million jobs that ran on the Mistral system at DKRZ. The authors used 10,000 jobs for training and then used the 1 million jobs for clustering. It was found that general purpose clustering algorithms were not creating meaningful clusters, hence, the authors explored quantitative and qualitative analysis of clusters using knowledge of I/O patterns. 
+This paper describes an exploration to cluster one million jobs that ran on the Mistral system at DKRZ.
+The authors used 10,000 jobs for training and then used the 1 million jobs for clustering.
+It was found that general purpose clustering algorithms were not creating meaningful clusters, hence, the authors explored quantitative and qualitative analysis of clusters using knowledge of I/O patterns.
 
-What does the “score” mean in Figure 2.2? Please define it as it is not obvious based on the figure’s caption. 
 
-In general, the motivation of this paper is interesting. One thing I wasn’t clear at the end, may be due to my lack of expertise in clustering, which clustering method should a data center use. Understandably, clustering depends heavily on similarity, but selection of a similarity could be a daunting task for users. 
+What does the “score” mean in Figure 2.2? Please define it as it is not obvious based on the figure’s caption.
 
-Overall, this paper is interesting to the I/O community, as the effort is attempting to find clustering of jobs based on I/O, which is difficult, and defining similarity requires more work. 
+
+In general, the motivation of this paper is interesting.
+One thing I wasn’t clear at the end, may be due to my lack of expertise in clustering, which clustering method should a data center use.
+Understandably, clustering depends heavily on similarity, but selection of a similarity could be a daunting task for users.
+
+
+Overall, this paper is interesting to the I/O community, as the effort is attempting to find clustering of jobs based on I/O, which is difficult, and defining similarity requires more work.
+
 Added minor edits as suggestions in the text.
 
-The paper could be accepted for publication after the authors address minor editing suggestions and adding some minor details. 
+The paper could be accepted for publication after the authors address minor editing suggestions and adding some minor details.
+
 \paragraph{Scope}   % in regards to the journal, i.e., does the topic fit?
 Yes, it’s a good fit.
 \paragraph{Significance}   % of the research, minor vs. major
@@ -2326,25 +2352,41 @@ Yes
 Yes
 
 
-
 	 	 	 	
 \subsection*{Reviewer: George Markomanolis, Date: 2020-11-19}
 \paragraph{Overall summary and proposal for acceptance}
-During the profiling of the I/O on a supercomputer to analyze data, a scientist has to handle a problem, there are a lot of data from various jobs. New methodologies need to be developed for more efficient analysis. The authors propose an approach that is applied on Mistral system at DKRZ to map the I/O on some specific metrics where they can apply clustering techniques to avoid having a million different profiling data to analyze. Moreover, the authors did quantitative and qualitative analysis regarding their approach. They evaluated many algorithms and the coding technique helped them to use the time series data to study the similarity. The outcome was to have a small number of clusters that could analyze. There are many frameworks that produce a lot of data, thus this work is really important and could potentially be also used on other big systems.
-The paper is lengthy but needs to provide a lot of details for the reader to understand better. It would be great if more sites were included in these experiments but this could be future work.
-\paragraph{Scope}   % in regards to the journal, i.e., does the topic fit?Yes.
-\paragraph{Significance}   % of the research, minor vs. majorAbove average
-\paragraph{Readability}   % English and structure appropriate?Good
-\paragraph{Presentation}Good
-\paragraph{References}   % Correctly formatted?Yes
-\paragraph{Correctness}   % Is the research correctYes
+During the profiling of the I/O on a supercomputer to analyze data, a scientist has to handle a problem, there are a lot of data from various jobs.
+New methodologies need to be developed for more efficient analysis.
+The authors propose an approach that is applied on Mistral system at DKRZ to map the I/O on some specific metrics where they can apply clustering techniques to avoid having a million different profiling data to analyze.
+Moreover, the authors did quantitative and qualitative analysis regarding their approach.
+They evaluated many algorithms and the coding technique helped them to use the time series data to study the similarity.
+The outcome was to have a small number of clusters that could analyze.
+There are many frameworks that produce a lot of data, thus this work is really important and could potentially be also used on other big systems.
+The paper is lengthy but needs to provide a lot of details for the reader to understand better.
+It would be great if more sites were included in these experiments but this could be future work.
+\paragraph{Scope}   % in regards to the journal, i.e., does the topic fit?
+Yes.
+\paragraph{Significance}   % of the research, minor vs. major
+Above average
+\paragraph{Readability}   % English and structure appropriate?
+Good
+\paragraph{Presentation}
+Good
+\paragraph{References}   % Correctly formatted?
+Yes
+\paragraph{Correctness}   % Is the research correct
+Yes
 
 \subsection*{Reviewer: Adrian Jackson, Date: 2021-01-25}
 
 \paragraph{Overall summary and proposal for acceptance}
-This paper, outlining as it does a study of I/O job metrics and methods for automatically analysing I/O usage data on large scale systems, is generally of publishable quality, and presents interesting research. 
+This paper, outlining as it does a study of I/O job metrics and methods for automatically analysing I/O usage data on large scale systems, is generally of publishable quality, and presents interesting research.
 
-There are some places where the language or the discussion in the paper needs to be addressed, and this has been added in comments in the paper. Of most importance are the figures \Cref{cluster:use_case:bin_aggzeros} and \Cref{cluster:use_case:bin_all} where I think the labels are the wrong way around at the moment. There are also some issues around how levenshtein distance has been used in the research that could be improved or at least clarified, because it is not currently clear how text manipulations are being undertaken, i.e. in the example [-:6:-:-] -> [-:388:-:-] is described as requiring one change, but for classical Levenshtein distance that should be a minimum of 3 changes.
+
+There are some places where the language or the discussion in the paper needs to be addressed, and this has been added in comments in the paper.
+Of most importance are the figures \Cref{cluster:use_case:bin_aggzeros} and \Cref{cluster:use_case:bin_all} where I think the labels are the wrong way around at the moment.
+There are also some issues around how levenshtein distance has been used in the research that could be improved or at least clarified, because it is not currently clear how text manipulations are being undertaken, i.e.
+in the example [-:6:-:-] -> [-:388:-:-] is described as requiring one change, but for classical Levenshtein distance that should be a minimum of 3 changes.
 
 There are other minor areas where the text could be improved, but in general the rest of the paper is good.
 
@@ -2357,7 +2399,8 @@ Yes, the investigation of I/O monitoring metrics and analysis is a good fit to t
 The work has good significance in the topic of I/O metrics and analysis
 
 \paragraph{Readability}   % English and structure appropriate?
-In general the readability is good, although there are a number of places where the language could be improved or where text is not completely understandable. Comments have been added in the text outlining these issues.
+In general the readability is good, although there are a number of places where the language could be improved or where text is not completely understandable.
+Comments have been added in the text outlining these issues.
 
 \paragraph{Presentation}
 Good
