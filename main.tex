@@ -166,7 +166,7 @@ The other dimensions may be fixed for particular HPC systems; here we assume the
 On Mistral data is gathered every five seconds, for two Lustre file system, and for nine I/O metrics~\footnote{A difference to previously utilized job statistics is that the Lustre proc files on Mistral doesn't offer Object Storage Client (osc) counters after a major upgrade of Lustre file system from version 2.7 to 2.11.
 Thus, instead of 13 metrics, this time our data contains only 9 metrics.}.
 Five of them (md\_read, md\_mod, md\_file\_create, md\_file\_delete, md\_other) are aggregates of metadata activities and the remaining four (read\_bytes, read\_calls, write\_bytes, write\_calls) capture data access.
-The md\_read covers metadata read-only operations while md\_mod covers modifying operations and md\_other aggregates rarely used operations such as mknod.
+The md\_read covers metadata read-only operations while md\_mod covers modifying operations and md\_other aggregates rarely used operations such as mknod. 
 The creation and deletion of files are very important and not aggregated.
 
 \begin{figure}[bt]
